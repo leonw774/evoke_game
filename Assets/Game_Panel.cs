@@ -8,7 +8,6 @@ using UnityEngine.UI;
 
 public class Game_Panel : MonoBehaviour
 {
-
     public class Map
     {
         public enum BLOCK_TYPE : int { WALKABLE = 0, WALL = 1, FINISH_POINT = 2, PLAYER_START_POINT = 3 };
@@ -51,6 +50,7 @@ public class Game_Panel : MonoBehaviour
                 height = bmp.height;
                 width = bmp.width;
                 Debug.Log("Image loaded! : " + height + ", " + width);
+                Resources.UnloadAsset(bmp);
             }
             else
                 Debug.Log("No file path!");
@@ -276,7 +276,8 @@ public class Game_Panel : MonoBehaviour
                 adjust_done = DistributeAdjust();
                 CorridorAdjust();
                 count++;
-            } while (adjust_done && count < 8);
+            } while (adjust_done && count <= 2);
+            DistributeAdjust();
 
             //CorridorAdjust();
             //DistributeAdjust();
@@ -387,7 +388,6 @@ public class Game_Panel : MonoBehaviour
                                 Update(i + Random.Range(-1, 1), j);
                             }
                         }
-
                     }
                 } // end of for: j
             } // end of for: i
@@ -549,12 +549,14 @@ public class Game_Panel : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-
-        // initialize map
-        theMap = new Map("map_1");
-
-        // initalize player
-        thePlayer = new Player(theMap);
+        string sm = GameObject.Find("Menu Script").GetComponent<Menu_Script>().SelectedLevel;
+        if (sm != null)
+        {
+            // initialize map
+            theMap = new Map(sm);
+            // initalize player
+            thePlayer = new Player(theMap);
+        }
     }
 
     // Update is called once per frame
