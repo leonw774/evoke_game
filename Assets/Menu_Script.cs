@@ -1,26 +1,34 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class Menu_Script : MonoBehaviour {
 
-    public string SelectedLevel = null;
-    public string SelectedTheme = "0";
-    // filename = "map" + SelectedTheme + "_" + SelectedLevel
-    // but when in debug, set SelectedLevel as complete file name
-
     public void Start()
     {
-        DontDestroyOnLoad(gameObject);
+        // set Save_Data to the right value
+        if(Save_Data.levelProcess == 0)
+        {
+            // read value in save file
+            Save_Data.levelProcess = 2;
+            // Save_Data will get its value from a save file in future
+        }
+
+        Button[] lvlBtns = FindObjectsOfType<Button>();
+        for(int i = 0; i < lvlBtns.Length; ++i)
+        {
+            if(lvlBtns[i].name.CompareTo("MenuBtn" + Save_Data.levelProcess) <= 0)
+            {
+                lvlBtns[i].interactable = true;
+            }
+        }
     }
 
-    public void setSelectedLevel(string level)
+    public void LoadLevel(string level)
     {
-        SelectedLevel = level;
-    }
-
-	public void LoadLevel()
-    {
+        Save_Data.SelectedLevel = "map" + level;
+        Save_Data.levelProcess = int.Parse(level);
         SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
         SceneManager.LoadScene("Game Scene");
     }

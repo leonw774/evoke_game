@@ -138,15 +138,18 @@ public class Game_Panel : MonoBehaviour
             int estimate_least_step = astar.FindPathLength(true);
             int estimate_least_step_ignore_obs = astar.FindPathLength(false);
             Debug.Log(estimate_least_step + " / " + estimate_least_step_ignore_obs);
+            // add bonus steps
+            int bonusThreshold = (int) (width * height * 0.02);
+            if (estimate_least_step / 4 < bonusThreshold)
+                estimate_least_step = estimate_least_step * 5 / 4;
+            else
+                estimate_least_step += bonusThreshold;
+
             Text esco = GameObject.Find("Estimated Step Count Output").GetComponent<Text>();
             if (estimate_least_step == -1)
-            {
-                esco.text = "error";
-            }
+                esco.text = "err";
             else
-            {
                 esco.text = estimate_least_step.ToString();
-            }
         }
     }
 
@@ -197,7 +200,6 @@ public class Game_Panel : MonoBehaviour
                         Destroy(obs[k]);
                         obs[k] = null;
                     }
-
                 }
                 positionList.Remove(pos);
             }
@@ -260,7 +262,7 @@ public class Game_Panel : MonoBehaviour
                     for (int i = obs_start; i >= obs_end; i--)
                     {
                         if (parentMap.blocks[i, j] == 0)
-                            //if (positionList.IndexOf(i * parentMap.width + j) == -1) // dont wanna update existed obs cause it could be too loosen
+                          //if (positionList.IndexOf(i * parentMap.width + j) == -1) // dont wanna update existed obs cause it could be too loosen
                             Update(i, j);
                     }
                 }
@@ -276,9 +278,8 @@ public class Game_Panel : MonoBehaviour
                 adjust_done = DistributeAdjust();
                 CorridorAdjust();
                 count++;
-            } while (adjust_done && count <= 2);
+            } while (adjust_done && count < 3);
             DistributeAdjust();
-
             //CorridorAdjust();
             //DistributeAdjust();
 
@@ -333,7 +334,7 @@ public class Game_Panel : MonoBehaviour
                             else if (di == 0 & dj == -1) dj = 1;
                             else dj++;
                         }
-                        if (sameNeighborCount >= (this_block_is_obstacle_block ? 6 : 6))
+                        if (sameNeighborCount >= (this_block_is_obstacle_block ? 7 : 6))
                         {
                             some_adjustment_are_done = true;
                             Update(i, j);
@@ -452,6 +453,8 @@ public class Game_Panel : MonoBehaviour
                     stepCountObject.text = stepCount.ToString();
                 }
             }
+            if (h == parentMap.finishBlock[0] && w == parentMap.finishBlock[1])
+                ReachFinal();
         }
 
         public void DoAbility()
@@ -475,7 +478,10 @@ public class Game_Panel : MonoBehaviour
 
         public void ReachFinal()
         {
-
+            GameObject.Find("Final Stats Background").GetComponent<SpriteRenderer>().enabled = true;
+            GameObject.Find("Game Menu Canvas").transform.Translate(new Vector3(0.0f, 0.0f, 2.0f));
+            Debug.Log("FINISH!");
+            Save_Data.levelProcess++;
         }
 
         public void SetPositionTo(int newh, int neww)
@@ -549,7 +555,7 @@ public class Game_Panel : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        string sm = GameObject.Find("Menu Script").GetComponent<Menu_Script>().SelectedLevel;
+        string sm = Save_Data.SelectedLevel;
         if (sm != null)
         {
             // initialize map
