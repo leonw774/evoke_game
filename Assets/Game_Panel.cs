@@ -14,9 +14,13 @@ public class Game_Panel : MonoBehaviour
         public int[,] blocks;
         public int width = 0;
         public int height = 0;
+
         public Obstacles theObstacles; // store obstacle position in as integer(h * width + w)
         public int[] playerStartBlock = new int[2];
         public int[] finishBlock = new int[2];
+
+        public int estimatedStep = 0;
+
         public string mapFileName = null;
         private Color32[] mapPixels = null;
 
@@ -135,21 +139,21 @@ public class Game_Panel : MonoBehaviour
         {
             // use A-star to find least steps to finish
             Astar astar = new Astar(blocks, height, width, theObstacles.positionList, playerStartBlock, finishBlock);
-            int estimate_least_step = astar.FindPathLength(true);
-            int estimate_least_step_ignore_obs = astar.FindPathLength(false);
-            Debug.Log(estimate_least_step + " / " + estimate_least_step_ignore_obs);
+            int estimateStep_ignore_obs = astar.FindPathLength(false);
+            estimatedStep = astar.FindPathLength(true);
+            Debug.Log(estimatedStep + " / " + estimateStep_ignore_obs);
             // add bonus steps
-            int bonusThreshold = (int) (width * height * 0.02);
-            if (estimate_least_step / 4 < bonusThreshold)
-                estimate_least_step = estimate_least_step * 5 / 4;
+            int bonusLimit = (int) (width * height * 0.1);
+            if (estimatedStep / 4 < bonusLimit)
+                estimatedStep = estimatedStep * 5 / 4;
             else
-                estimate_least_step += bonusThreshold;
+                estimatedStep += bonusLimit;
 
-            Text esco = GameObject.Find("Estimated Step Count Output").GetComponent<Text>();
-            if (estimate_least_step == -1)
-                esco.text = "err";
+            Text sro = GameObject.Find("Remaining Steps Output").GetComponent<Text>();
+            if (estimatedStep == -1)
+                sro.text = "Error";
             else
-                esco.text = estimate_least_step.ToString();
+                sro.text = estimatedStep.ToString();
         }
     }
 
@@ -218,70 +222,61 @@ public class Game_Panel : MonoBehaviour
                 created.transform.position = trans;
             }
         }
-
         public void Generate()
         {
-            int obs_start, obs_end;
             // make vertical obs
             for (int i = 1; i < parentMap.height - 1; ++i) // for every height
             {
-                obs_start = Random.Range(parentMap.width - 1, 0); // choose a width position
-                // there's some chance to make no walls
-                if (obs_start == 0)
-                    continue;
-                if (obs_start == 1)
+                bool putObs = Random.Range(-5, 5) > 0;
+                for (int j = 1; j < parentMap.width - 1; ++j)
                 {
-                    if (parentMap.blocks[i, 1] == 0)
-                        Update(i, 1);
-                }
-                else if (obs_start < parentMap.width - 1)
-                {
-                    obs_end = Random.Range(obs_start, 1); // then find anothor width position lesser than previous one
-                    for (int j = obs_start; j >= obs_end; --j)
+                    if (putObs && parentMap.blocks[i, j] == (int)Map.BLOCK_TYPE.WALKABLE)
                     {
-                        if (parentMap.blocks[i, j] == 0)
-                            Update(i, j);
+                        Update(i, j);
+                        if (Random.Range(-2, 5) < 0)
+                            putObs = !putObs;
+
+                    }
+                    else
+                    {
+                        if (Random.Range(-2, 2) < 0)
+                            putObs = !putObs;
                     }
                 }
             }
             // make horizonal obs
             for (int j = 1; j < parentMap.width - 1; j++)
             {
-                obs_start = Random.Range(parentMap.width - 1, 0);
-                // there's some chance to make no walls
-                if (obs_start == 0)
-                    continue;
-                if (obs_start == 1)
+                bool putObs = Random.Range(-5, 5) > 0;
+                for (int i = 1; i < parentMap.width - 1; ++i)
                 {
-                    if (parentMap.blocks[1, j] == 0)
-                        Update(1, j);
-                }
-                else if (obs_start < parentMap.height - 1)
-                {
-                    obs_end = Random.Range(obs_start, 1);
-                    for (int i = obs_start; i >= obs_end; i--)
+                    if (putObs && parentMap.blocks[i, j] == (int)Map.BLOCK_TYPE.WALKABLE)
                     {
-                        if (parentMap.blocks[i, j] == 0)
-                          //if (positionList.IndexOf(i * parentMap.width + j) == -1) // dont wanna update existed obs cause it could be too loosen
-                            Update(i, j);
+                        Update(i, j);
+                        if (Random.Range(-2, 5) < 0)
+                            putObs = !putObs;
+
+                    }
+                    else
+                    {
+                        if (Random.Range(-2, 2) < 0)
+                            putObs = !putObs;
                     }
                 }
             }
         }
-
+       
         public void Adjust()
         {
-            bool adjust_done = false;
             int count = 0;
+            bool find_something_to_adjust = true;
             do
             {
-                adjust_done = DistributeAdjust();
+                find_something_to_adjust = DistributeAdjust();
                 CorridorAdjust();
                 count++;
-            } while (adjust_done && count < 3);
-            DistributeAdjust();
-            //CorridorAdjust();
-            //DistributeAdjust();
+                Debug.Log("Obstacles Adjusted");
+            } while (find_something_to_adjust && count < 2);
 
             // in opening, obstacle should not neighbor or be on same block of the player and finish
             int playerPosition = parentMap.playerStartBlock[0] * parentMap.width + parentMap.playerStartBlock[1];
@@ -305,12 +300,12 @@ public class Game_Panel : MonoBehaviour
             {
                 for (int j = 1; j < parentMap.width - 1; ++j)
                 {
-                    int k = i * parentMap.width + j;
+                    int thisBlockPos = i * parentMap.width + j;
                     if (parentMap.blocks[i, j] != (int)Map.BLOCK_TYPE.WALKABLE)
                         continue;
                     else
                     {
-                        bool this_block_is_obstacle_block = (positionList.IndexOf(k) >= 0);
+                        bool this_is_obs = (positionList.Exists(x => x == thisBlockPos));
                         int di = -1, dj = -1;
                         int sameNeighborCount = 0;
                         while (di <= 1)
@@ -318,11 +313,11 @@ public class Game_Panel : MonoBehaviour
                             if (di == 0 & dj == 0) continue;
                             int neighborBlockPos = (i + di) * parentMap.width + (j + dj);
                             // no matter the neighbor block is really a obstacle or a wall, it all count as obstacle
-                            bool neighbor_block_is_obstacle_block =
-                                (positionList.IndexOf(neighborBlockPos)) >= 0 || (parentMap.blocks[i + di, j + dj] != (int)Map.BLOCK_TYPE.WALKABLE);
+                            bool neighbor_is_obs =
+                                (positionList.Exists(x => x == neighborBlockPos)) || (parentMap.blocks[i + di, j + dj] != (int)Map.BLOCK_TYPE.WALKABLE);
 
                             // check if neighbor is same with this block
-                            if (this_block_is_obstacle_block == neighbor_block_is_obstacle_block)
+                            if (this_is_obs == neighbor_is_obs)
                                 sameNeighborCount++;
 
                             // upadte neighbor blocks ij
@@ -334,10 +329,14 @@ public class Game_Panel : MonoBehaviour
                             else if (di == 0 & dj == -1) dj = 1;
                             else dj++;
                         }
-                        if (sameNeighborCount >= (this_block_is_obstacle_block ? 7 : 6))
+                        if (sameNeighborCount >= (this_is_obs ? 6 : 5))
                         {
                             some_adjustment_are_done = true;
                             Update(i, j);
+                            if (sameNeighborCount == 8)
+                            {
+                                Update(i + Random.Range(-1, 2), j + Random.Range(-1, 2));
+                            }
                         }
                     }
                 } // end of for: j
@@ -355,38 +354,48 @@ public class Game_Panel : MonoBehaviour
                 {
                     if (parentMap.blocks[i, j] == (int)Map.BLOCK_TYPE.WALKABLE)
                     {
-                        int pos = i * parentMap.width + j;
-                        int d = -1;
-                        bool is_middle_all_walkable = true;
-                        bool is_up_all_obstacle = true, is_down_all_obstacle = true;
-                        bool is_left_all_obstacle = true, is_right_all_obstacle = true;
+                        int pos = i * parentMap.width + j, d = -1, mw = parentMap.width;
+                        bool is_up_all_obs = true,
+                            is_down_all_obs = true,
+                            is_left_all_obs = true,
+                            is_right_all_obs = true,
+                            is_middle_all_walkable = true;
                         // check vertical corridor
                         while (d <= 1)
                         {
-                            is_up_all_obstacle = is_up_all_obstacle && (positionList.Exists(x => x == pos - parentMap.width + d) || parentMap.blocks[i - 1, j + d] == (int)Map.BLOCK_TYPE.WALL);
-                            is_down_all_obstacle = is_down_all_obstacle && (positionList.Exists(x => x == pos + parentMap.width + d) || parentMap.blocks[i + 1, j + d] == (int)Map.BLOCK_TYPE.WALL);
-                            is_middle_all_walkable = is_middle_all_walkable && !(positionList.Exists(x => x == pos + d) || parentMap.blocks[i, j + d] == (int)Map.BLOCK_TYPE.WALL);
+                            // Note: Map.BLOCK_TYPE.WALL is 1
+                            is_up_all_obs = is_up_all_obs && (positionList.Exists(x => x == pos - mw + d) || parentMap.blocks[i - 1, j + d] == 1);
+                            is_down_all_obs = is_down_all_obs && (positionList.Exists(x => x == pos + mw + d) || parentMap.blocks[i + 1, j + d] == 1);
+                            is_middle_all_walkable = is_middle_all_walkable && !(positionList.Exists(x => x == pos + d) || parentMap.blocks[i, j + d] == 1);
                             d++;
                         }
-                        if (is_middle_all_walkable && (is_up_all_obstacle || is_down_all_obstacle))
+                        if (is_middle_all_walkable && is_up_all_obs && is_down_all_obs)
                         {
-                            Update(i, j + Random.Range(-1, 1));
+                            Update(i, j); // close the walk way
+                            if (Random.Range(-1, 3) > 0)
+                            {
+                                Update(i + ((Random.Range(0, 2) == 0) ? 1 : -1), j); // open a obs
+                            }
                         }
                         else
                         {
                             // check horizontal corridor
                             d = -1;
-                            is_middle_all_walkable = true;
+                            is_middle_all_walkable = false;
                             while (d <= 1)
                             {
-                                is_left_all_obstacle = is_left_all_obstacle && (positionList.Exists(x => x == pos + d * parentMap.width - 1) || parentMap.blocks[i + d, j - 1] == (int)Map.BLOCK_TYPE.WALL);
-                                is_right_all_obstacle = is_right_all_obstacle && (positionList.Exists(x => x == pos + d * parentMap.width + 1) || parentMap.blocks[i + d, j + 1] == (int)Map.BLOCK_TYPE.WALL);
-                                is_middle_all_walkable = is_middle_all_walkable && !(positionList.Exists(x => x == pos + d * parentMap.width) || parentMap.blocks[i + d, j] == (int)Map.BLOCK_TYPE.WALL);
+                                is_left_all_obs = is_left_all_obs && (positionList.Exists(x => x == pos + d * mw - 1) || parentMap.blocks[i + d, j - 1] == 1);
+                                is_right_all_obs = is_right_all_obs && (positionList.Exists(x => x == pos + d * mw + 1) || parentMap.blocks[i + d, j + 1] == 1);
+                                is_middle_all_walkable = is_middle_all_walkable && !(positionList.Exists(x => x == pos + d * mw) || parentMap.blocks[i + d, j] == 1);
                                 d++;
                             }
-                            if (is_middle_all_walkable && (is_left_all_obstacle || is_right_all_obstacle))
+                            if (is_middle_all_walkable && is_left_all_obs && is_right_all_obs)
                             {
-                                Update(i + Random.Range(-1, 1), j);
+                                Update(i, j); // close a walk way
+                                if (Random.Range(-1, 3) > 0)
+                                {
+                                    Update(i, j + ((Random.Range(0, 2) == 0) ? 1 : -1)); // open a obs
+                                }
                             }
                         }
                     }
@@ -420,7 +429,7 @@ public class Game_Panel : MonoBehaviour
         public Map parentMap;
         public int stepCount;
         GameObject playerSpriteObject = GameObject.Find("Player Sprite");
-        Text stepCountObject = GameObject.Find("Player's Step Count Output").GetComponent<Text>();
+        Text stepRemainObject = GameObject.Find("Remaining Steps Output").GetComponent<Text>();
 
         public Player()
         {
@@ -450,7 +459,7 @@ public class Game_Panel : MonoBehaviour
                     //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
                     playerSpriteObject.transform.position = new Vector3((w - parentMap.width / 2.0f + 0.5f), (parentMap.height / 2.0f - h - 0.5f), 0);
                     stepCount++;
-                    stepCountObject.text = stepCount.ToString();
+                    stepRemainObject.text = (parentMap.estimatedStep - stepCount).ToString();
                 }
             }
             if (h == parentMap.finishBlock[0] && w == parentMap.finishBlock[1])
@@ -473,13 +482,13 @@ public class Game_Panel : MonoBehaviour
                 else dw++;
             }
             stepCount++;
-            stepCountObject.text = stepCount.ToString();
+            stepRemainObject.text = (parentMap.estimatedStep - stepCount).ToString();
         }
 
-        public void ReachFinal()
+        private void ReachFinal()
         {
             GameObject.Find("Final Stats Background").GetComponent<SpriteRenderer>().enabled = true;
-            GameObject.Find("Game Menu Canvas").transform.Translate(new Vector3(0.0f, 0.0f, 2.0f));
+            GameObject.Find("Control Panel").GetComponent<Control_Panel>().toggleGameMenu();
             Debug.Log("FINISH!");
             Save_Data.levelProcess++;
         }
@@ -510,17 +519,18 @@ public class Game_Panel : MonoBehaviour
 
         public void SetStepCount(int i)
         {
-            stepCount = i;
-            stepCountObject.text = stepCount.ToString();
+            stepCount = 0;
+            stepRemainObject.text = parentMap.estimatedStep.ToString();
         }
     }
 
     public Map theMap;
     public Player thePlayer;
 
-    public void Restart()
+    public void RestartButton()
     {
         Debug.Log("Restart");
+        GameObject.Find("Final Stats Background").GetComponent<SpriteRenderer>().enabled = false;
         theMap.theObstacles.Initialize();
         theMap.FindEstimatedPath();
         thePlayer.SetPositionTo(theMap.playerStartBlock[0], theMap.playerStartBlock[1]);
