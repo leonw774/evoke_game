@@ -5,7 +5,7 @@ using System.Collections;
 public class Control_Panel : MonoBehaviour {
 
     GameObject menuCanvas;
-    bool menuBtn_active = false;
+    public bool isMenuActive = false;
 	// Use this for initialization
 	void Start () {
         menuCanvas = GameObject.Find("Game Menu Canvas");
@@ -17,17 +17,17 @@ public class Control_Panel : MonoBehaviour {
             Application.Quit();
     }
 
-    public void gameMenuButton()
+    public void toggleGameMenu()
     {
-        if (menuCanvas.transform.position.z == -9.0f)
+        if (isMenuActive)
         {
             menuCanvas.transform.Translate(new Vector3(0.0f, 0.0f, -2.0f));
-            menuBtn_active = false;
+            isMenuActive = false;
         }
         else
         {
             menuCanvas.transform.Translate(new Vector3(0.0f, 0.0f, 2.0f));
-            menuBtn_active = true;
+            isMenuActive = true;
         }
     }
 
