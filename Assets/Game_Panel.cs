@@ -255,11 +255,10 @@ public class Game_Panel : MonoBehaviour
                         Update(i, j);
                         if (Random.Range(-2, 5) < 0)
                             putObs = !putObs;
-
                     }
                     else
                     {
-                        if (Random.Range(-2, 2) < 0)
+                        if (Random.Range(-2, 3) < 0)
                             putObs = !putObs;
                     }
                 }
@@ -276,7 +275,7 @@ public class Game_Panel : MonoBehaviour
                 CorridorAdjust();
                 count++;
                 Debug.Log("Obstacles Adjusted");
-            } while (find_something_to_adjust && count < 2);
+            } while (find_something_to_adjust && count < 4);
 
             // in opening, obstacle should not neighbor or be on same block of the player and finish
             int playerPosition = parentMap.playerStartBlock[0] * parentMap.width + parentMap.playerStartBlock[1];
@@ -335,7 +334,10 @@ public class Game_Panel : MonoBehaviour
                             Update(i, j);
                             if (sameNeighborCount == 8)
                             {
-                                Update(i + Random.Range(-1, 2), j + Random.Range(-1, 2));
+                                if(Random.Range(-1, 1) == 0)
+                                    Update(i + Random.Range(-1, 2), j);
+                                else
+                                    Update(i, j + Random.Range(-1, 2));
                             }
                         }
                     }
@@ -355,10 +357,8 @@ public class Game_Panel : MonoBehaviour
                     if (parentMap.blocks[i, j] == (int)Map.BLOCK_TYPE.WALKABLE)
                     {
                         int pos = i * parentMap.width + j, d = -1, mw = parentMap.width;
-                        bool is_up_all_obs = true,
-                            is_down_all_obs = true,
-                            is_left_all_obs = true,
-                            is_right_all_obs = true,
+                        bool is_up_all_obs = true, is_down_all_obs = true,
+                            is_left_all_obs = true, is_right_all_obs = true,
                             is_middle_all_walkable = true;
                         // check vertical corridor
                         while (d <= 1)
@@ -372,7 +372,7 @@ public class Game_Panel : MonoBehaviour
                         if (is_middle_all_walkable && is_up_all_obs && is_down_all_obs)
                         {
                             Update(i, j); // close the walk way
-                            if (Random.Range(-1, 3) > 0)
+                            if (Random.Range(-1, 2) > 0)
                             {
                                 Update(i + ((Random.Range(0, 2) == 0) ? 1 : -1), j); // open a obs
                             }
@@ -381,7 +381,7 @@ public class Game_Panel : MonoBehaviour
                         {
                             // check horizontal corridor
                             d = -1;
-                            is_middle_all_walkable = false;
+                            is_middle_all_walkable = true;
                             while (d <= 1)
                             {
                                 is_left_all_obs = is_left_all_obs && (positionList.Exists(x => x == pos + d * mw - 1) || parentMap.blocks[i + d, j - 1] == 1);
@@ -392,7 +392,7 @@ public class Game_Panel : MonoBehaviour
                             if (is_middle_all_walkable && is_left_all_obs && is_right_all_obs)
                             {
                                 Update(i, j); // close a walk way
-                                if (Random.Range(-1, 3) > 0)
+                                if (Random.Range(-1, 2) > 0)
                                 {
                                     Update(i, j + ((Random.Range(0, 2) == 0) ? 1 : -1)); // open a obs
                                 }
