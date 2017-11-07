@@ -490,7 +490,7 @@ public class Game_Panel : MonoBehaviour
             GameObject.Find("Final Stats Background").GetComponent<SpriteRenderer>().enabled = true;
             GameObject.Find("Control Panel").GetComponent<Control_Panel>().toggleGameMenu();
             Debug.Log("FINISH!");
-            Save_Data.levelProcess++;
+			Temp_Save_Data.UpdateLevel();
         }
 
         public void SetPositionTo(int newh, int neww)
@@ -565,7 +565,7 @@ public class Game_Panel : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        string sm = Save_Data.SelectedLevel;
+        string sm = Temp_Save_Data.SelectedLevel;
         if (sm != null)
         {
             // initialize map
@@ -600,7 +600,7 @@ public class Game_Panel : MonoBehaviour
                 times_irreponsive = Time.time + 0.3f;
                 playerMoveRight();
             }
-            if (Input.GetKey(KeyCode.RightShift))
+            if (Input.GetKey(KeyCode.LeftShift))
             {
                 times_irreponsive = Time.time + 0.3f;
                 playerDoAbility();
