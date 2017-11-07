@@ -14,10 +14,7 @@ public class Menu_Script : MonoBehaviour {
             Save_Data.levelProcess = 2;
             // Save_Data will get its value from a save file in future
         }
-        else
-        {
-            Save_Data.levelProcess = 1;
-        }
+
         Button[] lvlBtns = FindObjectsOfType<Button>();
         for(int i = 0; i < lvlBtns.Length; ++i)
         {

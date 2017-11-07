@@ -574,10 +574,37 @@ public class Game_Panel : MonoBehaviour
             thePlayer = new Player(theMap);
         }
     }
-
+    float times_irreponsive = 0;
     // Update is called once per frame
     void Update()
     {
-
+        if (times_irreponsive < Time.time)
+        {
+            if (Input.GetKey(KeyCode.UpArrow))
+            {
+                times_irreponsive = Time.time + 0.3f;
+                playerMoveUp();
+            }
+            if (Input.GetKey(KeyCode.DownArrow))
+            {
+                times_irreponsive = Time.time + 0.3f;
+                playerMoveDown();
+            }
+            if (Input.GetKey(KeyCode.LeftArrow))
+            {
+                times_irreponsive = Time.time + 0.3f;
+                playerMoveLeft();
+            }
+            if (Input.GetKey(KeyCode.RightArrow))
+            {
+                times_irreponsive = Time.time + 0.3f;
+                playerMoveRight();
+            }
+            if (Input.GetKey(KeyCode.RightShift))
+            {
+                times_irreponsive = Time.time + 0.3f;
+                playerDoAbility();
+            }
+        }
     }
 }
