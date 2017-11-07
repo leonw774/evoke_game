@@ -153,12 +153,12 @@ public class Game_Panel : MonoBehaviour
 
         public void DeleteWalls()
         {
-            GameObject wallsToDelete;
-            while (wallsToDelete = GameObject.Find("Wall Sprite"))
+            GameObject[] wallsToDelete = GameObject.FindGameObjectsWithTag("Wall");
+            for(int i = 0; i < wallsToDelete.Length; ++i)
             {
                 Debug.Log("Destroy a wall");
-                Destroy(wallsToDelete);
-                wallsToDelete = null;
+                Destroy(wallsToDelete[i]);
+                wallsToDelete[i] = null;
             }
         }
     }
@@ -480,6 +480,8 @@ public class Game_Panel : MonoBehaviour
             }
             stepCount++;
             stepRemainObject.text = (parentMap.estimatedStep - stepCount).ToString();
+            if (int.Parse(stepRemainObject.text) == 0)
+                theControlPanel.toggleFailMenu();
         }
 
         public void SetPositionTo(int newh, int neww)
@@ -559,7 +561,7 @@ public class Game_Panel : MonoBehaviour
         Debug.Break();
         Temp_Save_Data.SelectedNextLevel();
         Debug.Break();
-        theMap.DeleteWalls();
+        GameInitial(Temp_Save_Data.SelectedLevel);
     }
 
     public void playerMoveUp()

@@ -68,10 +68,10 @@ public class Menu_Script : MonoBehaviour {
     {
         Color toFadeInColor = titleImgIcon.color;
         Color toFadeOutColor = titleImg.color;
-        if (toFadeInColor.a < 0.99f)
+        if (toFadeInColor.a < 0.9f)
         {
-            toFadeInColor.a = Mathf.Lerp(toFadeInColor.a, 1.0f, 4.0f * Time.deltaTime);
-            toFadeOutColor.a = Mathf.Lerp(toFadeOutColor.a, 0.0f, 4.0f * Time.deltaTime);
+            toFadeInColor.a = Mathf.Lerp(toFadeInColor.a, 1.0f, 2.4f * Time.deltaTime);
+            toFadeOutColor.a = Mathf.Lerp(toFadeOutColor.a, 0.0f, 2.4f * Time.deltaTime);
             titleImgIcon.color = toFadeInColor;
             titleImg.color = toFadeOutColor;
         }
