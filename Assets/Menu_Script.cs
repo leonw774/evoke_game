@@ -12,26 +12,27 @@ public class Menu_Script : MonoBehaviour {
 
     public void Start()
     {
-		/*
+		
 		string SaveFilePath = Application.persistentDataPath + "/save.dat";
-		SaveW = new StreamWriter(SaveFilePath);
-		SaveR = new StreamReader(SaveFilePath);
-		*/
-		/*
+
 		// if save file not read yet
 		if (Temp_Save_Data.levelPassed == 0)
 		{
 			if (File.Exists(SaveFilePath))
 			{
+                SaveR = new StreamReader(SaveFilePath);
 				Temp_Save_Data.levelPassed = int.Parse(SaveR.ReadLine());
+                SaveR.Close();
 			}
 			else
 			{
-				File.Create(SaveFilePath);
+                SaveW = new StreamWriter(SaveFilePath, true);
 				SaveW.WriteLine("0\n");
+                SaveW.Close();
+                GameObject.Find("ContinueBtn").GetComponent<Text>().text = "Begin";
 			}
 		}
-		*/
+		
 		/*
 		if (Temp_Save_Data.levelPassed == 0)
 		{
@@ -61,12 +62,12 @@ public class Menu_Script : MonoBehaviour {
 	public void LevelContinue()
 	{
 		Temp_Save_Data.UpdateLevel();
-		LoadLevel(Temp_Save_Data.levelPassed.ToString());
+		LoadLevel(Temp_Save_Data.levelPassed);
 	}
 
-    public void LoadLevel(string level)
+    public void LoadLevel(int level)
     {
-		Temp_Save_Data.SelectedLevel = "map" + level;
+		Temp_Save_Data.SelectedLevel = level;
         SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
         SceneManager.LoadScene("Game Scene");
     }

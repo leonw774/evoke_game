@@ -31,9 +31,10 @@ public class Game_Panel : MonoBehaviour
             playerStartBlock = new int[2] { -1, -1 };
         }
 
-        public Map(string newMapFileName)
+        public Map(int newMapLevel)
         {
-            mapFileName = newMapFileName;
+            mapFileName = "map" + newMapLevel.ToString();
+            Debug.Log("mapFileMap: " + mapFileName);
             LoadMapImg();
             if (ParseMapImg())
             {
@@ -403,7 +404,7 @@ public class Game_Panel : MonoBehaviour
             } // end of for: i
         }
 
-        private void DestroyObstacles()
+        public void DestroyObstacles()
         {
             GameObject[] obs = GameObject.FindGameObjectsWithTag("Obstacle");
             int k = 0;
@@ -462,8 +463,12 @@ public class Game_Panel : MonoBehaviour
                     stepRemainObject.text = (parentMap.estimatedStep - stepCount).ToString();
                 }
             }
+            if (int.Parse(stepRemainObject.text) == 0)
+            {
+                GameObject.Find("Control Panel").GetComponent<Control_Panel>().toggleFailMenu();
+            }
             if (h == parentMap.finishBlock[0] && w == parentMap.finishBlock[1])
-                ReachFinal();
+                GameFinish();
         }
 
         public void DoAbility()
@@ -483,14 +488,6 @@ public class Game_Panel : MonoBehaviour
             }
             stepCount++;
             stepRemainObject.text = (parentMap.estimatedStep - stepCount).ToString();
-        }
-
-        private void ReachFinal()
-        {
-            GameObject.Find("Final Stats Background").GetComponent<SpriteRenderer>().enabled = true;
-            GameObject.Find("Control Panel").GetComponent<Control_Panel>().toggleGameMenu();
-            Debug.Log("FINISH!");
-			Temp_Save_Data.UpdateLevel();
         }
 
         public void SetPositionTo(int newh, int neww)
@@ -522,19 +519,46 @@ public class Game_Panel : MonoBehaviour
             stepCount = 0;
             stepRemainObject.text = parentMap.estimatedStep.ToString();
         }
+
+        public void GameFinish()
+        {
+            GameObject.Find("Control Panel").GetComponent<Control_Panel>().toggleFinishMenu();
+            if (Temp_Save_Data.SelectedLevel == Temp_Save_Data.levelPassed + 1)
+            {
+                Temp_Save_Data.UpdateLevel();
+            }
+            Debug.Log("SelectedLevel: " + Temp_Save_Data.SelectedLevel);
+            Debug.Log("levelPassed: " + Temp_Save_Data.levelPassed);
+        }
     }
 
     public Map theMap;
     public Player thePlayer;
 
-    public void RestartButton()
+    public void GameInitial(int sm)
+    {
+        // initialize map
+        theMap = new Map(sm);
+        // initalize player
+        thePlayer = new Player(theMap);
+    }
+
+    public void GameRestart()
     {
         Debug.Log("Restart");
-        GameObject.Find("Final Stats Background").GetComponent<SpriteRenderer>().enabled = false;
         theMap.theObstacles.Initialize();
         theMap.FindEstimatedPath();
         thePlayer.SetPositionTo(theMap.playerStartBlock[0], theMap.playerStartBlock[1]);
         thePlayer.SetStepCount(0);
+    }
+
+    public void GameNextLevel()
+    {
+        Debug.Log("next level");
+        Debug.Break();
+        Temp_Save_Data.SelectedNextLevel();
+        Debug.Break();
+        GameInitial(Temp_Save_Data.SelectedLevel);
     }
 
     public void playerMoveUp()
@@ -565,13 +589,9 @@ public class Game_Panel : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        string sm = Temp_Save_Data.SelectedLevel;
-        if (sm != null)
+        if (Temp_Save_Data.SelectedLevel != -1)
         {
-            // initialize map
-            theMap = new Map(sm);
-            // initalize player
-            thePlayer = new Player(theMap);
+            GameInitial(Temp_Save_Data.SelectedLevel);
         }
     }
     float times_irreponsive = 0;
@@ -582,27 +602,27 @@ public class Game_Panel : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.UpArrow))
             {
-                times_irreponsive = Time.time + 0.3f;
+                times_irreponsive = Time.time + 0.2f;
                 playerMoveUp();
             }
             if (Input.GetKey(KeyCode.DownArrow))
             {
-                times_irreponsive = Time.time + 0.3f;
+                times_irreponsive = Time.time + 0.2f;
                 playerMoveDown();
             }
             if (Input.GetKey(KeyCode.LeftArrow))
             {
-                times_irreponsive = Time.time + 0.3f;
+                times_irreponsive = Time.time + 0.2f;
                 playerMoveLeft();
             }
             if (Input.GetKey(KeyCode.RightArrow))
             {
-                times_irreponsive = Time.time + 0.3f;
+                times_irreponsive = Time.time + 0.2f;
                 playerMoveRight();
             }
-            if (Input.GetKey(KeyCode.LeftShift))
+            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
             {
-                times_irreponsive = Time.time + 0.3f;
+                times_irreponsive = Time.time + 0.2f;
                 playerDoAbility();
             }
         }
