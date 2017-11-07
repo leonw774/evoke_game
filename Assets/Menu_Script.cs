@@ -10,9 +10,15 @@ public class Menu_Script : MonoBehaviour {
 	public StreamReader SaveR = null;
 	public string SaveFilePath = null;
 
+    public bool titleAnimationPlay = false;
+    public SpriteRenderer titleImg;
+    public SpriteRenderer titleImgIcon;
     public void Start()
     {
 		
+        titleImg = GameObject.Find("Main Title").GetComponent<SpriteRenderer>();
+        titleImgIcon = GameObject.Find("Main Title Icon").GetComponent<SpriteRenderer>();
+
 		string SaveFilePath = Application.persistentDataPath + "/save.dat";
 
 		// if save file not read yet
@@ -50,6 +56,26 @@ public class Menu_Script : MonoBehaviour {
         }
     }
 
+    public void AnimationStart()
+    {
+        titleAnimationPlay = true;
+    }
+
+    public void TitleAnimation()
+    {
+        Color toFadeInColor = titleImgIcon.color;
+        if (toFadeInColor.a < 0.99f)
+        {
+            toFadeInColor.a = Mathf.Lerp(toFadeInColor.a, 1.0f, 4.0f * Time.deltaTime);
+            titleImgIcon.color = toFadeInColor;
+        }
+        else
+        {
+            titleAnimationPlay = false;
+            CameraSwitch();
+        }
+    }
+
 	public void CameraSwitch()
 	{
 		Camera mainCam = GameObject.Find("Main Camera").GetComponent<Camera>(), menuCam = GameObject.Find("Menu Camera").GetComponent<Camera>();
@@ -57,12 +83,9 @@ public class Menu_Script : MonoBehaviour {
 		t = mainCam.enabled;
 		mainCam.enabled = menuCam.enabled;
 		menuCam.enabled = t;
-	}
-
-	public void LevelContinue()
-	{
-		Temp_Save_Data.UpdateLevel();
-		LoadLevel(Temp_Save_Data.levelPassed);
+        Color c = titleImgIcon.color;
+        c.a = 0.0f;
+        titleImgIcon.color = c;
 	}
 
     public void LoadLevel(int level)
@@ -70,5 +93,11 @@ public class Menu_Script : MonoBehaviour {
 		Temp_Save_Data.SelectedLevel = level;
         SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
         SceneManager.LoadScene("Game Scene");
+    }
+
+    void Update()
+    {
+        if (titleAnimationPlay)
+            TitleAnimation();
     }
 }
