@@ -16,7 +16,8 @@ public static class Temp_Save_Data {
     /*
      * GAME STATUS SAVE
      * record the status in any time of the game
-     * */ 
+     * */
+    public static int latestScene = 0; // 0: Main Menu, 1: Game Menu, 2: Finish Menu
     public static int SelectedLevel = -1;
     public static int SelectedTheme = -1;
     public static void SelectedNextLevel()

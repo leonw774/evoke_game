@@ -10,12 +10,14 @@ public class Menu_Script : MonoBehaviour {
 	public StreamReader SaveR = null;
 	public string SaveFilePath = null;
 
-    public bool titleAnimationPlay = false;
+    public bool isTitleAnimPlaying = false;
     public SpriteRenderer titleImg;
     public SpriteRenderer titleImgIcon;
+    public GameObject mainCam;
+
     public void Start()
     {
-		
+        mainCam = GameObject.Find("Main Camera");
         titleImg = GameObject.Find("Main Title").GetComponent<SpriteRenderer>();
         titleImgIcon = GameObject.Find("Main Title Icon").GetComponent<SpriteRenderer>();
 
@@ -35,7 +37,8 @@ public class Menu_Script : MonoBehaviour {
                 SaveW = new StreamWriter(SaveFilePath, true);
 				SaveW.WriteLine("0\n");
                 SaveW.Close();
-                GameObject.Find("ContinueBtn").GetComponent<Text>().text = "Begin";
+                string tttest = GameObject.Find("ContinueBtn").GetComponentInChildren<Text>().text = "Begin";
+                Debug.Log(tttest);
 			}
 		}
 		
@@ -49,7 +52,7 @@ public class Menu_Script : MonoBehaviour {
         Button[] lvlBtns = FindObjectsOfType<Button>();
         for(int i = 0; i < lvlBtns.Length; ++i)
         {
-			if(lvlBtns[i].name.CompareTo("MenuBtn" + Temp_Save_Data.levelPassed.ToString()) <= 0)
+			if(lvlBtns[i].name.CompareTo("LevelBtn" + Temp_Save_Data.levelPassed.ToString()) <= 0)
             {
                 lvlBtns[i].interactable = true;
             }
@@ -58,34 +61,39 @@ public class Menu_Script : MonoBehaviour {
 
     public void AnimationStart()
     {
-        titleAnimationPlay = true;
+        isTitleAnimPlaying = true;
     }
 
     public void TitleAnimation()
     {
         Color toFadeInColor = titleImgIcon.color;
+        Color toFadeOutColor = titleImg.color;
         if (toFadeInColor.a < 0.99f)
         {
             toFadeInColor.a = Mathf.Lerp(toFadeInColor.a, 1.0f, 4.0f * Time.deltaTime);
+            toFadeOutColor.a = Mathf.Lerp(toFadeOutColor.a, 0.0f, 4.0f * Time.deltaTime);
             titleImgIcon.color = toFadeInColor;
+            titleImg.color = toFadeOutColor;
         }
         else
         {
-            titleAnimationPlay = false;
-            CameraSwitch();
+            isTitleAnimPlaying = false;
+            CameraSwitch(true);
         }
     }
 
-	public void CameraSwitch()
+	public void CameraSwitch(bool isMaintoMenu)
 	{
-		Camera mainCam = GameObject.Find("Main Camera").GetComponent<Camera>(), menuCam = GameObject.Find("Menu Camera").GetComponent<Camera>();
-		bool t;
-		t = mainCam.enabled;
-		mainCam.enabled = menuCam.enabled;
-		menuCam.enabled = t;
-        Color c = titleImgIcon.color;
-        c.a = 0.0f;
-        titleImgIcon.color = c;
+        if (isMaintoMenu)
+            mainCam.transform.Translate(new Vector3(-20, 0, 0));
+        else
+            mainCam.transform.Translate(new Vector3(20, 0, 0));
+        // set title logo back to transparent
+        Color c = titleImg.color, ci = titleImgIcon.color;
+        c.a = 1.0f;
+        ci.a = 0.0f;
+        titleImg.color = c;
+        titleImgIcon.color = ci;
 	}
 
     public void LoadLevel(int level)
@@ -97,7 +105,7 @@ public class Menu_Script : MonoBehaviour {
 
     void Update()
     {
-        if (titleAnimationPlay)
+        if (isTitleAnimPlaying)
             TitleAnimation();
     }
 }
