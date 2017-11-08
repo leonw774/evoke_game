@@ -445,6 +445,8 @@ public class Game_Panel : MonoBehaviour
         public void Move(int dh, int dw)
         {
             //Debug.Log("thePlayer.Move() is called in Game_Panel");
+            if (theControlPanel.isMenuActive)
+                return;
             if (parentMap.blocks[(h + dh), (w + dw)] != (int)Map.BLOCK_TYPE.WALL)
             {
                 if (parentMap.theObstacles.positionList.IndexOf((h + dh) * parentMap.width + (w + dw)) == -1)
@@ -466,6 +468,8 @@ public class Game_Panel : MonoBehaviour
         public void DoAbility()
         {
             int dh = -1, dw = -1;
+            if (theControlPanel.isMenuActive)
+                return;
             while (dh <= 1)
             {
                 parentMap.theObstacles.Update(h + dh, w + dw);
