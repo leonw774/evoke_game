@@ -19,6 +19,7 @@ public class Game_Panel : MonoBehaviour
         public int width = 0, height = 0;
         public int estimatedStep = 0;
 
+        public Sprite minimap;
         public string mapFileName = null;
         private Color32[] mapPixels = null;
 
@@ -33,6 +34,7 @@ public class Game_Panel : MonoBehaviour
         {
             mapFileName = "map" + newMapLevel.ToString();
             Debug.Log("mapFileMap: " + mapFileName);
+            minimap = Resources.Load<Sprite>(mapFileName);
             LoadMapImg();
             if (ParseMapImg())
             {
@@ -50,6 +52,8 @@ public class Game_Panel : MonoBehaviour
             if (mapFileName != null)
             {
                 Texture2D bmp = Resources.Load<Texture2D>(mapFileName);
+                SpriteRenderer mpsr = GameObject.Find("Mini Map").GetComponent<SpriteRenderer>();
+                mpsr.sprite = minimap;
                 mapPixels = bmp.GetPixels32();
                 blocks = new int[bmp.height, bmp.width];
                 height = bmp.height;
@@ -76,11 +80,11 @@ public class Game_Panel : MonoBehaviour
                     Color32 thisPixel = mapPixels[i * width + j];
                     if (thisPixel.Equals(new Color32(255, 255, 255, 255)))
                         blocks[height - 1 - i, j] = (int)(BLOCK_TYPE.WALKABLE);
-                    else if (thisPixel.r > 0)
+                    else if (thisPixel.Equals(new Color32(0, 0, 0, 255)))
                         blocks[height - 1 - i, j] = (int)(BLOCK_TYPE.WALL);
-                    else if (thisPixel.g > 0)
+                    else if (thisPixel.Equals(new Color32(255, 0, 0, 255)))
                         blocks[height - 1 - i, j] = (int)(BLOCK_TYPE.FINISH_POINT);
-                    else if (thisPixel.b > 0)
+                    else if (thisPixel.Equals(new Color32(0, 0, 255, 255)))
                         blocks[height - 1 - i, j] = (int)(BLOCK_TYPE.PLAYER_START_POINT);
                     else
                         return false;
@@ -241,11 +245,10 @@ public class Game_Panel : MonoBehaviour
                         Update(i, j);
                         if (Random.Range(-2, 5) < 0)
                             putObs = !putObs;
-
                     }
                     else
                     {
-                        if (Random.Range(-2, 2) < 0)
+                        if (Random.Range(-2, 3) < 0)
                             putObs = !putObs;
                     }
                 }
@@ -281,7 +284,7 @@ public class Game_Panel : MonoBehaviour
                 CorridorAdjust();
                 count++;
                 Debug.Log("Obstacles Adjusted");
-            } while (find_something_to_adjust && count < 1);
+            } while (find_something_to_adjust && count < 4);
 
             // in opening, obstacle should not neighbor or be on same block of the player and finish
             int playerPosition = parentMap.playerStartBlock[0] * parentMap.width + parentMap.playerStartBlock[1];
@@ -328,7 +331,7 @@ public class Game_Panel : MonoBehaviour
                         else if (di == 0 & dj == -1) dj = 1;
                         else dj++;
                     }
-                    if (sameNeighborCount >= (this_is_obs ? 6 : 5))
+                    if (sameNeighborCount >= (this_is_obs ? 7 : 5))
                     {
                         some_adjustment_are_done = true;
                         Update(i, j);
@@ -412,8 +415,14 @@ public class Game_Panel : MonoBehaviour
     /*
     public class Enemies
     {
+        int number;
         List<int> positionList;
         Map parentMap;
+
+        public void Initialize()
+        {
+            
+        }
     }
     */
     public class Player
@@ -552,7 +561,7 @@ public class Game_Panel : MonoBehaviour
 
     public void GameRestart()
     {
-        Debug.Log("Restart");
+        //Debug.Log("Restart");
         theMap.theObstacles.Initialize();
         theMap.FindEstimatedPath();
         thePlayer.SetPositionTo(theMap.playerStartBlock[0], theMap.playerStartBlock[1]);
@@ -561,10 +570,8 @@ public class Game_Panel : MonoBehaviour
 
     public void GameNextLevel()
     {
-        Debug.Log("next level");
-        Debug.Break();
+        //Debug.Log("next level");
         Temp_Save_Data.SelectedNextLevel();
-        Debug.Break();
         GameInitial(Temp_Save_Data.SelectedLevel);
     }
 

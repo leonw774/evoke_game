@@ -11,6 +11,7 @@ public class Control_Panel : MonoBehaviour {
     GameObject ResumeBtn;
     public bool isMenuActive = false;
     public bool isFinishMenu = false, isFailMenu = false;
+
 	// Use this for initialization
 	void Start () {
         menuCanvas = GameObject.Find("Game Menu Canvas");
@@ -75,5 +76,4 @@ public class Control_Panel : MonoBehaviour {
         SceneManager.LoadScene("Menu Scene");
         //Application.Quit();
     }
-
 }
