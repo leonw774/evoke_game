@@ -1,4 +1,6 @@
 Build/
 Build_Android/
 *.psd
-.vs/evoke_game/v14/.suo
+.vs/
+*.sln
+.userprefs
