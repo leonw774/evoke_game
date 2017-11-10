@@ -1,0 +1,177 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class Player_Control : MonoBehaviour {
+
+    public int h;
+    public int w;
+    public int stepRemain;
+    GameObject playerSpriteObject;
+    Text stepRemainObject;
+    Game_Menu theControlPanel;
+    Level_Map levelMap;
+
+    // Use this for initialization
+    void Start()
+    {
+        playerSpriteObject = GameObject.Find("Player Sprite");
+        theControlPanel = GameObject.Find("Control Panel").GetComponent<Game_Menu>();
+        levelMap = GameObject.Find("Game Panel").GetComponent<Level_Map>();
+        stepRemainObject = GameObject.Find("Remaining Steps Output").GetComponent<Text>();
+    }
+
+    public void Initialize()
+    {
+        h = levelMap.playerStartBlock[0];
+        w = levelMap.playerStartBlock[1];
+        stepRemain = int.Parse(GameObject.Find("Remaining Steps Output").GetComponent<Text>().text);
+    } 
+
+    public void playerMoveUp()
+    {
+        Move(-1, 0);
+    }
+
+    public void playerMoveLeft()
+    {
+        Move(0, -1);
+    }
+
+    public void playerMoveDown()
+    {
+        Move(1, 0);
+    }
+
+    public void playerMoveRight()
+    {
+        Move(0, 1);
+    }
+
+    public void playerDoAbility()
+    {
+        DoAbility();
+    }
+
+    private void Move(int dh, int dw)
+    {
+        //Debug.Log("thePlayer.Move() is called in Game_Panel");
+        if (theControlPanel.isMenuActive)
+            return;
+        if (levelMap.blocks[(h + dh), (w + dw)] != (int)Level_Map.BLOCK_TYPE.WALL)
+        {
+            if (levelMap.theObstacles.positionList.IndexOf((h + dh) * levelMap.width + (w + dw)) == -1)
+            {
+                h = h + dh;
+                w = w + dw;
+                //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
+                playerSpriteObject.transform.position = new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0);
+                stepRemain--;
+                stepRemainObject.text = stepRemain.ToString();
+            }
+        }
+        if (int.Parse(stepRemainObject.text) == 0)
+            theControlPanel.toggleFailMenu();
+        if (h == levelMap.finishBlock[0] && w == levelMap.finishBlock[1])
+            GameFinish();
+    }
+
+    private void DoAbility()
+    {
+        int dh = -1, dw = -1;
+        if (theControlPanel.isMenuActive)
+            return;
+        while (dh <= 1)
+        {
+            levelMap.theObstacles.ObsUpdate(h + dh, w + dw);
+            // upadte neighbor blocks ij
+            if (dw == 1)
+            {
+                dh++;
+                dw = -1;
+            }
+            else if (dh == 0 & dw == -1) dw = 1;
+            else dw++;
+        }
+        stepRemain--;
+        stepRemainObject.text = stepRemain.ToString();
+        if (int.Parse(stepRemainObject.text) == 0)
+            theControlPanel.toggleFailMenu();
+    }
+    /*
+    private void SetPositionTo(int newh, int neww)
+    {
+        if (newh >= levelMap.height || neww >= levelMap.width)
+        {
+            Debug.Log("illegal position");
+            return;
+        }
+        //Debug.Log("thePlayer.SetPositionTo() is called in Game_Panel");
+        if (levelMap.blocks[newh, neww] != (int)Level_Map.BLOCK_TYPE.WALL)
+        {
+            if (levelMap.theObstacles.positionList.IndexOf(newh * levelMap.width + neww) == -1)
+            {
+                h = newh;
+                w = neww;
+                //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
+                playerSpriteObject.transform.position = new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0);
+            }
+            else
+            {
+                levelMap.theObstacles.ObsUpdate(newh, neww);
+            }
+        }
+    }
+
+    private void SetStepRemain(int i)
+    {
+        stepRemain = i;
+        stepRemainObject.text = stepRemain.ToString();
+    }
+    */
+    public void GameFinish()
+    {
+        theControlPanel.toggleFinishMenu();
+        if (Temp_Save_Data.SelectedLevel == Temp_Save_Data.levelPassed + 1)
+        {
+            Temp_Save_Data.UpdateLevel();
+        }
+        Debug.Log("SelectedLevel: " + Temp_Save_Data.SelectedLevel);
+        Debug.Log("levelPassed: " + Temp_Save_Data.levelPassed);
+    }
+
+    float times_irreponsive = 0;
+    // Update is called once per frame
+    void Update()
+    {
+        if (times_irreponsive < Time.time)
+        {
+            if (Input.GetKey(KeyCode.UpArrow))
+            {
+                times_irreponsive = Time.time + 0.2f;
+                playerMoveUp();
+            }
+            if (Input.GetKey(KeyCode.DownArrow))
+            {
+                times_irreponsive = Time.time + 0.2f;
+                playerMoveDown();
+            }
+            if (Input.GetKey(KeyCode.LeftArrow))
+            {
+                times_irreponsive = Time.time + 0.2f;
+                playerMoveLeft();
+            }
+            if (Input.GetKey(KeyCode.RightArrow))
+            {
+                times_irreponsive = Time.time + 0.2f;
+                playerMoveRight();
+            }
+            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            {
+                times_irreponsive = Time.time + 0.2f;
+                playerDoAbility();
+            }
+        }
+    }
+}
