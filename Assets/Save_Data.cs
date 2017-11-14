@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class Temp_Save_Data {
+public static class Save_Data {
     /*
      * GAME PROCESS SAVE
      * thing that will read from/write to the save file when Menu_Script is loaded
@@ -10,7 +10,7 @@ public static class Temp_Save_Data {
     public static int levelPassed = 0; // when player fifnish the level, this variable++
 	public static void UpdateLevel()
 	{
-		Temp_Save_Data.levelPassed++;
+		Save_Data.levelPassed++;
 	}
 
     /*

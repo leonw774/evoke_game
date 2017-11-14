@@ -7,9 +7,9 @@ public class Player_Control : MonoBehaviour {
 
     public int h;
     public int w;
-    public int stepRemain;
+    public int energyPoint;
     GameObject playerSpriteObject;
-    Text stepRemainObject;
+    Text energyPointObject;
     Game_Menu theControlPanel;
     Level_Map levelMap;
 
@@ -17,17 +17,13 @@ public class Player_Control : MonoBehaviour {
     void Start()
     {
         playerSpriteObject = GameObject.Find("Player Sprite");
-        theControlPanel = GameObject.Find("Control Panel").GetComponent<Game_Menu>();
+        theControlPanel = GameObject.Find("Game Menu Canvas").GetComponent<Game_Menu>();
         levelMap = GameObject.Find("Game Panel").GetComponent<Level_Map>();
-        stepRemainObject = GameObject.Find("Remaining Steps Output").GetComponent<Text>();
-    }
-
-    public void Initialize()
-    {
+        energyPointObject = GameObject.Find("EP Output").GetComponent<Text>();
         h = levelMap.playerStartBlock[0];
         w = levelMap.playerStartBlock[1];
-        stepRemain = int.Parse(GameObject.Find("Remaining Steps Output").GetComponent<Text>().text);
-    } 
+        energyPoint = int.Parse(energyPointObject.text);
+    }
 
     public void playerMoveUp()
     {
@@ -56,24 +52,26 @@ public class Player_Control : MonoBehaviour {
 
     private void Move(int dh, int dw)
     {
-        //Debug.Log("thePlayer.Move() is called in Game_Panel");
+        //Debug.Log("thePlayer.Move(" + dh + ", " + dw + ") is called");
+        //Debug.Log("plar wanna go to " + (h + dh) + ", " + (w + dw));
         if (theControlPanel.isMenuActive)
             return;
         if (levelMap.blocks[(h + dh), (w + dw)] != (int)Level_Map.BLOCK_TYPE.WALL)
         {
+            //Debug.Log("not WALL");
             if (levelMap.theObstacles.positionList.IndexOf((h + dh) * levelMap.width + (w + dw)) == -1)
             {
                 h = h + dh;
                 w = w + dw;
                 //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
                 playerSpriteObject.transform.position = new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0);
-                stepRemain--;
-                stepRemainObject.text = stepRemain.ToString();
+                energyPoint--;
+                energyPointObject.text = energyPoint.ToString();
             }
         }
-        if (int.Parse(stepRemainObject.text) == 0)
+        if (int.Parse(energyPointObject.text) == 0)
             theControlPanel.toggleFailMenu();
-        if (h == levelMap.finishBlock[0] && w == levelMap.finishBlock[1])
+        if (h + dh == levelMap.finishBlock[0] && w + dw == levelMap.finishBlock[1])
             GameFinish();
     }
 
@@ -94,9 +92,9 @@ public class Player_Control : MonoBehaviour {
             else if (dh == 0 & dw == -1) dw = 1;
             else dw++;
         }
-        stepRemain--;
-        stepRemainObject.text = stepRemain.ToString();
-        if (int.Parse(stepRemainObject.text) == 0)
+        energyPoint--;
+        energyPointObject.text = energyPoint.ToString();
+        if (int.Parse(energyPointObject.text) == 0)
             theControlPanel.toggleFailMenu();
     }
     /*
@@ -126,19 +124,19 @@ public class Player_Control : MonoBehaviour {
 
     private void SetStepRemain(int i)
     {
-        stepRemain = i;
-        stepRemainObject.text = stepRemain.ToString();
+        energyPoint = i;
+        energyPointObject.text = energyPoint.ToString();
     }
     */
     public void GameFinish()
     {
         theControlPanel.toggleFinishMenu();
-        if (Temp_Save_Data.SelectedLevel == Temp_Save_Data.levelPassed + 1)
+        if (Save_Data.SelectedLevel == Save_Data.levelPassed + 1)
         {
-            Temp_Save_Data.UpdateLevel();
+            Save_Data.UpdateLevel();
         }
-        Debug.Log("SelectedLevel: " + Temp_Save_Data.SelectedLevel);
-        Debug.Log("levelPassed: " + Temp_Save_Data.levelPassed);
+        Debug.Log("SelectedLevel: " + Save_Data.SelectedLevel);
+        Debug.Log("levelPassed: " + Save_Data.levelPassed);
     }
 
     float times_irreponsive = 0;

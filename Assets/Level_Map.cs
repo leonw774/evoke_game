@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using B83.Image.BMP;
 using UnityEngine.UI;
+using System.Reflection;
 
 
 public class Level_Map : MonoBehaviour
@@ -16,6 +17,7 @@ public class Level_Map : MonoBehaviour
     public int estimatedStep = 0;
 
     public Obstacles theObstacles = null;
+    public Monsters theMonsters = null;
 
     public Sprite minimap = null;
     public string mapFileName = null;
@@ -26,8 +28,11 @@ public class Level_Map : MonoBehaviour
     void Start()
     {
         theObstacles = gameObject.AddComponent<Obstacles>();
-        if (Temp_Save_Data.SelectedLevel != -1)
-            GameInitial(Temp_Save_Data.SelectedLevel);
+        theMonsters = gameObject.AddComponent<Monsters>();
+        if (Save_Data.SelectedLevel != -1)
+        {
+            GameInitial(Save_Data.SelectedLevel);
+        }
         else
             Debug.Log("Selected Level Value Error!");
     }
@@ -39,10 +44,15 @@ public class Level_Map : MonoBehaviour
         Debug.Log("mapFileMap: " + mapFileName);
         minimap = Resources.Load<Sprite>(mapFileName);
         LoadMapImg();
+        GameConstruct();
+    }
 
+    public void GameConstruct()
+    {
         // destroy previous walls
         DeleteWalls();
         theObstacles.Initialize();
+        theMonsters.Initialize();
 
         if (ParseMapImg())
         {
@@ -96,7 +106,7 @@ public class Level_Map : MonoBehaviour
                     blocks[height - 1 - i, j] = (int)(BLOCK_TYPE.PLAYER_START_POINT);
                 else
                     return false;
-                Debug.Log(i + "," + j + ":" + blocks[height - 1 - i, j]);
+                //Debug.Log(i + "," + j + ":" + blocks[height - 1 - i, j]);
                 //Debug.Log(thisPixel.ToString());
             }
         }
@@ -136,11 +146,16 @@ public class Level_Map : MonoBehaviour
         }
         // construct obstacles
         theObstacles.Construct();
+
+        // generate monsters
+        theMonsters.GenerateMonsters(2);
     }
 
     public void FindEstimatedPath()
     {
         // use A-star to find least steps to finish
+        Debug.Log("playerStartBlock: " + playerStartBlock[0] + "," + playerStartBlock[1]);
+        Debug.Log("finishBlock: " + finishBlock[0] + "," + finishBlock[1]);
         Astar astar = new Astar(blocks, height, width, theObstacles.positionList, playerStartBlock, finishBlock);
         int estimateStep_ignore_obs = astar.FindPathLength(false);
         estimatedStep = astar.FindPathLength(true);
@@ -152,16 +167,17 @@ public class Level_Map : MonoBehaviour
         else
             estimatedStep += bonusLimit;
 
-        Text sro = GameObject.Find("Remaining Steps Output").GetComponent<Text>();
+        Text epo = GameObject.Find("EP Output").GetComponent<Text>();
         if (estimatedStep == -1)
-            sro.text = "Error";
+            epo.text = "Error";
         else
-            sro.text = estimatedStep.ToString();
+            epo.text = estimatedStep.ToString();
     }
 
     public void GameRestart()
     {
         //Debug.Log("Restart");
+        GameConstruct();
         theObstacles.Initialize();
         FindEstimatedPath();
     }
@@ -169,8 +185,8 @@ public class Level_Map : MonoBehaviour
     public void GameNextLevel()
     {
         //Debug.Log("next level");
-        Temp_Save_Data.SelectedNextLevel();
-        GameInitial(Temp_Save_Data.SelectedLevel);
+        Save_Data.SelectedNextLevel();
+        GameInitial(Save_Data.SelectedLevel);
     }
 
     public void DeleteWalls()

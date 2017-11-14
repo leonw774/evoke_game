@@ -28,8 +28,9 @@ public class BlockNode
                 return new BlockNode(h + 1, w);
             case 3: // right
                 return new BlockNode(h, w + 1);
+            default:
+                return new BlockNode(-1, -1);
         }
-        return new BlockNode(-1, -1);
     }
 
     public bool IsEqualBlock(BlockNode other)
@@ -81,6 +82,8 @@ public class Astar {
         OpenList.Clear();
         ClosedList.Clear();
         OpenList.Add(StartBlock);
+        if (obstacleList.Count == 0)
+            Debug.Log("obsList empty"); 
         InitializeMaps(blocks, obstacleList);
     }
     
@@ -90,7 +93,7 @@ public class Astar {
         GeoMap = new int[height, width];
         CostMap = new int[height, width];
         EstimatedTotalCostMap = new int[height, width];
-        //CameFromMap = new int[h, w];
+        //CameFromMap = new int[height, width];
         for (int i = 0; i < height; i++)
         {
             for (int j = 0; j < width; j++)
@@ -146,8 +149,8 @@ public class Astar {
                 if (ClosedList.Exists(x => x.IsEqualBlock(nbBlock)))
                     continue;
 
-                // if is wall
-                if (GeoMap[nbBlock.h, nbBlock.w] == (int)PATH_BLOCK_TYPE.WALL)
+                // if is wall then continue, but finishBlock is actually a wall so:
+                if (!nbBlock.IsEqualBlock(GoalBlock) && GeoMap[nbBlock.h, nbBlock.w] == (int)PATH_BLOCK_TYPE.WALL)
                     continue;
 
                 // calculate cost form start to here

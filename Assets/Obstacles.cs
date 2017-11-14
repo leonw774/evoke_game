@@ -6,6 +6,7 @@ public class Obstacles : MonoBehaviour {
 
     public List<int> positionList = null;  // store obstacle position in as integer(h * width + w)
     public Level_Map levelMap;
+    GameObject prototype;
 
     // Use this for initialization
     void Start()
@@ -18,6 +19,7 @@ public class Obstacles : MonoBehaviour {
         positionList = new List<int>();
         levelMap = gameObject.GetComponent<Level_Map>();
         DestroyObstacles(); // deatroy previous obstacles
+        prototype = GameObject.Find("Prototype Obstacle Sprite");
     }
 
     public void Construct()
@@ -56,7 +58,7 @@ public class Obstacles : MonoBehaviour {
             // add
             // Debug.Log("obs creation happened");
             Vector3 trans = new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0);
-            GameObject created = Instantiate(GameObject.Find("Prototype Obstacle Sprite"));
+            GameObject created = Instantiate(prototype);
             positionList.Add(pos);
             positionList.Sort();
             created.name = "Obstacle Sprite" + pos.ToString();
