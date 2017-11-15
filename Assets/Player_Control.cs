@@ -16,13 +16,15 @@ public class Player_Control : MonoBehaviour {
     // Use this for initialization
     void Start()
     {
+        Debug.Log("Player_Control.Start()");
+    }
+
+    public void Initialize()
+    {
         playerSpriteObject = GameObject.Find("Player Sprite");
         theControlPanel = GameObject.Find("Game Menu Canvas").GetComponent<Game_Menu>();
         levelMap = GameObject.Find("Game Panel").GetComponent<Level_Map>();
         energyPointObject = GameObject.Find("EP Output").GetComponent<Text>();
-        h = levelMap.playerStartBlock[0];
-        w = levelMap.playerStartBlock[1];
-        energyPoint = int.Parse(energyPointObject.text);
     }
 
     public void playerMoveUp()
@@ -70,9 +72,14 @@ public class Player_Control : MonoBehaviour {
             }
         }
         if (int.Parse(energyPointObject.text) == 0)
+        {
             theControlPanel.toggleFailMenu();
-        if (h + dh == levelMap.finishBlock[0] && w + dw == levelMap.finishBlock[1])
-            GameFinish();
+        }
+        else if (h + dh == levelMap.finishBlock[0] && w + dw == levelMap.finishBlock[1])
+        {
+            theControlPanel.toggleFinishMenu();
+            levelMap.GameFinish();
+        }
     }
 
     private void DoAbility()
@@ -95,12 +102,14 @@ public class Player_Control : MonoBehaviour {
         energyPoint--;
         energyPointObject.text = energyPoint.ToString();
         if (int.Parse(energyPointObject.text) == 0)
+        {
             theControlPanel.toggleFailMenu();
+        }
     }
-    /*
-    private void SetPositionTo(int newh, int neww)
+
+    public void SetPositionTo(int newh, int neww)
     {
-        if (newh >= levelMap.height || neww >= levelMap.width)
+        if (newh >= levelMap.height || neww >= levelMap.width || newh < 0 || neww < 0)
         {
             Debug.Log("illegal position");
             return;
@@ -122,21 +131,10 @@ public class Player_Control : MonoBehaviour {
         }
     }
 
-    private void SetStepRemain(int i)
+    public void SetEnergyPoint(int i)
     {
         energyPoint = i;
         energyPointObject.text = energyPoint.ToString();
-    }
-    */
-    public void GameFinish()
-    {
-        theControlPanel.toggleFinishMenu();
-        if (Save_Data.SelectedLevel == Save_Data.levelPassed + 1)
-        {
-            Save_Data.UpdateLevel();
-        }
-        Debug.Log("SelectedLevel: " + Save_Data.SelectedLevel);
-        Debug.Log("levelPassed: " + Save_Data.levelPassed);
     }
 
     float times_irreponsive = 0;

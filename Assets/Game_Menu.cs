@@ -59,17 +59,23 @@ public class Game_Menu : MonoBehaviour {
     public void toggleFinishMenu()
     {
         toggleGameMenu();
-        FinishGO.transform.Translate(new Vector3(0, 0, 1000));
-        ResumeBtn.transform.Translate(new Vector3(0, 0, 1000));
-        isFinishMenu = true;
+        if (!isFinishMenu)
+        {
+            FinishGO.transform.Translate(new Vector3(0, 0, 1000));
+            ResumeBtn.transform.Translate(new Vector3(0, 0, 1000));
+            isFinishMenu = true;
+        }
     }
 
     public void toggleFailMenu()
     {
         toggleGameMenu();
-        FailGO.transform.Translate(new Vector3(0, 0, 1000));
-        ResumeBtn.transform.Translate(new Vector3(0, 0, 1000));
-        isFailMenu = true;
+        if (!isFailMenu)
+        {
+            FailGO.transform.Translate(new Vector3(0, 0, 1000));
+            ResumeBtn.transform.Translate(new Vector3(0, 0, 1000));
+            isFailMenu = true;
+        }
     }
 
     public void gameExitButton()

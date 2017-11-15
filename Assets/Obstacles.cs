@@ -11,7 +11,7 @@ public class Obstacles : MonoBehaviour {
     // Use this for initialization
     void Start()
     {
-        
+        Debug.Log("Obstacles.Start()");
     }
     
     public void Initialize()
@@ -78,12 +78,12 @@ public class Obstacles : MonoBehaviour {
                 if (putObs && levelMap.blocks[i, j] == (int)Level_Map.BLOCK_TYPE.WALKABLE)
                 {
                     ObsUpdate(i, j);
-                    if (Random.Range(-2, 5) < 0)
+                    if (Random.Range(-3, 6) < 0)
                         putObs = !putObs;
                 }
                 else
                 {
-                    if (Random.Range(-2, 3) < 0)
+                    if (Random.Range(-3, 4) < 0)
                         putObs = !putObs;
                 }
             }
@@ -97,12 +97,12 @@ public class Obstacles : MonoBehaviour {
                 if (putObs && levelMap.blocks[i, j] == (int)Level_Map.BLOCK_TYPE.WALKABLE)
                 {
                     ObsUpdate(i, j);
-                    if (Random.Range(-2, 5) < 0)
+                    if (Random.Range(-3, 6) < 0)
                         putObs = !putObs;
                 }
                 else
                 {
-                    if (Random.Range(-2, 3) < 0)
+                    if (Random.Range(-3, 4) < 0)
                         putObs = !putObs;
                 }
             }
@@ -119,11 +119,16 @@ public class Obstacles : MonoBehaviour {
             CorridorAdjust();
             count++;
             Debug.Log("Obstacles Adjusted");
-        } while (find_something_to_adjust && count < 4);
+        } while (find_something_to_adjust && count <= 4);
+
+        /*
+        DistributeAdjust();
+        CorridorAdjust();
+        */
 
         // in opening, obstacle should not neighbor or be on same block of the player and finish
         int playerPosition = levelMap.playerStartBlock[0] * levelMap.width + levelMap.playerStartBlock[1];
-        Debug.Log("playerPosition:" + playerPosition);
+        //Debug.Log("playerPosition:" + playerPosition);
         if (positionList.Exists(x => x == playerPosition)) // same block
             ObsUpdate(playerPosition);
         if (positionList.Exists(x => x == playerPosition + 1)) // right
@@ -210,7 +215,7 @@ public class Obstacles : MonoBehaviour {
                     if (is_middle_all_walkable && is_up_all_obs && is_down_all_obs)
                     {
                         ObsUpdate(i, j); // close the walk way
-                        if (Random.Range(-1, 2) > 0)  // then randomly delete a obs
+                        if (Random.Range(-1, 3) > 0)  // then randomly delete a obs
                             ObsUpdate(i + ((Random.Range(0, 2) == 0) ? 1 : -1), j);
                         return;
                     }
@@ -227,7 +232,7 @@ public class Obstacles : MonoBehaviour {
                     if (is_middle_all_walkable && is_left_all_obs && is_right_all_obs)
                     {
                         ObsUpdate(i, j); // close a walk way
-                        if (Random.Range(-1, 2) > 0) // then randomly delete a obs
+                        if (Random.Range(-1, 3) > 0) // then randomly delete a obs
                             ObsUpdate(i, j + ((Random.Range(0, 2) == 0) ? 1 : -1));
                         return;
                     }
@@ -245,6 +250,7 @@ public class Obstacles : MonoBehaviour {
             Destroy(obs[k]);
             obs[k] = null;
         }
+        positionList = new List<int>();
         Debug.Log("destroy " + k + " obs");
     }
 	

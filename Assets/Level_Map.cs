@@ -15,23 +15,32 @@ public class Level_Map : MonoBehaviour
     public int[] finishBlock = new int[2];
     public int width = 0, height = 0;
     public int estimatedStep = 0;
+    public int wallsNumber = 0;
 
     public Obstacles theObstacles = null;
     public Monsters theMonsters = null;
+    public Player_Control thePlayer = null;
 
     public Sprite minimap = null;
     public string mapFileName = null;
     private Color32[] mapPixels = null;
 
-
     // Use this for initialization
     void Start()
     {
         theObstacles = gameObject.AddComponent<Obstacles>();
+        theObstacles.Initialize();
         theMonsters = gameObject.AddComponent<Monsters>();
+        theMonsters.Initialize();
+        thePlayer = GameObject.Find("Player Control Canvas").GetComponent<Player_Control>();
         if (Save_Data.SelectedLevel != -1)
         {
             GameInitial(Save_Data.SelectedLevel);
+            // if parse img succese
+            if (ParseMapImg())
+                GameStart();
+            else
+                Debug.Log("Level Read Map Failed.");
         }
         else
             Debug.Log("Selected Level Value Error!");
@@ -44,24 +53,18 @@ public class Level_Map : MonoBehaviour
         Debug.Log("mapFileMap: " + mapFileName);
         minimap = Resources.Load<Sprite>(mapFileName);
         LoadMapImg();
-        GameConstruct();
     }
 
-    public void GameConstruct()
+    public void GameStart()
     {
-        // destroy previous walls
-        DeleteWalls();
-        theObstacles.Initialize();
-        theMonsters.Initialize();
+        // only do MapConstruct in first start
+        MapConstruction();
 
-        if (ParseMapImg())
-        {
-            // if read img succese
-            MapConstruction();
-            FindEstimatedPath();
-        }
-        else
-            Debug.Log("Level Read Map Failed.");
+        // construct obstacles
+        theObstacles.Construct();
+        // generate monsters
+        theMonsters.Generate(4);
+        SetPlayerInfo();
     }
 
     public void LoadMapImg()
@@ -76,7 +79,7 @@ public class Level_Map : MonoBehaviour
             blocks = new int[bmp.height, bmp.width];
             height = bmp.height;
             width = bmp.width;
-            Debug.Log("Image loaded! : " + height + ", " + width);
+            Debug.Log("Image loaded: " + height + ", " + width);
             Resources.UnloadAsset(bmp);
         }
         else
@@ -115,6 +118,9 @@ public class Level_Map : MonoBehaviour
 
     public void MapConstruction()
     {
+        // delete previous walls
+        DeleteWalls();
+        wallsNumber = 0;
         // make images on map
         for (int h = 0; h < height; h++)
         {
@@ -129,6 +135,7 @@ public class Level_Map : MonoBehaviour
                     wallCreated.tag = "Wall";
                     wallCreated.transform.parent = GameObject.Find("Game Panel").transform;
                     wallCreated.transform.position = trans;
+                    wallsNumber++;
                 }
                 else if (blocks[h, w] == (int)(BLOCK_TYPE.FINISH_POINT))
                 {
@@ -139,54 +146,65 @@ public class Level_Map : MonoBehaviour
                 else if (blocks[h, w] == (int)(BLOCK_TYPE.PLAYER_START_POINT))
                 {
                     playerStartBlock = new int[2] { h, w };
-                    GameObject.Find("Player Sprite").transform.position = trans;
                     blocks[h, w] = (int)(BLOCK_TYPE.WALKABLE);
                 }
             }
         }
-        // construct obstacles
-        theObstacles.Construct();
-
-        // generate monsters
-        theMonsters.GenerateMonsters(2);
     }
 
-    public void FindEstimatedPath()
+    public void SetPlayerInfo()
     {
         // use A-star to find least steps to finish
         Debug.Log("playerStartBlock: " + playerStartBlock[0] + "," + playerStartBlock[1]);
         Debug.Log("finishBlock: " + finishBlock[0] + "," + finishBlock[1]);
         Astar astar = new Astar(blocks, height, width, theObstacles.positionList, playerStartBlock, finishBlock);
-        int estimateStep_ignore_obs = astar.FindPathLength(false);
         estimatedStep = astar.FindPathLength(true);
-        Debug.Log(estimatedStep + " / " + estimateStep_ignore_obs);
+        Debug.Log("estimatedStep:" + estimatedStep);
         // add bonus steps
         int bonusLimit = (int)(width * height * 0.1);
         if (estimatedStep / 4 < bonusLimit)
             estimatedStep = estimatedStep * 5 / 4;
         else
             estimatedStep += bonusLimit;
-
-        Text epo = GameObject.Find("EP Output").GetComponent<Text>();
-        if (estimatedStep == -1)
-            epo.text = "Error";
-        else
-            epo.text = estimatedStep.ToString();
+        
+        thePlayer.Initialize();
+        thePlayer.SetEnergyPoint(estimatedStep);
+        thePlayer.SetPositionTo(playerStartBlock[0], playerStartBlock[1]);
     }
 
     public void GameRestart()
     {
         //Debug.Log("Restart");
-        GameConstruct();
-        theObstacles.Initialize();
-        FindEstimatedPath();
+        theObstacles.DestroyObstacles();
+        theMonsters.DestroyMonsters();
+        theObstacles.Construct();
+        theMonsters.Generate(4);
+        SetPlayerInfo();
+    }
+
+    public void GameFinish()
+    {
+        if (Save_Data.SelectedLevel == Save_Data.levelPassed + 1)
+        {
+            Save_Data.UpdateLevel();
+        }
+        Debug.Log("SelectedLevel: " + Save_Data.SelectedLevel);
+        Debug.Log("levelPassed: " + Save_Data.levelPassed);
     }
 
     public void GameNextLevel()
     {
         //Debug.Log("next level");
+        theObstacles.DestroyObstacles();
+        theMonsters.DestroyMonsters();
+       
         Save_Data.SelectedNextLevel();
         GameInitial(Save_Data.SelectedLevel);
+        // if parse img succese
+        if (ParseMapImg())
+            GameStart();
+        else
+            Debug.Log("Level Read Map Failed.");
     }
 
     public void DeleteWalls()
