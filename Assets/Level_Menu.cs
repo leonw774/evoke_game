@@ -21,42 +21,74 @@ public class Level_Menu : MonoBehaviour {
         titleImg = GameObject.Find("Main Title").GetComponent<SpriteRenderer>();
         titleImgIcon = GameObject.Find("Main Title Icon").GetComponent<SpriteRenderer>();
 
-		string SaveFilePath = Application.persistentDataPath + "/save.dat";
+		SaveFilePath = Application.persistentDataPath + "/save.dat";
 
-		// if save file not read yet
-		if (Save_Data.levelPassed == 0)
-		{
-			if (File.Exists(SaveFilePath))
-			{
-                SaveR = new StreamReader(SaveFilePath);
-				Save_Data.levelPassed = int.Parse(SaveR.ReadLine());
-                SaveR.Close();
-			}
-			else
-			{
-                SaveW = new StreamWriter(SaveFilePath, true);
-				SaveW.WriteLine("0\n");
-                SaveW.Close();
-                string tttest = GameObject.Find("ContinueBtn").GetComponentInChildren<Text>().text = "Begin";
-                Debug.Log(tttest);
-			}
-		}
+		// if it is the the first to the main menu
+        if (Save_Data.levelPassed == 0)
+        {
+            if (File.Exists(SaveFilePath))
+            {
+                loadSaveData();
+            }
+            else
+            {
+                // leave it unloaded
+            }
+        }
+        // if the game has been played over some level
+        else
+        {
+            if (File.Exists(SaveFilePath))
+            {
+                // it will do further examination about player_info
+            }
+            else // and there is not a save file yet!
+            {
+                writeSaveData(Save_Data.levelPassed);
+            }
+        }
 		
-		/*
-		if (Save_Data.levelPassed == 0)
-		{
-			// to unlock level for debug
-			Save_Data.levelPassed = 2;
-		}
-		*/
+	    Save_Data.levelPassed = 3;
+
+        SetupLevelMenuButton();
+    }
+
+    void SetupLevelMenuButton()
+    {
         Button[] lvlBtns = FindObjectsOfType<Button>();
         for(int i = 0; i < lvlBtns.Length; ++i)
         {
-			if(lvlBtns[i].name.CompareTo("LevelBtn" + (Save_Data.levelPassed + 1).ToString()) <= 0)
+            if(lvlBtns[i].name.CompareTo("LevelBtn" + (Save_Data.levelPassed + 1).ToString()) <= 0)
             {
                 lvlBtns[i].interactable = true;
             }
         }
+    }
+
+    void loadSaveData()
+    {
+        SaveR = new StreamReader(SaveFilePath);
+        Save_Data.levelPassed = int.Parse(SaveR.ReadLine());
+        SaveR.Close();
+    }
+
+    void writeSaveData(int level)
+    {
+        if (File.Exists(SaveFilePath))
+        {
+            SaveW = new StreamWriter(SaveFilePath, true);
+            SaveW.WriteLine(level.ToString() + "\n");
+            SaveW.Close();
+            string tttest = GameObject.Find("Continue Button Text").GetComponent<Text>().text = "Begin";
+            Debug.Log(tttest);
+        }
+    }
+
+    public void LoadLevel(int level)
+    {
+        Save_Data.SelectedLevel = level;
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
+        SceneManager.LoadScene("Game Scene");
     }
 
     public void AnimationStart()
@@ -98,13 +130,6 @@ public class Level_Menu : MonoBehaviour {
             isTitleAnimPlaying = false;
             CameraMain2Menu();
         }
-    }
-
-    public void LoadLevel(int level)
-    {
-		Save_Data.SelectedLevel = level;
-        SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
-        SceneManager.LoadScene("Game Scene");
     }
 
     void Update()

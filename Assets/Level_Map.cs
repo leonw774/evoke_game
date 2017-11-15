@@ -16,6 +16,7 @@ public class Level_Map : MonoBehaviour
     public int width = 0, height = 0;
     public int estimatedStep = 0;
     public int wallsNumber = 0;
+    public int monsterNumber = 0;
 
     public Obstacles theObstacles = null;
     public Monsters theMonsters = null;
@@ -53,18 +54,6 @@ public class Level_Map : MonoBehaviour
         Debug.Log("mapFileMap: " + mapFileName);
         minimap = Resources.Load<Sprite>(mapFileName);
         LoadMapImg();
-    }
-
-    public void GameStart()
-    {
-        // only do MapConstruct in first start
-        MapConstruction();
-
-        // construct obstacles
-        theObstacles.Construct();
-        // generate monsters
-        theMonsters.Generate(4);
-        SetPlayerInfo();
     }
 
     public void LoadMapImg()
@@ -120,6 +109,7 @@ public class Level_Map : MonoBehaviour
     {
         // delete previous walls
         DeleteWalls();
+
         wallsNumber = 0;
         // make images on map
         for (int h = 0; h < height; h++)
@@ -150,13 +140,18 @@ public class Level_Map : MonoBehaviour
                 }
             }
         }
+
+        Debug.Log("playerStartBlock: " + playerStartBlock[0] + "," + playerStartBlock[1]);
+        Debug.Log("finishBlock: " + finishBlock[0] + "," + finishBlock[1]);
+
+        // set monster number
+        monsterNumber = (blocks.Length - wallsNumber) / 50 + 2;
+        Debug.Log("the map ask for " + monsterNumber + " monsters");
     }
 
     public void SetPlayerInfo()
     {
         // use A-star to find least steps to finish
-        Debug.Log("playerStartBlock: " + playerStartBlock[0] + "," + playerStartBlock[1]);
-        Debug.Log("finishBlock: " + finishBlock[0] + "," + finishBlock[1]);
         Astar astar = new Astar(blocks, height, width, theObstacles.positionList, playerStartBlock, finishBlock);
         estimatedStep = astar.FindPathLength(true);
         Debug.Log("estimatedStep:" + estimatedStep);
@@ -172,13 +167,25 @@ public class Level_Map : MonoBehaviour
         thePlayer.SetPositionTo(playerStartBlock[0], playerStartBlock[1]);
     }
 
+    public void GameStart()
+    {
+        // only do MapConstruct in first start
+        MapConstruction();
+
+        // construct obstacles
+        theObstacles.Construct();
+        // generate monsters
+        theMonsters.Generate(monsterNumber);
+        SetPlayerInfo();
+    }
+
     public void GameRestart()
     {
         //Debug.Log("Restart");
         theObstacles.DestroyObstacles();
         theMonsters.DestroyMonsters();
         theObstacles.Construct();
-        theMonsters.Generate(4);
+        theMonsters.Generate(monsterNumber);
         SetPlayerInfo();
     }
 

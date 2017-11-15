@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 
 public class Player_Control : MonoBehaviour {
-
+    public enum FACING : int {UP = 0, LEFT, DOWN, RIGHT};
     public int h;
     public int w;
     public int energyPoint;
+    public FACING faceTo;
+    int abilityCooldown;
     GameObject playerSpriteObject;
     Text energyPointObject;
     Game_Menu theControlPanel;
@@ -29,21 +32,25 @@ public class Player_Control : MonoBehaviour {
 
     public void playerMoveUp()
     {
+        faceTo = FACING.UP;
         Move(-1, 0);
     }
 
     public void playerMoveLeft()
     {
+        faceTo = FACING.LEFT;
         Move(0, -1);
     }
 
     public void playerMoveDown()
     {
+        faceTo = FACING.DOWN;
         Move(1, 0);
     }
 
     public void playerMoveRight()
     {
+        faceTo = FACING.RIGHT;
         Move(0, 1);
     }
 
@@ -65,8 +72,12 @@ public class Player_Control : MonoBehaviour {
             {
                 h = h + dh;
                 w = w + dw;
+
+                levelMap.theMonsters.MonstersPosUpdate();
+
                 //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
                 playerSpriteObject.transform.position = new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0);
+
                 energyPoint--;
                 energyPointObject.text = energyPoint.ToString();
             }
@@ -137,7 +148,16 @@ public class Player_Control : MonoBehaviour {
         energyPointObject.text = energyPoint.ToString();
     }
 
+    void moveAnimStart()
+    {
+        
+    }
+
     float times_irreponsive = 0;
+    float animDurTime = 0.15f;
+    float animBeginPos = 0;
+    float animEndPos = 0;
+    bool moveAnimation = false;
     // Update is called once per frame
     void Update()
     {
@@ -145,29 +165,35 @@ public class Player_Control : MonoBehaviour {
         {
             if (Input.GetKey(KeyCode.UpArrow))
             {
-                times_irreponsive = Time.time + 0.2f;
+                times_irreponsive = Time.time + animDurTime;
                 playerMoveUp();
             }
             if (Input.GetKey(KeyCode.DownArrow))
             {
-                times_irreponsive = Time.time + 0.2f;
+                times_irreponsive = Time.time + animDurTime;
                 playerMoveDown();
             }
             if (Input.GetKey(KeyCode.LeftArrow))
             {
-                times_irreponsive = Time.time + 0.2f;
+                times_irreponsive = Time.time + animDurTime;
                 playerMoveLeft();
             }
             if (Input.GetKey(KeyCode.RightArrow))
             {
-                times_irreponsive = Time.time + 0.2f;
+                times_irreponsive = Time.time + animDurTime;
                 playerMoveRight();
             }
             if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
             {
-                times_irreponsive = Time.time + 0.2f;
+                times_irreponsive = Time.time + animDurTime;
                 playerDoAbility();
             }
         }
+        /*
+        if (moveAnimation)
+        {
+            
+        }
+        */
     }
 }

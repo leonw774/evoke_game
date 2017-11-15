@@ -78,12 +78,12 @@ public class Obstacles : MonoBehaviour {
                 if (putObs && levelMap.blocks[i, j] == (int)Level_Map.BLOCK_TYPE.WALKABLE)
                 {
                     ObsUpdate(i, j);
-                    if (Random.Range(-3, 6) < 0)
+                    if (Random.Range(-5, 8) < 0)
                         putObs = !putObs;
                 }
                 else
                 {
-                    if (Random.Range(-3, 4) < 0)
+                    if (Random.Range(-5, 6) < 0)
                         putObs = !putObs;
                 }
             }
@@ -97,12 +97,12 @@ public class Obstacles : MonoBehaviour {
                 if (putObs && levelMap.blocks[i, j] == (int)Level_Map.BLOCK_TYPE.WALKABLE)
                 {
                     ObsUpdate(i, j);
-                    if (Random.Range(-3, 6) < 0)
+                    if (Random.Range(-5, 8) < 0)
                         putObs = !putObs;
                 }
                 else
                 {
-                    if (Random.Range(-3, 4) < 0)
+                    if (Random.Range(-5, 6) < 0)
                         putObs = !putObs;
                 }
             }
@@ -113,6 +113,7 @@ public class Obstacles : MonoBehaviour {
     {
         int count = 0;
         bool find_something_to_adjust = true;
+
         do
         {
             find_something_to_adjust = DistributeAdjust();
@@ -125,7 +126,6 @@ public class Obstacles : MonoBehaviour {
         DistributeAdjust();
         CorridorAdjust();
         */
-
         // in opening, obstacle should not neighbor or be on same block of the player and finish
         int playerPosition = levelMap.playerStartBlock[0] * levelMap.width + levelMap.playerStartBlock[1];
         //Debug.Log("playerPosition:" + playerPosition);
@@ -172,7 +172,7 @@ public class Obstacles : MonoBehaviour {
                     else if (di == 0 & dj == -1) dj = 1;
                     else dj++;
                 }
-                if (sameNeighborCount >= (this_is_obs ? 7 : 5))
+                if (sameNeighborCount >= (this_is_obs ? 6 : 5))
                 {
                     some_adjustment_are_done = true;
                     ObsUpdate(i, j);
@@ -214,8 +214,8 @@ public class Obstacles : MonoBehaviour {
                     }
                     if (is_middle_all_walkable && is_up_all_obs && is_down_all_obs)
                     {
-                        ObsUpdate(i, j); // close the walk way
-                        if (Random.Range(-1, 3) > 0)  // then randomly delete a obs
+                        ObsUpdate(i, j); // add an obs in the walk way
+                        if (Random.Range(-1, 5) > 0)  // then randomly delete a obs
                             ObsUpdate(i + ((Random.Range(0, 2) == 0) ? 1 : -1), j);
                         return;
                     }
@@ -231,8 +231,8 @@ public class Obstacles : MonoBehaviour {
                     }
                     if (is_middle_all_walkable && is_left_all_obs && is_right_all_obs)
                     {
-                        ObsUpdate(i, j); // close a walk way
-                        if (Random.Range(-1, 3) > 0) // then randomly delete a obs
+                        ObsUpdate(i, j); // add an obs in the walk way
+                        if (Random.Range(-1, 5) > 0) // then randomly delete a obs
                             ObsUpdate(i, j + ((Random.Range(0, 2) == 0) ? 1 : -1));
                         return;
                     }
