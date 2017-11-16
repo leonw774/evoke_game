@@ -78,7 +78,7 @@ public class Obstacles : MonoBehaviour {
                 if (putObs && levelMap.blocks[i, j] == (int)Level_Map.BLOCK_TYPE.WALKABLE)
                 {
                     ObsUpdate(i, j);
-                    if (Random.Range(-5, 8) < 0)
+                    if (Random.Range(-5, 7) < 0)
                         putObs = !putObs;
                 }
                 else
@@ -97,7 +97,7 @@ public class Obstacles : MonoBehaviour {
                 if (putObs && levelMap.blocks[i, j] == (int)Level_Map.BLOCK_TYPE.WALKABLE)
                 {
                     ObsUpdate(i, j);
-                    if (Random.Range(-5, 8) < 0)
+                    if (Random.Range(-5, 7) < 0)
                         putObs = !putObs;
                 }
                 else
@@ -120,7 +120,7 @@ public class Obstacles : MonoBehaviour {
             CorridorAdjust();
             count++;
             Debug.Log("Obstacles Adjusted");
-        } while (find_something_to_adjust && count <= 4);
+        } while (find_something_to_adjust && count < 8);
 
         /*
         DistributeAdjust();
@@ -199,7 +199,7 @@ public class Obstacles : MonoBehaviour {
             {
                 if (levelMap.blocks[i, j] == (int)Level_Map.BLOCK_TYPE.WALKABLE)
                 {
-                    int pos = i * levelMap.width + j, d = -1, mw = levelMap.width;
+                    int pos = i * levelMap.width + j, mw = levelMap.width, d = -1;
                     bool is_up_all_obs = true, is_down_all_obs = true,
                         is_left_all_obs = true, is_right_all_obs = true,
                         is_middle_all_walkable = true;
@@ -215,7 +215,7 @@ public class Obstacles : MonoBehaviour {
                     if (is_middle_all_walkable && is_up_all_obs && is_down_all_obs)
                     {
                         ObsUpdate(i, j); // add an obs in the walk way
-                        if (Random.Range(-1, 5) > 0)  // then randomly delete a obs
+                        if (Random.Range(-1, 8) > 0)  // then randomly delete a obs
                             ObsUpdate(i + ((Random.Range(0, 2) == 0) ? 1 : -1), j);
                         return;
                     }
@@ -232,7 +232,7 @@ public class Obstacles : MonoBehaviour {
                     if (is_middle_all_walkable && is_left_all_obs && is_right_all_obs)
                     {
                         ObsUpdate(i, j); // add an obs in the walk way
-                        if (Random.Range(-1, 5) > 0) // then randomly delete a obs
+                        if (Random.Range(-1, 8) > 0) // then randomly delete a obs
                             ObsUpdate(i, j + ((Random.Range(0, 2) == 0) ? 1 : -1));
                         return;
                     }

@@ -161,7 +161,6 @@ public class Level_Map : MonoBehaviour
             estimatedStep = estimatedStep * 5 / 4;
         else
             estimatedStep += bonusLimit;
-        
         thePlayer.Initialize();
         thePlayer.SetEnergyPoint(estimatedStep);
         thePlayer.SetPositionTo(playerStartBlock[0], playerStartBlock[1]);
@@ -171,7 +170,6 @@ public class Level_Map : MonoBehaviour
     {
         // only do MapConstruct in first start
         MapConstruction();
-
         // construct obstacles
         theObstacles.Construct();
         // generate monsters
@@ -181,7 +179,7 @@ public class Level_Map : MonoBehaviour
 
     public void GameRestart()
     {
-        //Debug.Log("Restart");
+        Debug.Log("Restart");
         theObstacles.DestroyObstacles();
         theMonsters.DestroyMonsters();
         theObstacles.Construct();
@@ -189,6 +187,7 @@ public class Level_Map : MonoBehaviour
         SetPlayerInfo();
     }
 
+    // this function is called by Player_Control when it find out player is at finish
     public void GameFinish()
     {
         if (Save_Data.SelectedLevel == Save_Data.levelPassed + 1)
@@ -219,7 +218,7 @@ public class Level_Map : MonoBehaviour
         GameObject[] wallsToDelete = GameObject.FindGameObjectsWithTag("Wall");
         for (int i = 0; i < wallsToDelete.Length; ++i)
         {
-            Debug.Log("Destroy a wall");
+            //Debug.Log("Destroy a wall");
             Destroy(wallsToDelete[i]);
             wallsToDelete[i] = null;
         }

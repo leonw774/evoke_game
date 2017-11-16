@@ -67,9 +67,9 @@ public class Player_Control : MonoBehaviour {
             return;
         if (levelMap.blocks[(h + dh), (w + dw)] != (int)Level_Map.BLOCK_TYPE.WALL)
         {
-            //Debug.Log("not WALL");
-            if (levelMap.theObstacles.positionList.IndexOf((h + dh) * levelMap.width + (w + dw)) == -1)
+            if(!levelMap.theObstacles.positionList.Exists(x => x == (h + dh) * levelMap.width + (w + dw)))
             {
+                //Debug.Log("not WALL no OBS");
                 h = h + dh;
                 w = w + dw;
 
@@ -80,13 +80,14 @@ public class Player_Control : MonoBehaviour {
 
                 energyPoint--;
                 energyPointObject.text = energyPoint.ToString();
+
+                if (int.Parse(energyPointObject.text) == 0)
+                {
+                    theControlPanel.toggleFailMenu();
+                }
             }
         }
-        if (int.Parse(energyPointObject.text) == 0)
-        {
-            theControlPanel.toggleFailMenu();
-        }
-        else if (h + dh == levelMap.finishBlock[0] && w + dw == levelMap.finishBlock[1])
+        else if (h == levelMap.finishBlock[0] && w == levelMap.finishBlock[1])
         {
             theControlPanel.toggleFinishMenu();
             levelMap.GameFinish();
@@ -120,6 +121,7 @@ public class Player_Control : MonoBehaviour {
 
     public void SetPositionTo(int newh, int neww)
     {
+        Debug.Log("thePlayer.SetPositionTo()");
         if (newh >= levelMap.height || neww >= levelMap.width || newh < 0 || neww < 0)
         {
             Debug.Log("illegal position");
@@ -154,7 +156,7 @@ public class Player_Control : MonoBehaviour {
     }
 
     float times_irreponsive = 0;
-    float animDurTime = 0.15f;
+    float animDurTime = 0.2f;
     float animBeginPos = 0;
     float animEndPos = 0;
     bool moveAnimation = false;
