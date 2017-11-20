@@ -150,7 +150,7 @@ public class Astar {
                     continue;
 
                 // if is wall then continue, but finishBlock is actually a wall so:
-                if (!nbBlock.IsEqualBlock(GoalBlock) && GeoMap[nbBlock.h, nbBlock.w] == (int)PATH_BLOCK_TYPE.WALL)
+                if (!nbBlock.IsEqualBlock(GoalBlock) && (GeoMap[nbBlock.h, nbBlock.w] == (int)PATH_BLOCK_TYPE.WALL))
                     continue;
 
                 // calculate cost form start to here

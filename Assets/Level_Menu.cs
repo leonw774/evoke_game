@@ -40,7 +40,7 @@ public class Level_Menu : MonoBehaviour {
         {
             if (File.Exists(SaveFilePath))
             {
-                // it will do further examination about player_info
+                writeSaveData(Save_Data.levelPassed);
             }
             else // and there is not a save file yet!
             {
@@ -48,7 +48,7 @@ public class Level_Menu : MonoBehaviour {
             }
         }
 		
-	    Save_Data.levelPassed = 3;
+	    Save_Data.levelPassed = 2;
 
         SetupLevelMenuButton();
     }

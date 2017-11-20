@@ -110,8 +110,7 @@ public class Level_Map : MonoBehaviour
         // delete previous walls
         DeleteWalls();
 
-        wallsNumber = 0;
-        // make images on map
+        // make objects on map
         for (int h = 0; h < height; h++)
         {
             for (int w = 0; w < width; w++)
@@ -145,7 +144,8 @@ public class Level_Map : MonoBehaviour
         Debug.Log("finishBlock: " + finishBlock[0] + "," + finishBlock[1]);
 
         // set monster number
-        monsterNumber = (blocks.Length - wallsNumber) / 50 + 2;
+        wallsNumber = 0;
+        monsterNumber = (blocks.Length - wallsNumber) / 45 + 2;
         Debug.Log("the map ask for " + monsterNumber + " monsters");
     }
 
@@ -157,12 +157,13 @@ public class Level_Map : MonoBehaviour
         Debug.Log("estimatedStep:" + estimatedStep);
         // add bonus steps
         int bonusLimit = (int)(width * height * 0.1);
-        if (estimatedStep / 4 < bonusLimit)
-            estimatedStep = estimatedStep * 5 / 4;
+        if (estimatedStep / 10 * 3 < bonusLimit)
+            estimatedStep += estimatedStep / 10 * 3;
         else
             estimatedStep += bonusLimit;
         thePlayer.Initialize();
         thePlayer.SetEnergyPoint(estimatedStep);
+        thePlayer.SetHealthPoint(1);
         thePlayer.SetPositionTo(playerStartBlock[0], playerStartBlock[1]);
     }
 
@@ -172,6 +173,7 @@ public class Level_Map : MonoBehaviour
         MapConstruction();
         // construct obstacles
         theObstacles.Construct();
+        //Debug.Break();
         // generate monsters
         theMonsters.Generate(monsterNumber);
         SetPlayerInfo();

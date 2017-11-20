@@ -12,7 +12,10 @@ public class Monster
     public int h;
     public int w;
     public int index;
-    public GameObject monSpriteObject;
+    public GameObject monSpriteObject = null;
+
+    public Vector3 animBeginPosition;
+    public Vector3 animEndPosition;
 
     public Monster(int _h, int _w, int _index, GameObject ms)
     {
@@ -47,10 +50,10 @@ public class MonsterPosComparer : IComparer<Monster>
 
 public class Monsters : MonoBehaviour {
 
-    public List<Monster> monsterList = null;  // store obstacle position in as integer(h * width + w)
-    public Level_Map levelMap;
+    private List<Monster> monsterList = null;  // store obstacle position in as integer(h * width + w)
+    private Level_Map levelMap;
     public GameObject prototype;
-    MonsterPosComparer mpc = new MonsterPosComparer();
+    private MonsterPosComparer mpc = new MonsterPosComparer();
 
     // Use this for initialization
     void Start()
@@ -78,9 +81,19 @@ public class Monsters : MonoBehaviour {
         int prePos = levelMap.playerStartBlock[0] * mapWidth + levelMap.playerStartBlock[1];
         //int[] prePos = new int[2] {levelMap.playerStartBlock[0] , levelMap.playerStartBlock[1]};
 
+        Debug.Log("posRandMin:" + posRandMin);
+        Debug.Log("posRandMax: " + posRandMax);
+
         /* LINEAR SPAWN */
-        while(spawnedCount < totalNum)
+        while (spawnedCount < totalNum)
         {
+            if(emegercyJumpOut++ > (totalNum * 128))
+            {
+                Debug.Log("Emegercy Jump-Out Happened.");
+                Debug.Log("tryCount: " + emegercyJumpOut);
+                Debug.Log("totalNum: " + totalNum);
+                break;
+            }
             // make random pos
             int pos = prePos;
             pos += Random.Range(posRandMin, posRandMax);
@@ -130,10 +143,11 @@ public class Monsters : MonoBehaviour {
                             break;
                     }
                     direction++;
-                    if (levelMap.blocks[h_tocheck, w_tocheck] != (int)Level_Map.BLOCK_TYPE.WALL || !levelMap.theObstacles.positionList.Exists(x => x == (h_tocheck * mapWidth + w_tocheck)))
+                    if (levelMap.blocks[h_tocheck, w_tocheck] != (int)Level_Map.BLOCK_TYPE.WALL
+                     && !levelMap.theObstacles.positionList.Exists(x => x == (h_tocheck * mapWidth + w_tocheck)))
                         walkable_neighbor_count++;
                 }
-                if(walkable_neighbor_count > 0)
+                if(walkable_neighbor_count > 1)
                 {
                     Spawn(h, w, spawnedCount);
                     spawnedCount++;
@@ -246,18 +260,30 @@ public class Monsters : MonoBehaviour {
         monsterList.Sort(mpc);
     }
 
-    public void Kill(int pos)
+    public bool TryAttackPlayer(int playerPos)
     {
-        
+        return monsterList.FindIndex(x => (x.h * levelMap.width + x.w == playerPos)) >= 0;
     }
 
-    public void MonstersPosUpdate()
+    public void TryKillMonster(int pos)
+    {
+        int found = -1;
+        if ((found = monsterList.FindIndex(x => (x.h * levelMap.width + x.w == pos))) >= 0)
+            DestroyMonsterByIndex(found);
+    }
+
+    public void MonstersMove()
     {
         //Debug.Log("theMonster.MonstersPosUpdate()");
         int mapWidth = levelMap.width;
         int tryCount = 0;
         for (int i = 0; i < monsterList.Count; i++)
         {
+            // POS IS SAME WITH PLAYER
+            if (monsterList[i].h == levelMap.thePlayer.h && monsterList[i].w == levelMap.thePlayer.w)
+                break;
+
+            // RANDOM
             int goingTo = Random.Range(0, 4);
             int newh = monsterList[i].h, neww = monsterList[i].w;
             switch(goingTo)
@@ -294,29 +320,46 @@ public class Monsters : MonoBehaviour {
                     monsterList[i].faceTo = (FACING) goingTo;
                 }
             }
-            else if (tryCount < 2)
+            else if (tryCount < 4)
             {
                 tryCount++;
                 continue;
             }
         }
     }
-	
+
+    private void DestroyMonsterByIndex(int index)
+    {
+        for (int k = 0; k < monsterList.Count; k++)
+        {
+            if (monsterList[k].index == index)
+            {
+                Destroy(monsterList[index].monSpriteObject);
+                monsterList.RemoveAt(index);
+                break;
+            }
+        }
+        Debug.Log("destroy monster #" + index);
+    }
+
     public void DestroyMonsters()
     {
-        GameObject[] mon = GameObject.FindGameObjectsWithTag("Monster");
-        monsterList = new List<Monster>();
         int k = 0;
-        for (; k < mon.Length; k++)
+        for (; k < monsterList.Count; k++)
         {
-            Destroy(mon[k]);
-            mon[k] = null;
+            Destroy(monsterList[k].monSpriteObject);
         }
+        monsterList.Clear();
         Debug.Log("destroy " + k + " monsters");
     }
 
-	// Update is called once per frame
-	void Update () {
+    float times_irreponsive = 0;
+    float animDurTime = 0.2f;
+    Vector3 animBeginPos;
+    Vector3 animEndPos;
+    bool moveAnimation = false;
+    // Update is called once per frame
+    void Update () {
 		
 	}
 }

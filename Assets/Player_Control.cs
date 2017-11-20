@@ -8,13 +8,18 @@ public class Player_Control : MonoBehaviour {
     public enum FACING : int {UP = 0, LEFT, DOWN, RIGHT};
     public int h;
     public int w;
+
     public int energyPoint;
-    public FACING faceTo;
-    int abilityCooldown;
-    GameObject playerSpriteObject;
-    Text energyPointObject;
-    Game_Menu theControlPanel;
-    Level_Map levelMap;
+    public int healthPoint;
+
+    private FACING faceTo;
+    private int abilityCooldown;
+
+    private GameObject playerSpriteObject;
+    private Text energyPointObject;
+    private Text healthPointObject;
+    private Game_Menu theControlPanel;
+    private Level_Map levelMap;
 
     // Use this for initialization
     void Start()
@@ -28,30 +33,35 @@ public class Player_Control : MonoBehaviour {
         theControlPanel = GameObject.Find("Game Menu Canvas").GetComponent<Game_Menu>();
         levelMap = GameObject.Find("Game Panel").GetComponent<Level_Map>();
         energyPointObject = GameObject.Find("EP Output").GetComponent<Text>();
+        healthPointObject = GameObject.Find("HP Output").GetComponent<Text>();
     }
 
     public void playerMoveUp()
     {
         faceTo = FACING.UP;
         Move(-1, 0);
+        MonstersTurn();
     }
 
     public void playerMoveLeft()
     {
         faceTo = FACING.LEFT;
         Move(0, -1);
+        MonstersTurn();
     }
 
     public void playerMoveDown()
     {
         faceTo = FACING.DOWN;
         Move(1, 0);
+        MonstersTurn();
     }
 
     public void playerMoveRight()
     {
         faceTo = FACING.RIGHT;
         Move(0, 1);
+        MonstersTurn();
     }
 
     public void playerDoAbility()
@@ -59,12 +69,13 @@ public class Player_Control : MonoBehaviour {
         DoAbility();
     }
 
-    private void Move(int dh, int dw)
+    // retrun true: player did change position; return false: player didn't move
+    private bool Move(int dh, int dw)
     {
         //Debug.Log("thePlayer.Move(" + dh + ", " + dw + ") is called");
         //Debug.Log("plar wanna go to " + (h + dh) + ", " + (w + dw));
         if (theControlPanel.isMenuActive)
-            return;
+            return false;
         if (levelMap.blocks[(h + dh), (w + dw)] != (int)Level_Map.BLOCK_TYPE.WALL)
         {
             if(!levelMap.theObstacles.positionList.Exists(x => x == (h + dh) * levelMap.width + (w + dw)))
@@ -73,25 +84,24 @@ public class Player_Control : MonoBehaviour {
                 h = h + dh;
                 w = w + dw;
 
-                levelMap.theMonsters.MonstersPosUpdate();
-
                 //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
-                playerSpriteObject.transform.position = new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0);
+                MoveAnimStart(playerSpriteObject.transform.position, new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0));
 
                 energyPoint--;
                 energyPointObject.text = energyPoint.ToString();
 
-                if (int.Parse(energyPointObject.text) == 0)
-                {
+                if (energyPoint == 0)
                     theControlPanel.toggleFailMenu();
-                }
             }
+            else
+                return false;
         }
-        else if (h == levelMap.finishBlock[0] && w == levelMap.finishBlock[1])
+        else if ((h + dh) == levelMap.finishBlock[0] && (w + dw) == levelMap.finishBlock[1])
         {
             theControlPanel.toggleFinishMenu();
             levelMap.GameFinish();
         }
+        return true;
     }
 
     private void DoAbility()
@@ -113,9 +123,22 @@ public class Player_Control : MonoBehaviour {
         }
         energyPoint--;
         energyPointObject.text = energyPoint.ToString();
-        if (int.Parse(energyPointObject.text) == 0)
+        if (energyPoint == 0)
         {
             theControlPanel.toggleFailMenu();
+        }
+    }
+
+    private void MonstersTurn()
+    {
+        levelMap.theMonsters.MonstersMove();
+        bool success = levelMap.theMonsters.TryAttackPlayer(h * levelMap.width + w);
+        if (success)
+        {
+            healthPoint--;
+            healthPointObject.text = healthPoint.ToString();
+            if (healthPoint == 0)
+                theControlPanel.toggleFailMenu();
         }
     }
 
@@ -144,21 +167,44 @@ public class Player_Control : MonoBehaviour {
         }
     }
 
-    public void SetEnergyPoint(int i)
+    public void SetEnergyPoint(int e)
     {
-        energyPoint = i;
+        energyPoint = e;
         energyPointObject.text = energyPoint.ToString();
     }
 
-    void moveAnimStart()
+    public void SetHealthPoint(int h)
     {
-        
+        healthPoint = h;
+        healthPointObject.text = healthPoint.ToString();
+    }
+
+    void MoveAnimStart(Vector3 begin, Vector3 end)
+    {
+        animBeginPos = begin;
+        animEndPos = end;
+        moveAnimation = true;
+    }
+
+    void moveAnim()
+    {
+        if(times_irreponsive <= Time.time || (playerSpriteObject.transform.position - animEndPos).magnitude < 0.01)
+        {
+            moveAnimation = false;
+            playerSpriteObject.transform.position = animEndPos;
+            animEndPos = new Vector3();
+            animBeginPos = new Vector3();
+        }
+        else
+        {
+            playerSpriteObject.transform.position = playerSpriteObject.transform.position + (animEndPos - animBeginPos) / (Time.deltaTime / 0.0015f);
+        }
     }
 
     float times_irreponsive = 0;
     float animDurTime = 0.2f;
-    float animBeginPos = 0;
-    float animEndPos = 0;
+    Vector3 animBeginPos;
+    Vector3 animEndPos;
     bool moveAnimation = false;
     // Update is called once per frame
     void Update()
@@ -191,11 +237,9 @@ public class Player_Control : MonoBehaviour {
                 playerDoAbility();
             }
         }
-        /*
         if (moveAnimation)
         {
-            
+            moveAnim();
         }
-        */
     }
 }

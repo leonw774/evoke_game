@@ -5,8 +5,8 @@ using UnityEngine;
 public class Obstacles : MonoBehaviour {
 
     public List<int> positionList = null;  // store obstacle position in as integer(h * width + w)
-    public Level_Map levelMap;
-    GameObject prototype;
+    private Level_Map levelMap;
+    private GameObject prototype;
 
     // Use this for initialization
     void Start()
@@ -40,33 +40,45 @@ public class Obstacles : MonoBehaviour {
         // check if there is already a obstacle on this block
         if (positionList.IndexOf(pos) != -1)
         {
-            //Debug.Log("obs destruction happened");
-            GameObject[] obs = GameObject.FindGameObjectsWithTag("Obstacle");
-            for (int k = 0; k < obs.Length; ++k)
-            {
-                if (obs[k].name == "Obstacle Sprite" + pos.ToString())
-                {
-                    Destroy(obs[k]);
-                    obs[k] = null;
-                }
-            }
-            positionList.Remove(pos);
+            ObsDestroy(pos);
         }
         // if there is not obs & block is walkable then
         else if (levelMap.blocks[h, w] == 0)
         {
-            // add
-            // Debug.Log("obs creation happened");
-            Vector3 trans = new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0);
-            GameObject created = Instantiate(prototype);
-            positionList.Add(pos);
-            positionList.Sort();
-            created.name = "Obstacle Sprite" + pos.ToString();
-            created.tag = "Obstacle";
-            created.transform.parent = GameObject.Find("Game Panel").transform;
-            created.transform.position = trans;
+            levelMap.theMonsters.TryKillMonster(pos);
+            ObsCreate(h, w);
         }
     }
+
+    public void ObsCreate(int h, int w)
+    {
+        // Debug.Log("obs creation happened");
+        int pos = h * levelMap.width + w;
+        Vector3 trans = new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0);
+        GameObject created = Instantiate(prototype);
+        positionList.Add(pos);
+        positionList.Sort();
+        created.name = "Obstacle Sprite" + pos.ToString();
+        created.tag = "Obstacle";
+        created.transform.parent = GameObject.Find("Game Panel").transform;
+        created.transform.position = trans;
+    }
+
+    public void ObsDestroy(int pos)
+    {
+        //Debug.Log("obs destruction happened");
+        GameObject[] obs = GameObject.FindGameObjectsWithTag("Obstacle");
+        for (int k = 0; k < obs.Length; ++k)
+        {
+            if (obs[k].name == "Obstacle Sprite" + pos.ToString())
+            {
+                Destroy(obs[k]);
+                obs[k] = null;
+            }
+        }
+        positionList.Remove(pos);
+    }
+
     public void Generate()
     {
         // make vertical obs
@@ -77,13 +89,15 @@ public class Obstacles : MonoBehaviour {
             {
                 if (putObs && levelMap.blocks[i, j] == (int)Level_Map.BLOCK_TYPE.WALKABLE)
                 {
+                    // STATE: PUT OBS
                     ObsUpdate(i, j);
-                    if (Random.Range(-5, 7) < 0)
+                    if (Random.Range(-5, 8) < 0) // possibility to change state 
                         putObs = !putObs;
                 }
                 else
                 {
-                    if (Random.Range(-5, 6) < 0)
+                    // STATE: DONT PUT OBS
+                    if (Random.Range(-5, 7) < 0) // possibility to change state 
                         putObs = !putObs;
                 }
             }
@@ -97,12 +111,12 @@ public class Obstacles : MonoBehaviour {
                 if (putObs && levelMap.blocks[i, j] == (int)Level_Map.BLOCK_TYPE.WALKABLE)
                 {
                     ObsUpdate(i, j);
-                    if (Random.Range(-5, 7) < 0)
+                    if (Random.Range(-5, 8) < 0)
                         putObs = !putObs;
                 }
                 else
                 {
-                    if (Random.Range(-5, 6) < 0)
+                    if (Random.Range(-5, 7) < 0)
                         putObs = !putObs;
                 }
             }
@@ -120,13 +134,13 @@ public class Obstacles : MonoBehaviour {
             CorridorAdjust();
             count++;
             Debug.Log("Obstacles Adjusted");
-        } while (find_something_to_adjust && count < 8);
+        } while (find_something_to_adjust && count < 2);
 
         /*
         DistributeAdjust();
         CorridorAdjust();
         */
-        // in opening, obstacle should not neighbor or be on same block of the player and finish
+        // in opening, too much obstacles should not neighbor or be on same block of the player and finish
         int playerPosition = levelMap.playerStartBlock[0] * levelMap.width + levelMap.playerStartBlock[1];
         //Debug.Log("playerPosition:" + playerPosition);
         if (positionList.Exists(x => x == playerPosition)) // same block
@@ -250,7 +264,7 @@ public class Obstacles : MonoBehaviour {
             Destroy(obs[k]);
             obs[k] = null;
         }
-        positionList = new List<int>();
+        positionList .Clear();
         Debug.Log("destroy " + k + " obs");
     }
 	

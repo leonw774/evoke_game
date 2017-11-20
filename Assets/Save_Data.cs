@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public static class Save_Data {
+﻿public static class Save_Data {
     /*
      * GAME FILE SAVE
      * thing that will read from/write to the save file when Menu_Script is loaded
