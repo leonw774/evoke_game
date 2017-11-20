@@ -39,34 +39,47 @@ public class Player_Control : MonoBehaviour {
     public void playerMoveUp()
     {
         faceTo = FACING.UP;
-        Move(-1, 0);
-        MonstersTurn();
+        if (Move(-1, 0)) // it is monster's turn only if player did change position
+        {
+            MonstersTurn();
+            if (energyPoint == 0) theControlPanel.toggleFailMenu();
+        }
     }
 
     public void playerMoveLeft()
     {
         faceTo = FACING.LEFT;
-        Move(0, -1);
-        MonstersTurn();
+        if (Move(0, -1))
+        {
+            MonstersTurn();
+            if (energyPoint == 0) theControlPanel.toggleFailMenu();
+        }
     }
 
     public void playerMoveDown()
     {
         faceTo = FACING.DOWN;
-        Move(1, 0);
-        MonstersTurn();
+        if (Move(1, 0))
+        {
+            MonstersTurn();
+            if (energyPoint == 0) theControlPanel.toggleFailMenu();
+        }
     }
 
     public void playerMoveRight()
     {
         faceTo = FACING.RIGHT;
-        Move(0, 1);
-        MonstersTurn();
+        if (Move(0, 1))
+        {
+            MonstersTurn();
+            if (energyPoint == 0) theControlPanel.toggleFailMenu();
+        }
     }
 
     public void playerDoAbility()
     {
         DoAbility();
+        if (energyPoint == 0) theControlPanel.toggleFailMenu();
     }
 
     // retrun true: player did change position; return false: player didn't move
@@ -76,30 +89,24 @@ public class Player_Control : MonoBehaviour {
         //Debug.Log("plar wanna go to " + (h + dh) + ", " + (w + dw));
         if (theControlPanel.isMenuActive)
             return false;
-        if (levelMap.blocks[(h + dh), (w + dw)] != (int)Level_Map.BLOCK_TYPE.WALL)
+        else if (levelMap.blocks[(h + dh), (w + dw)] != (int)Level_Map.BLOCK_TYPE.WALL
+            && !levelMap.theObstacles.positionList.Exists(x => x == (h + dh) * levelMap.width + (w + dw)))
         {
-            if(!levelMap.theObstacles.positionList.Exists(x => x == (h + dh) * levelMap.width + (w + dw)))
-            {
-                //Debug.Log("not WALL no OBS");
-                h = h + dh;
-                w = w + dw;
-
-                //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
-                MoveAnimStart(playerSpriteObject.transform.position, new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0));
-
-                energyPoint--;
-                energyPointObject.text = energyPoint.ToString();
-
-                if (energyPoint == 0)
-                    theControlPanel.toggleFailMenu();
-            }
-            else
-                return false;
+            h = h + dh;
+            w = w + dw;
+            //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
+            MoveAnimStart(playerSpriteObject.transform.position, new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0));
+            energyPointObject.text = (--energyPoint).ToString();
         }
         else if ((h + dh) == levelMap.finishBlock[0] && (w + dw) == levelMap.finishBlock[1])
         {
+            MoveAnimStart(playerSpriteObject.transform.position, new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0));
             theControlPanel.toggleFinishMenu();
             levelMap.GameFinish();
+        }
+        else
+        {
+            return false;
         }
         return true;
     }
@@ -121,12 +128,8 @@ public class Player_Control : MonoBehaviour {
             else if (dh == 0 & dw == -1) dw = 1;
             else dw++;
         }
-        energyPoint--;
-        energyPointObject.text = energyPoint.ToString();
-        if (energyPoint == 0)
-        {
-            theControlPanel.toggleFailMenu();
-        }
+        AbilityAnimStart();
+        energyPointObject.text = (--energyPoint).ToString();
     }
 
     private void MonstersTurn()
@@ -144,7 +147,7 @@ public class Player_Control : MonoBehaviour {
 
     public void SetPositionTo(int newh, int neww)
     {
-        Debug.Log("thePlayer.SetPositionTo()");
+        Debug.Log("Player_Control.SetPositionTo(): thePlayer.SetPositionTo()");
         if (newh >= levelMap.height || neww >= levelMap.width || newh < 0 || neww < 0)
         {
             Debug.Log("illegal position");
@@ -153,34 +156,39 @@ public class Player_Control : MonoBehaviour {
         //Debug.Log("thePlayer.SetPositionTo() is called in Game_Panel");
         if (levelMap.blocks[newh, neww] != (int)Level_Map.BLOCK_TYPE.WALL)
         {
-            if (levelMap.theObstacles.positionList.IndexOf(newh * levelMap.width + neww) == -1)
-            {
-                h = newh;
-                w = neww;
-                //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
-                playerSpriteObject.transform.position = new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0);
-            }
-            else
+            if (levelMap.theObstacles.positionList.Exists(x => x == (newh * levelMap.width + neww)))
             {
                 levelMap.theObstacles.ObsUpdate(newh, neww);
             }
+            h = newh;
+            w = neww;
+            //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
+            playerSpriteObject.transform.position = new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0);
+        }
+        else
+        {
+            Debug.Log("Player_Control.SetPositionTo(): illegal position");
         }
     }
 
     public void SetEnergyPoint(int e)
     {
-        energyPoint = e;
-        energyPointObject.text = energyPoint.ToString();
+        energyPointObject.text = (energyPoint = e).ToString();
     }
 
     public void SetHealthPoint(int h)
     {
-        healthPoint = h;
-        healthPointObject.text = healthPoint.ToString();
+        healthPointObject.text = (healthPoint = h).ToString();
+    }
+
+    void AbilityAnimStart()
+    {
+        times_irreponsive = Time.time + animDurTime;
     }
 
     void MoveAnimStart(Vector3 begin, Vector3 end)
     {
+        times_irreponsive = Time.time + animDurTime;
         animBeginPos = begin;
         animEndPos = end;
         moveAnimation = true;
@@ -188,7 +196,10 @@ public class Player_Control : MonoBehaviour {
 
     void moveAnim()
     {
-        if(times_irreponsive <= Time.time || (playerSpriteObject.transform.position - animEndPos).magnitude < 0.01)
+        // do animation in the irreponsive time
+        if (times_irreponsive <= Time.time
+         || (animEndPos - playerSpriteObject.transform.position).magnitude < 0.01
+         || (animEndPos - playerSpriteObject.transform.position).normalized == (animBeginPos - animEndPos).normalized)
         {
             moveAnimation = false;
             playerSpriteObject.transform.position = animEndPos;
@@ -197,7 +208,7 @@ public class Player_Control : MonoBehaviour {
         }
         else
         {
-            playerSpriteObject.transform.position = playerSpriteObject.transform.position + (animEndPos - animBeginPos) / (Time.deltaTime / 0.0015f);
+            playerSpriteObject.transform.position = playerSpriteObject.transform.position + (animEndPos - animBeginPos) / (Time.deltaTime / 0.0014f);
         }
     }
 
@@ -209,31 +220,26 @@ public class Player_Control : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
-        if (times_irreponsive < Time.time)
+        if (times_irreponsive <= Time.time)
         {
             if (Input.GetKey(KeyCode.UpArrow))
             {
-                times_irreponsive = Time.time + animDurTime;
                 playerMoveUp();
             }
             if (Input.GetKey(KeyCode.DownArrow))
             {
-                times_irreponsive = Time.time + animDurTime;
                 playerMoveDown();
             }
             if (Input.GetKey(KeyCode.LeftArrow))
             {
-                times_irreponsive = Time.time + animDurTime;
                 playerMoveLeft();
             }
             if (Input.GetKey(KeyCode.RightArrow))
             {
-                times_irreponsive = Time.time + animDurTime;
                 playerMoveRight();
             }
             if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
             {
-                times_irreponsive = Time.time + animDurTime;
                 playerDoAbility();
             }
         }

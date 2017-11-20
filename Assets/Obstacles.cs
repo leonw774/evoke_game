@@ -18,7 +18,7 @@ public class Obstacles : MonoBehaviour {
     {
         positionList = new List<int>();
         levelMap = gameObject.GetComponent<Level_Map>();
-        DestroyObstacles(); // deatroy previous obstacles
+        DestroyAllObstacles(); // deatroy previous obstacles
         prototype = GameObject.Find("Prototype Obstacle Sprite");
     }
 
@@ -45,7 +45,7 @@ public class Obstacles : MonoBehaviour {
         // if there is not obs & block is walkable then
         else if (levelMap.blocks[h, w] == 0)
         {
-            levelMap.theMonsters.TryKillMonster(pos);
+            levelMap.theMonsters.TryKillMonsterByPos(pos);
             ObsCreate(h, w);
         }
     }
@@ -91,13 +91,13 @@ public class Obstacles : MonoBehaviour {
                 {
                     // STATE: PUT OBS
                     ObsUpdate(i, j);
-                    if (Random.Range(-5, 8) < 0) // possibility to change state 
+                    if (Random.Range(-5, 10) < 0) // possibility to change state 
                         putObs = !putObs;
                 }
                 else
                 {
                     // STATE: DONT PUT OBS
-                    if (Random.Range(-5, 7) < 0) // possibility to change state 
+                    if (Random.Range(-5, 5) < 0) // possibility to change state 
                         putObs = !putObs;
                 }
             }
@@ -105,18 +105,18 @@ public class Obstacles : MonoBehaviour {
         // make horizonal obs
         for (int j = 1; j < levelMap.width - 1; j++)
         {
-            bool putObs = Random.Range(-5, 5) > 0;
+            bool putObs = Random.Range(-5, 6) > 0;
             for (int i = 1; i < levelMap.width - 1; ++i)
             {
                 if (putObs && levelMap.blocks[i, j] == (int)Level_Map.BLOCK_TYPE.WALKABLE)
                 {
                     ObsUpdate(i, j);
-                    if (Random.Range(-5, 8) < 0)
+                    if (Random.Range(-5, 10) < 0)
                         putObs = !putObs;
                 }
                 else
                 {
-                    if (Random.Range(-5, 7) < 0)
+                    if (Random.Range(-5, 6) < 0)
                         putObs = !putObs;
                 }
             }
@@ -134,7 +134,7 @@ public class Obstacles : MonoBehaviour {
             CorridorAdjust();
             count++;
             Debug.Log("Obstacles Adjusted");
-        } while (find_something_to_adjust && count < 2);
+        } while (find_something_to_adjust && count < 3);
 
         /*
         DistributeAdjust();
@@ -186,7 +186,7 @@ public class Obstacles : MonoBehaviour {
                     else if (di == 0 & dj == -1) dj = 1;
                     else dj++;
                 }
-                if (sameNeighborCount >= (this_is_obs ? 6 : 5))
+                if (sameNeighborCount >= (this_is_obs ? 7 : 5))
                 {
                     some_adjustment_are_done = true;
                     ObsUpdate(i, j);
@@ -229,7 +229,7 @@ public class Obstacles : MonoBehaviour {
                     if (is_middle_all_walkable && is_up_all_obs && is_down_all_obs)
                     {
                         ObsUpdate(i, j); // add an obs in the walk way
-                        if (Random.Range(-1, 8) > 0)  // then randomly delete a obs
+                        if (Random.Range(-1, 8) >= 0)  // then randomly delete a obs
                             ObsUpdate(i + ((Random.Range(0, 2) == 0) ? 1 : -1), j);
                         return;
                     }
@@ -246,7 +246,7 @@ public class Obstacles : MonoBehaviour {
                     if (is_middle_all_walkable && is_left_all_obs && is_right_all_obs)
                     {
                         ObsUpdate(i, j); // add an obs in the walk way
-                        if (Random.Range(-1, 8) > 0) // then randomly delete a obs
+                        if (Random.Range(-1, 8) >= 0) // then randomly delete a obs
                             ObsUpdate(i, j + ((Random.Range(0, 2) == 0) ? 1 : -1));
                         return;
                     }
@@ -255,7 +255,7 @@ public class Obstacles : MonoBehaviour {
         } // end of for: i
     }
 
-    public void DestroyObstacles()
+    public void DestroyAllObstacles()
     {
         GameObject[] obs = GameObject.FindGameObjectsWithTag("Obstacle");
         int k = 0;

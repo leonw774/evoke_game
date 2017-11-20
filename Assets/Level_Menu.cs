@@ -76,7 +76,7 @@ public class Level_Menu : MonoBehaviour {
     {
         if (File.Exists(SaveFilePath))
         {
-            SaveW = new StreamWriter(SaveFilePath, true);
+            SaveW = new StreamWriter(SaveFilePath, false);
             SaveW.WriteLine(level.ToString() + "\n");
             SaveW.Close();
             string tttest = GameObject.Find("Continue Button Text").GetComponent<Text>().text = "Begin";

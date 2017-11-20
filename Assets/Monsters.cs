@@ -11,19 +11,19 @@ public class Monster
     public FACING faceTo;
     public int h;
     public int w;
-    public int index;
+    public int id;
     public GameObject monSpriteObject = null;
 
     public Vector3 animBeginPosition;
     public Vector3 animEndPosition;
 
-    public Monster(int _h, int _w, int _index, GameObject ms)
+    public Monster(int _h, int _w, int _id, GameObject ms)
     {
         isActive = false;
         faceTo = (FACING) Random.Range(0, 4);
         h = _h;
         w = _w;
-        index = _index;
+        id = _id;
         monSpriteObject = ms;
     }
 
@@ -84,10 +84,10 @@ public class Monsters : MonoBehaviour {
         Debug.Log("posRandMin:" + posRandMin);
         Debug.Log("posRandMax: " + posRandMax);
 
-        /* LINEAR SPAWN */
+        /* ITERATIVE SPAWN */
         while (spawnedCount < totalNum)
         {
-            if(emegercyJumpOut++ > (totalNum * 128))
+            if(emegercyJumpOut++ > (totalNum * 512))
             {
                 Debug.Log("Emegercy Jump-Out Happened.");
                 Debug.Log("tryCount: " + emegercyJumpOut);
@@ -116,8 +116,13 @@ public class Monsters : MonoBehaviour {
                     tooClose = true;
             }
             if (tooClose) prePos = pos;
-            else if (levelMap.blocks[h, w] != (int)Level_Map.BLOCK_TYPE.WALL && !levelMap.theObstacles.positionList.Exists(x => x == (h * mapWidth + w)))
+            else if (levelMap.blocks[h, w] != (int)Level_Map.BLOCK_TYPE.WALL)
             {
+                bool spawn_on_obs = true;
+                if (!levelMap.theObstacles.positionList.Exists(x => x == (h * mapWidth + w)))
+                {
+                    spawn_on_obs = false;
+                }
                 // not too close and this is not wall/obstacle
                 // check if is stuck
                 int walkable_neighbor_count = 0;
@@ -147,10 +152,14 @@ public class Monsters : MonoBehaviour {
                      && !levelMap.theObstacles.positionList.Exists(x => x == (h_tocheck * mapWidth + w_tocheck)))
                         walkable_neighbor_count++;
                 }
-                if(walkable_neighbor_count > 1)
+                if (!spawn_on_obs && walkable_neighbor_count > 1)
                 {
                     Spawn(h, w, spawnedCount);
                     spawnedCount++;
+                }
+                else if (spawn_on_obs && walkable_neighbor_count < 3 && Random.Range(-1, 2) <= 0)
+                {
+                    levelMap.theObstacles.ObsDestroy(pos);
                 }
             }
         }
@@ -265,11 +274,17 @@ public class Monsters : MonoBehaviour {
         return monsterList.FindIndex(x => (x.h * levelMap.width + x.w == playerPos)) >= 0;
     }
 
-    public void TryKillMonster(int pos)
+    public void TryKillMonsterByPos(int pos)
     {
         int found = -1;
         if ((found = monsterList.FindIndex(x => (x.h * levelMap.width + x.w == pos))) >= 0)
-            DestroyMonsterByIndex(found);
+        {
+            Debug.Log("kill monster #" + monsterList[found].id + " at pos:" + pos);
+            Destroy(monsterList[found].monSpriteObject, 0.1f);
+            monsterList.RemoveAt(found);
+        }
+        //else
+        //    Debug.Log("failed to kill monster at pos:" + pos);
     }
 
     public void MonstersMove()
@@ -328,18 +343,19 @@ public class Monsters : MonoBehaviour {
         }
     }
 
-    private void DestroyMonsterByIndex(int index)
+    private void TryKillMonsterById(int id)
     {
         for (int k = 0; k < monsterList.Count; k++)
         {
-            if (monsterList[k].index == index)
+            if (monsterList[k].id == id)
             {
-                Destroy(monsterList[index].monSpriteObject);
-                monsterList.RemoveAt(index);
-                break;
+                Destroy(monsterList[k].monSpriteObject);
+                Debug.Log("destroy monster #" + id);
+                monsterList.RemoveAt(k);
+                return;
             }
         }
-        Debug.Log("destroy monster #" + index);
+        Debug.Log("failed to destroy monster by id " + id);
     }
 
     public void DestroyMonsters()
