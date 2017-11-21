@@ -220,6 +220,7 @@ public class Astar {
             if(count++ > 50)
                 break;
         }
+        pathList.Reverse(); // reverse to {start -> goal} order
         return pathList;
     }
 }

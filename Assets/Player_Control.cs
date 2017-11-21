@@ -18,6 +18,7 @@ public class Player_Control : MonoBehaviour {
     private GameObject playerSpriteObject;
     private Text energyPointObject;
     private Text healthPointObject;
+    private Text abilityCooldownObject;
     private Game_Menu theControlPanel;
     private Level_Map levelMap;
 
@@ -34,6 +35,7 @@ public class Player_Control : MonoBehaviour {
         levelMap = GameObject.Find("Game Panel").GetComponent<Level_Map>();
         energyPointObject = GameObject.Find("EP Output").GetComponent<Text>();
         healthPointObject = GameObject.Find("HP Output").GetComponent<Text>();
+        abilityCooldownObject = GameObject.Find("CD Output").GetComponent<Text>();
     }
 
     public void playerMoveUp()
@@ -97,6 +99,7 @@ public class Player_Control : MonoBehaviour {
             //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
             MoveAnimStart(playerSpriteObject.transform.position, new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0));
             energyPointObject.text = (--energyPoint).ToString();
+            SetAbilityCooldown(--abilityCooldown);
         }
         else if ((h + dh) == levelMap.finishBlock[0] && (w + dw) == levelMap.finishBlock[1])
         {
@@ -114,7 +117,7 @@ public class Player_Control : MonoBehaviour {
     private void DoAbility()
     {
         int dh = -1, dw = -1;
-        if (theControlPanel.isMenuActive)
+        if (theControlPanel.isMenuActive || abilityCooldown > 0)
             return;
         while (dh <= 1)
         {
@@ -129,6 +132,7 @@ public class Player_Control : MonoBehaviour {
             else dw++;
         }
         AbilityAnimStart();
+        SetAbilityCooldown(1);
         energyPointObject.text = (--energyPoint).ToString();
     }
 
@@ -179,6 +183,21 @@ public class Player_Control : MonoBehaviour {
     public void SetHealthPoint(int h)
     {
         healthPointObject.text = (healthPoint = h).ToString();
+    }
+
+    public void SetAbilityCooldown(int cd)
+    {
+        if (cd > 0)
+        {
+            abilityCooldownObject.text = (abilityCooldown = cd).ToString();
+            GameObject.Find("Ability Button").GetComponent<Button>().interactable = false;
+        }
+        else
+        {
+            GameObject.Find("Ability Button").GetComponent<Button>().interactable = true;
+            abilityCooldownObject.text = " ";
+            abilityCooldown = 0;
+        }
     }
 
     void AbilityAnimStart()

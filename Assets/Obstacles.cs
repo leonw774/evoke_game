@@ -84,20 +84,20 @@ public class Obstacles : MonoBehaviour {
         // make vertical obs
         for (int i = 1; i < levelMap.height - 1; ++i) // for every height
         {
-            bool putObs = Random.Range(-5, 5) > 0;
+            bool putObs = Random.Range(-5, 6) > 0;
             for (int j = 1; j < levelMap.width - 1; ++j)
             {
                 if (putObs && levelMap.blocks[i, j] == (int)Level_Map.BLOCK_TYPE.WALKABLE)
                 {
                     // STATE: PUT OBS
                     ObsUpdate(i, j);
-                    if (Random.Range(-5, 10) < 0) // possibility to change state 
+                    if (Random.Range(-5, 6) < 0) // possibility to change state 
                         putObs = !putObs;
                 }
                 else
                 {
                     // STATE: DONT PUT OBS
-                    if (Random.Range(-5, 5) < 0) // possibility to change state 
+                    if (Random.Range(-5, 12) < 0) // possibility to change state 
                         putObs = !putObs;
                 }
             }
@@ -111,12 +111,12 @@ public class Obstacles : MonoBehaviour {
                 if (putObs && levelMap.blocks[i, j] == (int)Level_Map.BLOCK_TYPE.WALKABLE)
                 {
                     ObsUpdate(i, j);
-                    if (Random.Range(-5, 10) < 0)
+                    if (Random.Range(-5, 6) < 0)
                         putObs = !putObs;
                 }
                 else
                 {
-                    if (Random.Range(-5, 6) < 0)
+                    if (Random.Range(-5, 12) < 0)
                         putObs = !putObs;
                 }
             }
@@ -134,7 +134,7 @@ public class Obstacles : MonoBehaviour {
             CorridorAdjust();
             count++;
             Debug.Log("Obstacles Adjusted");
-        } while (find_something_to_adjust && count < 3);
+        } while (find_something_to_adjust && count < 4);
 
         /*
         DistributeAdjust();
@@ -229,8 +229,7 @@ public class Obstacles : MonoBehaviour {
                     if (is_middle_all_walkable && is_up_all_obs && is_down_all_obs)
                     {
                         ObsUpdate(i, j); // add an obs in the walk way
-                        if (Random.Range(-1, 8) >= 0)  // then randomly delete a obs
-                            ObsUpdate(i + ((Random.Range(0, 2) == 0) ? 1 : -1), j);
+                        ObsUpdate(i + ((Random.Range(0, 2) == 0) ? 1 : -1), j);// then randomly delete a obs
                         return;
                     }
                     // check horizontal corridor
@@ -246,8 +245,7 @@ public class Obstacles : MonoBehaviour {
                     if (is_middle_all_walkable && is_left_all_obs && is_right_all_obs)
                     {
                         ObsUpdate(i, j); // add an obs in the walk way
-                        if (Random.Range(-1, 8) >= 0) // then randomly delete a obs
-                            ObsUpdate(i, j + ((Random.Range(0, 2) == 0) ? 1 : -1));
+                        ObsUpdate(i, j + ((Random.Range(0, 2) == 0) ? 1 : -1)); // then randomly delete a obs
                         return;
                     }
                 }

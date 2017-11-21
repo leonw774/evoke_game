@@ -145,7 +145,7 @@ public class Level_Map : MonoBehaviour
 
         // set monster number
         wallsNumber = 0;
-        monsterNumber = (blocks.Length - wallsNumber - 10) / 45 + 2;
+        monsterNumber = (blocks.Length - wallsNumber - 10) / 40 + 1;
         Debug.Log("the map ask for " + monsterNumber + " monsters");
     }
 
@@ -162,8 +162,9 @@ public class Level_Map : MonoBehaviour
         else
             estimatedStep += bonusLimit;
         thePlayer.Initialize();
-        thePlayer.SetEnergyPoint(estimatedStep + monsterNumber * 2);
+        thePlayer.SetEnergyPoint(estimatedStep + (int)(monsterNumber * 2.5));
         thePlayer.SetHealthPoint(1);
+        thePlayer.SetAbilityCooldown(0);
         thePlayer.SetPositionTo(playerStartBlock[0], playerStartBlock[1]);
     }
 

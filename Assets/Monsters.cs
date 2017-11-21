@@ -56,8 +56,8 @@ public class Monsters : MonoBehaviour {
     public void Generate(int totalNum)
     {
         int minDisBtwnMons = 6;
-        int posRandMin = (levelMap.blocks.Length - levelMap.wallsNumber) / totalNum;
-        int posRandMax = (levelMap.blocks.Length - levelMap.wallsNumber) / totalNum + (int)(minDisBtwnMons * 2);
+        int posRandMin = (levelMap.blocks.Length - levelMap.wallsNumber) / totalNum - minDisBtwnMons;
+        int posRandMax = (levelMap.blocks.Length - levelMap.wallsNumber) / totalNum + (minDisBtwnMons * 2);
         int spawnedCount = 0;
         int emegercyJumpOut = 0;
         int h = -1, w = -1;
@@ -71,7 +71,7 @@ public class Monsters : MonoBehaviour {
         /* ITERATIVE SPAWN */
         while (spawnedCount < totalNum)
         {
-            if(emegercyJumpOut++ > (totalNum * 512))
+            if(emegercyJumpOut++ > (totalNum * 1024))
             {
                 Debug.Log("Emegercy Jump-Out Happened.");
                 Debug.Log("tryCount: " + emegercyJumpOut);
@@ -90,8 +90,8 @@ public class Monsters : MonoBehaviour {
             w = pos % mapWidth;
             bool tooClose = false;
             // check if too close to player or finsh
-            if (minDisBtwnMons + 2 > (System.Math.Abs(levelMap.playerStartBlock[0] - h) + System.Math.Abs(levelMap.playerStartBlock[1] - w))
-             || minDisBtwnMons + 2 > (System.Math.Abs(levelMap.finishBlock[0] - h) + System.Math.Abs(levelMap.finishBlock[1] - w)))
+            if (minDisBtwnMons > (System.Math.Abs(levelMap.playerStartBlock[0] - h) + System.Math.Abs(levelMap.playerStartBlock[1] - w))
+             || minDisBtwnMons > (System.Math.Abs(levelMap.finishBlock[0] - h) + System.Math.Abs(levelMap.finishBlock[1] - w)))
                 tooClose = true;
             // check if too close to other monster
             for (int i = 0; i < monsterList.Count && !tooClose; ++i)
@@ -132,7 +132,7 @@ public class Monsters : MonoBehaviour {
                     Spawn(h, w, spawnedCount);
                     spawnedCount++;
                 }
-                else if (spawn_on_obs && walkable_neighbor_count < 3 && Random.Range(-1, 4) >= 0)
+                else if (spawn_on_obs && walkable_neighbor_count < 3 && walkable_neighbor_count > 1 && Random.Range(-1, 6) >= 0)
                 {
                     levelMap.theObstacles.ObsDestroy(pos);
                     Spawn(h, w, spawnedCount);
@@ -235,7 +235,7 @@ public class Monsters : MonoBehaviour {
 
     public void Spawn(int h, int w, int index)
     {
-        Debug.Log("monster creation happened at" + h + "," + w);
+        //Debug.Log("monster creation happened at " + h + "," + w);
         Vector3 trans = new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0);
         GameObject created = Instantiate(prototype);
         created.name = "Monster Sprite" + index.ToString();
@@ -269,7 +269,7 @@ public class Monsters : MonoBehaviour {
         int monsterSensePlayer = 8; // == minDisBtwnMon + 2
         for (int i = 0; i < monsterList.Count; i++)
         {
-            if (monsterSensePlayer <= (System.Math.Abs(levelMap.thePlayer.h - monsterList[i].h) + System.Math.Abs(levelMap.thePlayer.w - monsterList[i].w)))
+            if (monsterSensePlayer >= (System.Math.Abs(levelMap.thePlayer.h - monsterList[i].h) + System.Math.Abs(levelMap.thePlayer.w - monsterList[i].w)))
                 MonsterMoveToPlayer(i);
             else
                 MonsterMoveRandom(i);
@@ -278,36 +278,34 @@ public class Monsters : MonoBehaviour {
 
     private void MonsterMoveToPlayer(int i)
     {
+        int goingTo = -1;
         int[] monPosBlock = new int[2] {monsterList[i].h, monsterList[i].w};
         int[] playerPosBlock = new int[2] { levelMap.thePlayer.h, levelMap.thePlayer.w };
         Astar m_astar = new Astar(levelMap.blocks, levelMap.height, levelMap.width, levelMap.theObstacles.positionList, monPosBlock, playerPosBlock);
-        m_astar.FindPathLength(true, true);
-        List<int> pathFound = m_astar.GetPath();
-        Debug.Log("try MonsterMoveToPlayer()");
+        m_astar.FindPathLength(false, true);
+        List<int> pathList = m_astar.GetPath();
+        if(pathList.Count > 1) goingTo = pathList[1];
 
-        pathFound.ForEach(delegate(int x)
-            {
-                Debug.Log(x);
-            });
+        //for (int k = 0; k < pathList.Count; k++) Debug.Log("[" + k + "]" + ": " + pathList[k]);
+        //Debug.Log("goingTo = " + goingTo);
 
-        if (pathFound[0] == -1 || pathFound.Count > 16)
-        { // Monster sense player but cannot find path
+        if (goingTo == -1 || pathList.Count > 16)
+        { // Monster sense player but cannot find path //Debug.Log("try MonsterMoveToPlayer() failed");
             MonsterMoveRandom(i);
         }
         else
         {
-            Debug.Log("MonsterMoveToPlayer()");
-            int goingTo = pathFound[0];
+            //Debug.Log("MonsterMoveToPlayer()");
             int newh = monsterList[i].h, neww = monsterList[i].w;
             switch(goingTo)
             {
-                case 0: // down
-                    newh++; break;
-                case 1: // right
-                    neww--; break;
-                case 2: // up
+                case 0: // up
                     newh--; break;
-                case 3: // left
+                case 1: // left
+                    neww--; break;
+                case 2: // down
+                    newh++; break;
+                case 3: // right
                     neww++; break;
             }
             if (levelMap.blocks[newh, neww] != (int)Level_Map.BLOCK_TYPE.WALL && !levelMap.theObstacles.positionList.Exists(x => x == (newh * levelMap.width + neww)))
@@ -335,11 +333,12 @@ public class Monsters : MonoBehaviour {
         if (monsterList[i].h == levelMap.thePlayer.h && monsterList[i].w == levelMap.thePlayer.w)
             return;
 
-        while (tryCount <= 4)
+        while (tryCount <= 6)
         {
             int goingTo = Random.Range(0, 4);
             int newh = monsterList[i].h, neww = monsterList[i].w;
-            switch(goingTo)
+            if (Random.Range(-1, 36) < 0) break;
+            switch (goingTo)
             {
                 case 0:
                     newh--; break;
@@ -369,6 +368,7 @@ public class Monsters : MonoBehaviour {
                     break;
                 }
             }
+
             tryCount++;
         } // end of while(trycount < 4)
     }

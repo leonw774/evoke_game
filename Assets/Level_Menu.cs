@@ -118,10 +118,10 @@ public class Level_Menu : MonoBehaviour {
     {
         Color toFadeInColor = titleImgIcon.color;
         Color toFadeOutColor = titleImg.color;
-        if (toFadeInColor.a < 0.9f)
+        if (toFadeInColor.a < 0.88f)
         {
-            toFadeInColor.a = Mathf.Lerp(toFadeInColor.a, 1.0f, 2.4f * Time.deltaTime);
-            toFadeOutColor.a = Mathf.Lerp(toFadeOutColor.a, 0.0f, 2.4f * Time.deltaTime);
+            toFadeInColor.a = Mathf.Lerp(toFadeInColor.a, 1.0f, 2.7f * Time.deltaTime);
+            toFadeOutColor.a = Mathf.Lerp(toFadeOutColor.a, 0.0f, 2.7f * Time.deltaTime);
             titleImgIcon.color = toFadeInColor;
             titleImg.color = toFadeOutColor;
         }
