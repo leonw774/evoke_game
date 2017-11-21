@@ -56,7 +56,7 @@ public class Astar {
     private enum PATH_BLOCK_TYPE : int { WALKABLE = 0, WALL = 1, OBSTACLE = 2 };
     private int height, width;
     private int[,] GeoMap;
-    //private int[,] CameFromMap;
+    private int[,] CameFromMap;
     private int[,] CostMap; // cost of form start to here; -1 == not yet calculated
     private int[,] EstimatedTotalCostMap; // estimated cost form here to goal + cost of form start to here; -1 == not yet calculated
     private List<BlockNode> OpenList; // blocks pending to examine, sorting increasingly by estimated score
@@ -93,13 +93,13 @@ public class Astar {
         GeoMap = new int[height, width];
         CostMap = new int[height, width];
         EstimatedTotalCostMap = new int[height, width];
-        //CameFromMap = new int[height, width];
+        CameFromMap = new int[height, width];
         for (int i = 0; i < height; i++)
         {
             for (int j = 0; j < width; j++)
             {
                 CostMap[i, j] = 2048;
-                //CameFromMap[i, j] = -1;
+                CameFromMap[i, j] = -1;
                 EstimatedTotalCostMap[i, j] = 2048;
                 GeoMap[i, j] = blocks[i, j] + ((obstaclePostionList.IndexOf(i * width + j) >= 0) ? 2 : 0);
             }
@@ -119,7 +119,7 @@ public class Astar {
         EstimatedTotalCostMap[StartBlock.h, StartBlock.w] = EstimateCost(StartBlock);
     }
 
-    public int FindPathLength(bool isObstaclesCount) // retrun -1 means failure
+    public int FindPathLength(bool canBreakThroughObs, bool recordPath) // retrun -1 means failure
     {
         while(OpenList.Count > 0)
         {
@@ -129,7 +129,6 @@ public class Astar {
             if (curBlock.IsEqualBlock(GoalBlock))
             {
                 int result = CostMap[GoalBlock.h, GoalBlock.w];
-                //GeneratePath();
                 Refresh();
                 return result;
             }
@@ -157,10 +156,14 @@ public class Astar {
                 int nbCostScore = CostMap[curBlock.h, curBlock.w] + 1;
                 if (GeoMap[nbBlock.h, nbBlock.w] == (int)PATH_BLOCK_TYPE.OBSTACLE)
                 {
-                    if (isObstaclesCount)
-                    { // yes
+                    if (canBreakThroughObs)
+                    { // yes: add random steps for this obs
                         int rn = Random.Range(0, 2);
                         nbCostScore += ((Random.Range(0, 1) == 0) ? 1 : rn);
+                    }
+                    else
+                    { // no: then it function as a wall
+                        continue;
                     }
                 }
                 // check if it is a newly discovered block
@@ -176,7 +179,7 @@ public class Astar {
                     continue;
 
                 // now, this is a better way to get to this block
-                //CameFromMap[nbBlock.h, nbBlock.w] = (nbNum - 1); // nbNum - 1 because it is now the next neighbor
+                if (recordPath) CameFromMap[nbBlock.h, nbBlock.w] = (nbNum - 1); // nbNum - 1 because it is now the next neighbor
                 CostMap[nbBlock.h, nbBlock.w] = nbCostScore;
                 EstimatedTotalCostMap[nbBlock.h, nbBlock.w] = nbCostScore + EstimateCost(nbBlock);
             }
@@ -189,16 +192,19 @@ public class Astar {
     {
         return System.Math.Abs(bn.h - GoalBlock.h) + System.Math.Abs(bn.w - GoalBlock.w);
     }
-    /*
-    private void GeneratePath()
+
+    // return {-1} if there is no path
+    public List<int> GetPath()
     {
-        Debug.Log("Path: ");
-        int[] currentBlock = new int[2] { GoalBlock.h, GoalBlock.w };
+        List<int> pathList;
         int count = 0;
+        int[] currentBlock = new int[2] { GoalBlock.h, GoalBlock.w };
+        pathList = new List<int>();
+        pathList.Add(CameFromMap[currentBlock[0], currentBlock[1]]);
+
         while (CameFromMap[currentBlock[0], currentBlock[1]] != -1)
         {
-            //Debug.Log(CameFromMap[currentBlock[0], currentBlock[1]]);
-            Debug.Log(currentBlock[0] + "," + currentBlock[1]);
+            //Debug.Log(currentBlock[0] + "," + currentBlock[1]);
             switch (CameFromMap[currentBlock[0], currentBlock[1]])
             {
                 case 0: // down
@@ -210,9 +216,10 @@ public class Astar {
                 case 3: // left
                     currentBlock[1]--; break;
             }
+            pathList.Add(CameFromMap[currentBlock[0], currentBlock[1]]);
             if(count++ > 50)
                 break;
         }
+        return pathList;
     }
-    */
 }

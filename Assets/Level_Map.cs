@@ -153,7 +153,7 @@ public class Level_Map : MonoBehaviour
     {
         // use A-star to find least steps to finish
         Astar astar = new Astar(blocks, height, width, theObstacles.positionList, playerStartBlock, finishBlock);
-        estimatedStep = astar.FindPathLength(true);
+        estimatedStep = astar.FindPathLength(true, false);
         Debug.Log("estimatedStep:" + estimatedStep);
         // add bonus steps
         int bonusLimit = (int)(width * height * 0.1);
