@@ -32,6 +32,8 @@ public class Level_Menu : MonoBehaviour {
             }
             else
             {
+                string cbt = GameObject.Find("Continue Button Text").GetComponent<Text>().text;
+                cbt = "Begin";
                 // leave it unloaded
             }
         }
@@ -48,7 +50,7 @@ public class Level_Menu : MonoBehaviour {
             }
         }
 		
-	    Save_Data.levelPassed = 2;
+	    //Save_Data.levelPassed = 2;
 
         SetupLevelMenuButton();
     }
@@ -79,8 +81,6 @@ public class Level_Menu : MonoBehaviour {
             SaveW = new StreamWriter(SaveFilePath, false);
             SaveW.WriteLine(level.ToString() + "\n");
             SaveW.Close();
-            string tttest = GameObject.Find("Continue Button Text").GetComponent<Text>().text = "Begin";
-            Debug.Log(tttest);
         }
     }
 

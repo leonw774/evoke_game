@@ -9,10 +9,10 @@ using System.Reflection;
 
 public class Level_Map : MonoBehaviour
 {
-    public enum BLOCK_TYPE : int { WALKABLE = 0, WALL = 1, ITEM = 2, PLAYER_START_POINT = 3, FINISH_POINT = 4 };
-    public int[,] blocks = null;
-    public int[] playerStartBlock = new int[2] { -1, -1 };
-    public int[] finishBlock = new int[2];
+    public enum TILE_TYPE : int { WALKABLE = 0, WALL = 1, ITEM = 2, PLAYER_START_POINT = 3, FINISH_POINT = 4 };
+    public int[,] tiles = null;
+    public int[] playerStartTile = new int[2] { -1, -1 };
+    public int[] finishTile = new int[2];
     public int width = 0, height = 0;
     public int estimatedStep = 0;
     public int wallsNumber = 0;
@@ -47,12 +47,12 @@ public class Level_Map : MonoBehaviour
             Debug.Log("Selected Level Value Error!");
     }
 
-    public void GameInitial(int newMapLevel)
+    public void GameInitial(int thisMapLevel)
     {
         // initialize map
-        mapFileName = "map" + newMapLevel.ToString();
+        mapFileName = "map" + thisMapLevel.ToString();
         Debug.Log("mapFileMap: " + mapFileName);
-        minimap = Resources.Load<Sprite>(mapFileName);
+        Sprite mpsr = GameObject.Find("Mini Map").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(mapFileName);
         LoadMapImg();
     }
 
@@ -62,10 +62,8 @@ public class Level_Map : MonoBehaviour
         if (mapFileName != null)
         {
             Texture2D bmp = Resources.Load<Texture2D>(mapFileName);
-            SpriteRenderer mpsr = GameObject.Find("Mini Map").GetComponent<SpriteRenderer>();
-            mpsr.sprite = minimap;
             mapPixels = bmp.GetPixels32();
-            blocks = new int[bmp.height, bmp.width];
+            tiles = new int[bmp.height, bmp.width];
             height = bmp.height;
             width = bmp.width;
             Debug.Log("Image loaded: " + height + ", " + width);
@@ -89,16 +87,16 @@ public class Level_Map : MonoBehaviour
             {
                 Color32 thisPixel = mapPixels[i * width + j];
                 if (thisPixel.Equals(new Color32(255, 255, 255, 255)))
-                    blocks[height - 1 - i, j] = (int)(BLOCK_TYPE.WALKABLE);
+                    tiles[height - 1 - i, j] = (int)(TILE_TYPE.WALKABLE);
                 else if (thisPixel.Equals(new Color32(0, 0, 0, 255)))
-                    blocks[height - 1 - i, j] = (int)(BLOCK_TYPE.WALL);
+                    tiles[height - 1 - i, j] = (int)(TILE_TYPE.WALL);
                 else if (thisPixel.Equals(new Color32(255, 0, 0, 255)))
-                    blocks[height - 1 - i, j] = (int)(BLOCK_TYPE.FINISH_POINT);
+                    tiles[height - 1 - i, j] = (int)(TILE_TYPE.FINISH_POINT);
                 else if (thisPixel.Equals(new Color32(0, 0, 255, 255)))
-                    blocks[height - 1 - i, j] = (int)(BLOCK_TYPE.PLAYER_START_POINT);
+                    tiles[height - 1 - i, j] = (int)(TILE_TYPE.PLAYER_START_POINT);
                 else
                     return false;
-                //Debug.Log(i + "," + j + ":" + blocks[height - 1 - i, j]);
+                //Debug.Log(i + "," + j + ":" + tiles[height - 1 - i, j]);
                 //Debug.Log(thisPixel.ToString());
             }
         }
@@ -116,7 +114,7 @@ public class Level_Map : MonoBehaviour
             for (int w = 0; w < width; w++)
             {
                 Vector3 trans = new Vector3((w - width / 2.0f + 0.5f), (height / 2.0f - h - 0.5f), 0);
-                if (blocks[h, w] == (int)(BLOCK_TYPE.WALL))
+                if (tiles[h, w] == (int)(TILE_TYPE.WALL))
                 {
                     GameObject wallCreated;
                     wallCreated = Instantiate(GameObject.Find("Prototype Wall Sprite"));
@@ -126,46 +124,46 @@ public class Level_Map : MonoBehaviour
                     wallCreated.transform.position = trans;
                     wallsNumber++;
                 }
-                else if (blocks[h, w] == (int)(BLOCK_TYPE.FINISH_POINT))
+                else if (tiles[h, w] == (int)(TILE_TYPE.FINISH_POINT))
                 {
-                    finishBlock = new int[2] { h, w };
-                    blocks[h, w] = (int)(BLOCK_TYPE.WALL);
+                    finishTile = new int[2] { h, w };
+                    tiles[h, w] = (int)(TILE_TYPE.WALL);
                     GameObject.Find("Finish Sprite").transform.position = trans;
                 }
-                else if (blocks[h, w] == (int)(BLOCK_TYPE.PLAYER_START_POINT))
+                else if (tiles[h, w] == (int)(TILE_TYPE.PLAYER_START_POINT))
                 {
-                    playerStartBlock = new int[2] { h, w };
-                    blocks[h, w] = (int)(BLOCK_TYPE.WALKABLE);
+                    playerStartTile = new int[2] { h, w };
+                    tiles[h, w] = (int)(TILE_TYPE.WALKABLE);
                 }
             }
         }
 
-        Debug.Log("playerStartBlock: " + playerStartBlock[0] + "," + playerStartBlock[1]);
-        Debug.Log("finishBlock: " + finishBlock[0] + "," + finishBlock[1]);
+        Debug.Log("playerStartTile: " + playerStartTile[0] + "," + playerStartTile[1]);
+        Debug.Log("finishTile: " + finishTile[0] + "," + finishTile[1]);
 
         // set monster number
         wallsNumber = 0;
-        monsterNumber = (blocks.Length - wallsNumber - 10) / 40 + 1;
+        monsterNumber = (tiles.Length - wallsNumber - 10) / 42 + 3;
         Debug.Log("the map ask for " + monsterNumber + " monsters");
     }
 
     public void SetPlayerInfo()
     {
         // use A-star to find least steps to finish
-        Astar astar = new Astar(blocks, height, width, theObstacles.positionList, playerStartBlock, finishBlock);
+        Astar astar = new Astar(tiles, height, width, theObstacles.positionList, playerStartTile, finishTile);
         estimatedStep = astar.FindPathLength(true, false);
         Debug.Log("estimatedStep:" + estimatedStep);
         // add bonus steps
-        int bonusLimit = (int)(width * height * 0.1);
-        if ((int)(estimatedStep / 5) < bonusLimit)
-            estimatedStep += (int)(estimatedStep / 5);
+        /*int bonusLimit = (int)(width * height * 0.1);
+        if ((int)(estimatedStep / 6) < bonusLimit)
+            estimatedStep += (int)(estimatedStep / 6);
         else
-            estimatedStep += bonusLimit;
+            estimatedStep += bonusLimit;*/
         thePlayer.Initialize();
-        thePlayer.SetEnergyPoint(estimatedStep + (int)(monsterNumber * 2.5));
-        thePlayer.SetHealthPoint(1);
+        thePlayer.SetEnergyPoint(estimatedStep + (int)(monsterNumber * 2.4));
+        thePlayer.SetHealthPoint(2);
         thePlayer.SetAbilityCooldown(0);
-        thePlayer.SetPositionTo(playerStartBlock[0], playerStartBlock[1]);
+        thePlayer.SetPositionTo(playerStartTile[0], playerStartTile[1]);
     }
 
     public void GameStart()

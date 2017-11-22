@@ -56,14 +56,14 @@ public class Monsters : MonoBehaviour {
     public void Generate(int totalNum)
     {
         int minDisBtwnMons = 6;
-        int posRandMin = (levelMap.blocks.Length - levelMap.wallsNumber) / totalNum - minDisBtwnMons;
-        int posRandMax = (levelMap.blocks.Length - levelMap.wallsNumber) / totalNum + (minDisBtwnMons * 2);
+        int posRandMin = (levelMap.tiles.Length - levelMap.wallsNumber) / totalNum - minDisBtwnMons;
+        int posRandMax = (levelMap.tiles.Length - levelMap.wallsNumber) / totalNum + (minDisBtwnMons * 2);
         int spawnedCount = 0;
         int emegercyJumpOut = 0;
         int h = -1, w = -1;
         int mapWidth = levelMap.width;
-        int prePos = levelMap.playerStartBlock[0] * mapWidth + levelMap.playerStartBlock[1];
-        //int[] prePos = new int[2] {levelMap.playerStartBlock[0] , levelMap.playerStartBlock[1]};
+        int prePos = levelMap.playerStartTile[0] * mapWidth + levelMap.playerStartTile[1];
+        //int[] prePos = new int[2] {levelMap.playerStartTile[0] , levelMap.playerStartTile[1]};
 
         Debug.Log("posRandMin:" + posRandMin);
         Debug.Log("posRandMax: " + posRandMax);
@@ -90,8 +90,8 @@ public class Monsters : MonoBehaviour {
             w = pos % mapWidth;
             bool tooClose = false;
             // check if too close to player or finsh
-            if (minDisBtwnMons > (System.Math.Abs(levelMap.playerStartBlock[0] - h) + System.Math.Abs(levelMap.playerStartBlock[1] - w))
-             || minDisBtwnMons > (System.Math.Abs(levelMap.finishBlock[0] - h) + System.Math.Abs(levelMap.finishBlock[1] - w)))
+            if (minDisBtwnMons > (System.Math.Abs(levelMap.playerStartTile[0] - h) + System.Math.Abs(levelMap.playerStartTile[1] - w))
+             || minDisBtwnMons > (System.Math.Abs(levelMap.finishTile[0] - h) + System.Math.Abs(levelMap.finishTile[1] - w)))
                 tooClose = true;
             // check if too close to other monster
             for (int i = 0; i < monsterList.Count && !tooClose; ++i)
@@ -100,7 +100,7 @@ public class Monsters : MonoBehaviour {
                     tooClose = true;
             }
             if (tooClose) prePos = pos;
-            else if (levelMap.blocks[h, w] != (int)Level_Map.BLOCK_TYPE.WALL)
+            else if (levelMap.tiles[h, w] != (int)Level_Map.TILE_TYPE.WALL)
             {
                 bool spawn_on_obs = levelMap.theObstacles.positionList.Exists(x => x == (h * mapWidth + w));
                 // not too close and this is not wall/obstacle
@@ -124,7 +124,7 @@ public class Monsters : MonoBehaviour {
                             w_tocheck++; break;
                     }
                     direction++;
-                    if (levelMap.blocks[h_tocheck, w_tocheck] != (int)Level_Map.BLOCK_TYPE.WALL && !levelMap.theObstacles.positionList.Exists(x => x == (h_tocheck * mapWidth + w_tocheck)))
+                    if (levelMap.tiles[h_tocheck, w_tocheck] != (int)Level_Map.TILE_TYPE.WALL && !levelMap.theObstacles.positionList.Exists(x => x == (h_tocheck * mapWidth + w_tocheck)))
                         walkable_neighbor_count++;
                 }
                 if (!spawn_on_obs && walkable_neighbor_count > 1)
@@ -144,7 +144,7 @@ public class Monsters : MonoBehaviour {
         /* TREE SPAWN (is buggy)
         while (spawnedCount < totalNum && emegercyJumpOut < totalNum * 2)
         {
-            prePos = new int[2] { levelMap.playerStartBlock[0], levelMap.playerStartBlock[1] };
+            prePos = new int[2] { levelMap.playerStartTile[0], levelMap.playerStartTile[1] };
             tryCount = 0;
             while (tryCount < tryLimit)
             {
@@ -172,8 +172,8 @@ public class Monsters : MonoBehaviour {
 
                 // check if too close to other monsters
                 bool tooClose = false;
-                if (minDisBtwnMons > (System.Math.Abs(levelMap.playerStartBlock[0] - h) + System.Math.Abs(levelMap.playerStartBlock[1] - w))
-                    || minDisBtwnMons > (System.Math.Abs(levelMap.finishBlock[0] - h) + System.Math.Abs(levelMap.finishBlock[1] - w)))
+                if (minDisBtwnMons > (System.Math.Abs(levelMap.playerStartTile[0] - h) + System.Math.Abs(levelMap.playerStartTile[1] - w))
+                    || minDisBtwnMons > (System.Math.Abs(levelMap.finishTile[0] - h) + System.Math.Abs(levelMap.finishTile[1] - w)))
                 {
                     tooClose = true;
                 }
@@ -189,7 +189,7 @@ public class Monsters : MonoBehaviour {
                 }
 
                 // check if is WALL or Obs
-                if (levelMap.blocks[h, w] == (int)Level_Map.BLOCK_TYPE.WALL || levelMap.theObstacles.positionList.Exists(x => x == (h * levelMap.width + w)))
+                if (levelMap.tiles[h, w] == (int)Level_Map.TILE_TYPE.WALL || levelMap.theObstacles.positionList.Exists(x => x == (h * levelMap.width + w)))
                 {
                     continue;
                 }
@@ -217,7 +217,7 @@ public class Monsters : MonoBehaviour {
                             break;
                     }
                     direction++;
-                    if (levelMap.blocks[h_tocheck, w_tocheck] != (int)Level_Map.BLOCK_TYPE.WALL || !levelMap.theObstacles.positionList.Exists(x => x == (h_tocheck * mapWidth + w_tocheck)))
+                    if (levelMap.tiles[h_tocheck, w_tocheck] != (int)Level_Map.TILE_TYPE.WALL || !levelMap.theObstacles.positionList.Exists(x => x == (h_tocheck * mapWidth + w_tocheck)))
                         walkable_neighbor_count++;
                 }
                 if (walkable_neighbor_count > 0)
@@ -247,8 +247,16 @@ public class Monsters : MonoBehaviour {
 
     public bool TryAttackPlayer(int playerPos)
     {
+        int found;
         // true: attack success; false: attack fail
-        return monsterList.FindIndex(x => (x.h * levelMap.width + x.w == playerPos)) >= 0;
+        if ((found = monsterList.FindIndex(x => x.h * levelMap.width + x.w == playerPos)) >= 0)
+        {
+            Debug.Log("destroy monster #" + monsterList[found].id + "because it attack player");
+            Destroy(monsterList[found].monSpriteObject, 0.175f);
+            monsterList.RemoveAt(found);
+            return true;
+        }
+        return false;
     }
 
     public void TryKillMonsterByPos(int pos)
@@ -279,9 +287,9 @@ public class Monsters : MonoBehaviour {
     private void MonsterMoveToPlayer(int i)
     {
         int goingTo = -1;
-        int[] monPosBlock = new int[2] {monsterList[i].h, monsterList[i].w};
-        int[] playerPosBlock = new int[2] { levelMap.thePlayer.h, levelMap.thePlayer.w };
-        Astar m_astar = new Astar(levelMap.blocks, levelMap.height, levelMap.width, levelMap.theObstacles.positionList, monPosBlock, playerPosBlock);
+        int[] monPosTile = new int[2] {monsterList[i].h, monsterList[i].w};
+        int[] playerPosTile = new int[2] { levelMap.thePlayer.h, levelMap.thePlayer.w };
+        Astar m_astar = new Astar(levelMap.tiles, levelMap.height, levelMap.width, levelMap.theObstacles.positionList, monPosTile, playerPosTile);
         m_astar.FindPathLength(false, true);
         List<int> pathList = m_astar.GetPath();
         if(pathList.Count > 1) goingTo = pathList[1];
@@ -308,7 +316,7 @@ public class Monsters : MonoBehaviour {
                 case 3: // right
                     neww++; break;
             }
-            if (levelMap.blocks[newh, neww] != (int)Level_Map.BLOCK_TYPE.WALL && !levelMap.theObstacles.positionList.Exists(x => x == (newh * levelMap.width + neww)))
+            if (levelMap.tiles[newh, neww] != (int)Level_Map.TILE_TYPE.WALL && !levelMap.theObstacles.positionList.Exists(x => x == (newh * levelMap.width + neww)))
             {
                 int j = 0;
                 for (; j < monsterList.Count; j++)
@@ -328,7 +336,7 @@ public class Monsters : MonoBehaviour {
 
     private void MonsterMoveRandom(int i)
     {
-        Debug.Log("MonsterMoveRandom()");
+        //Debug.Log("MonsterMoveRandom()");
         int tryCount = 0;
         if (monsterList[i].h == levelMap.thePlayer.h && monsterList[i].w == levelMap.thePlayer.w)
             return;
@@ -337,7 +345,7 @@ public class Monsters : MonoBehaviour {
         {
             int goingTo = Random.Range(0, 4);
             int newh = monsterList[i].h, neww = monsterList[i].w;
-            if (Random.Range(-1, 36) < 0) break;
+            if (Random.Range(-1, 12) < 0) break;
             switch (goingTo)
             {
                 case 0:
@@ -352,7 +360,9 @@ public class Monsters : MonoBehaviour {
                     break;
             }
             //Debug.Log("montser try" + newh + "," + neww);
-            if (levelMap.blocks[newh, neww] != (int)Level_Map.BLOCK_TYPE.WALL && !levelMap.theObstacles.positionList.Exists(x => x == (newh * levelMap.width + neww)))
+            if (levelMap.tiles[newh, neww] != (int)Level_Map.TILE_TYPE.WALL
+                && !levelMap.theObstacles.positionList.Exists(x => x == (newh * levelMap.width + neww))
+                && (levelMap.thePlayer.h != newh || levelMap.thePlayer.w != neww))
             {
                 int j = 0;
                 for (; j < monsterList.Count; j++)

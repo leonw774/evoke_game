@@ -91,7 +91,7 @@ public class Player_Control : MonoBehaviour {
         //Debug.Log("plar wanna go to " + (h + dh) + ", " + (w + dw));
         if (theControlPanel.isMenuActive)
             return false;
-        else if (levelMap.blocks[(h + dh), (w + dw)] != (int)Level_Map.BLOCK_TYPE.WALL
+        else if (levelMap.tiles[(h + dh), (w + dw)] != (int)Level_Map.TILE_TYPE.WALL
             && !levelMap.theObstacles.positionList.Exists(x => x == (h + dh) * levelMap.width + (w + dw)))
         {
             h = h + dh;
@@ -101,7 +101,7 @@ public class Player_Control : MonoBehaviour {
             energyPointObject.text = (--energyPoint).ToString();
             SetAbilityCooldown(--abilityCooldown);
         }
-        else if ((h + dh) == levelMap.finishBlock[0] && (w + dw) == levelMap.finishBlock[1])
+        else if ((h + dh) == levelMap.finishTile[0] && (w + dw) == levelMap.finishTile[1])
         {
             MoveAnimStart(playerSpriteObject.transform.position, new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0));
             theControlPanel.toggleFinishMenu();
@@ -122,7 +122,7 @@ public class Player_Control : MonoBehaviour {
         while (dh <= 1)
         {
             levelMap.theObstacles.ObsUpdate(h + dh, w + dw);
-            // upadte neighbor blocks ij
+            // upadte neighbor tiles ij
             if (dw == 1)
             {
                 dh++;
@@ -158,7 +158,7 @@ public class Player_Control : MonoBehaviour {
             return;
         }
         //Debug.Log("thePlayer.SetPositionTo() is called in Game_Panel");
-        if (levelMap.blocks[newh, neww] != (int)Level_Map.BLOCK_TYPE.WALL)
+        if (levelMap.tiles[newh, neww] != (int)Level_Map.TILE_TYPE.WALL)
         {
             if (levelMap.theObstacles.positionList.Exists(x => x == (newh * levelMap.width + neww)))
             {
