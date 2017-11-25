@@ -143,7 +143,7 @@ public class Level_Map : MonoBehaviour
 
         // set monster number
         wallsNumber = 0;
-        monsterNumber = (tiles.Length - wallsNumber - 10) / 42 + 3;
+        monsterNumber = (tiles.Length - wallsNumber - 10) / 45 + 3;
         Debug.Log("the map ask for " + monsterNumber + " monsters");
     }
 
@@ -162,9 +162,10 @@ public class Level_Map : MonoBehaviour
             estimatedStep += bonusLimit;
         */
         thePlayer.Initialize();
-        thePlayer.SetEnergyPoint(estimatedStep + (int)(monsterNumber * 2.25));
+        thePlayer.SetEnergyPoint(estimatedStep + (int)(monsterNumber * 2.4));
         thePlayer.SetHealthPoint(2);
         thePlayer.SetAbilityCooldown(0);
+        thePlayer.SetFaceTo(Player_Control.FACING.FRONT);
         thePlayer.SetPositionTo(playerStartTile[0], playerStartTile[1]);
     }
 

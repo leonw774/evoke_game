@@ -135,7 +135,7 @@ public class Monsters : MonoBehaviour {
                     Spawn(h, w, spawnedCount);
                     spawnedCount++;
                 }
-                else if (spawn_on_obs && walkable_neighbor_count < 3 && walkable_neighbor_count > 1 && Random.Range(-1, 6) >= 0)
+                else if (spawn_on_obs && walkable_neighbor_count < 3 && walkable_neighbor_count > 1 && Random.Range(-1, 1) < 0)
                 {
                     levelMap.theObstacles.ObsDestroy(pos);
                     Spawn(h, w, spawnedCount++);

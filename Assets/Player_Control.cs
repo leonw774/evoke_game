@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using System;
 
 public class Player_Control : MonoBehaviour {
-    public enum FACING : int {UP = 0, LEFT, DOWN, RIGHT};
+    public enum FACING : int {FRONT = 0, LEFT, BACK, RIGHT};
     public int h;
     public int w;
 
@@ -15,7 +15,8 @@ public class Player_Control : MonoBehaviour {
     private FACING faceTo;
     private int abilityCooldown;
 
-    private GameObject playerSpriteObject;
+    private GameObject playerPositionObject;
+    private SpriteRenderer playerFacingSprite = null;
     private Text energyPointObject;
     private Text healthPointObject;
     private Text abilityCooldownObject;
@@ -30,7 +31,7 @@ public class Player_Control : MonoBehaviour {
 
     public void Initialize()
     {
-        playerSpriteObject = GameObject.Find("Player Sprite");
+        playerPositionObject = GameObject.Find("Player Sprite");
         theControlPanel = GameObject.Find("Game Menu Canvas").GetComponent<Game_Menu>();
         levelMap = GameObject.Find("Game Panel").GetComponent<Level_Map>();
         energyPointObject = GameObject.Find("EP Output").GetComponent<Text>();
@@ -40,9 +41,9 @@ public class Player_Control : MonoBehaviour {
 
     public void playerMoveUp()
     {
-        faceTo = FACING.UP;
         if (Move(-1, 0)) // it is monster's turn only if player did change position
         {
+            SetFaceTo(FACING.BACK);
             levelMap.theMonsters.MonstersMove();
             AnimSetup();
             if (energyPoint == 0) theControlPanel.toggleFailMenu();
@@ -51,9 +52,9 @@ public class Player_Control : MonoBehaviour {
 
     public void playerMoveLeft()
     {
-        faceTo = FACING.LEFT;
         if (Move(0, -1))
         {
+            SetFaceTo(FACING.LEFT);
             levelMap.theMonsters.MonstersMove();
             AnimSetup();
             if (energyPoint == 0) theControlPanel.toggleFailMenu();
@@ -62,9 +63,9 @@ public class Player_Control : MonoBehaviour {
 
     public void playerMoveDown()
     {
-        faceTo = FACING.DOWN;
         if (Move(1, 0))
         {
+            SetFaceTo(FACING.FRONT);
             levelMap.theMonsters.MonstersMove();
             AnimSetup();
             if (energyPoint == 0) theControlPanel.toggleFailMenu();
@@ -73,9 +74,9 @@ public class Player_Control : MonoBehaviour {
 
     public void playerMoveRight()
     {
-        faceTo = FACING.RIGHT;
         if (Move(0, 1))
         {
+            SetFaceTo(FACING.RIGHT);
             levelMap.theMonsters.MonstersMove();
             AnimSetup();
             if (energyPoint == 0) theControlPanel.toggleFailMenu();
@@ -105,13 +106,13 @@ public class Player_Control : MonoBehaviour {
             h = h + dh;
             w = w + dw;
             //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
-            PlayerAnimSetup(playerSpriteObject.transform.position, new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0));
+            PlayerAnimSetup(playerPositionObject.transform.position, new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0));
             energyPointObject.text = (--energyPoint).ToString();
             SetAbilityCooldown(--abilityCooldown);
         }
         else if ((h + dh) == levelMap.finishTile[0] && (w + dw) == levelMap.finishTile[1])
         {
-            PlayerAnimSetup(playerSpriteObject.transform.position, new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0));
+            PlayerAnimSetup(playerPositionObject.transform.position, new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0));
             theControlPanel.toggleFinishMenu();
             levelMap.GameFinish();
         }
@@ -175,7 +176,7 @@ public class Player_Control : MonoBehaviour {
             h = newh;
             w = neww;
             //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
-            playerSpriteObject.transform.position = new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0);
+            playerPositionObject.transform.position = new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0);
         }
         else
         {
@@ -208,6 +209,31 @@ public class Player_Control : MonoBehaviour {
         }
     }
 
+    public void SetFaceTo(FACING ft)
+    {
+        if (playerFacingSprite != null)
+            playerFacingSprite.enabled = false;
+        switch (ft)
+        {
+            case FACING.FRONT:
+                playerFacingSprite = GameObject.Find("Front Player Sprite").GetComponent<SpriteRenderer>();
+                break;
+            case FACING.LEFT:
+                playerFacingSprite = GameObject.Find("Left Player Sprite").GetComponent<SpriteRenderer>();
+                break;
+            case FACING.BACK:
+                playerFacingSprite = GameObject.Find("Back Player Sprite").GetComponent<SpriteRenderer>();
+                break;
+            case FACING.RIGHT:
+                playerFacingSprite = GameObject.Find("Right Player Sprite").GetComponent<SpriteRenderer>();
+                break;
+            default:
+                return;
+        }
+        playerFacingSprite.enabled = true;
+        faceTo = ft;
+    }
+
     /* ANIMATION */
 
     /*
@@ -235,12 +261,12 @@ public class Player_Control : MonoBehaviour {
 
     void PlayerAnim()
     {
-        playerSpriteObject.transform.position = playerSpriteObject.transform.position + (animEndPos - animBeginPos) / (Time.deltaTime / 0.0014f);
+        playerPositionObject.transform.position = playerPositionObject.transform.position + (animEndPos - animBeginPos) / (Time.deltaTime / 0.0014f);
     }
 
     void PlayerAnimEnd()
     {
-        playerSpriteObject.transform.position = animEndPos;
+        playerPositionObject.transform.position = animEndPos;
         animEndPos = new Vector3(0.0f, 0.0f, 0.0f);
         animBeginPos = new Vector3(0.0f, 0.0f, 0.0f);
         CheckPlayerAttacked();
@@ -256,8 +282,8 @@ public class Player_Control : MonoBehaviour {
     {
         // do animation in the irreponsive time
         if (times_irreponsive <= Time.time
-         || (animEndPos - playerSpriteObject.transform.position).magnitude < 0.01
-         || (animEndPos - playerSpriteObject.transform.position).normalized == (animBeginPos - animEndPos).normalized)
+         || (animEndPos - playerPositionObject.transform.position).magnitude < 0.01
+         || (animEndPos - playerPositionObject.transform.position).normalized == (animBeginPos - animEndPos).normalized)
         {
             moveAnimation = false;
             // tidy up player pos

@@ -97,16 +97,16 @@ public class Obstacles : MonoBehaviour {
                 else
                 {
                     // STATE: DONT PUT OBS
-                    if (Random.Range(-5, 8) < 0) // possibility to change state 
+                    if (Random.Range(-5, 9) < 0) // possibility to change state 
                         putObs = !putObs;
                 }
             }
         }
         // make horizonal obs
-        for (int j = 1; j < levelMap.width - 1; j++)
+        for (int j = 1; j < levelMap.width - 1; ++j)
         {
             bool putObs = Random.Range(-5, 5) > 0;
-            for (int i = 1; i < levelMap.width - 1; ++i)
+            for (int i = 1; i < levelMap.height - 1; ++i)
             {
                 if (putObs && levelMap.tiles[i, j] == (int)Level_Map.TILE_TYPE.WALKABLE)
                 {
@@ -116,7 +116,7 @@ public class Obstacles : MonoBehaviour {
                 }
                 else
                 {
-                    if (Random.Range(-5, 8) < 0)
+                    if (Random.Range(-5, 9) < 0)
                         putObs = !putObs;
                 }
             }
@@ -134,7 +134,7 @@ public class Obstacles : MonoBehaviour {
             CorridorAdjust();
             count++;
             Debug.Log("Obstacles Adjusted");
-        } while (find_something_to_adjust && count < 6);
+        } while (find_something_to_adjust && count < 4);
 
         /*
         DistributeAdjust();
