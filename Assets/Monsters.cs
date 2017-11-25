@@ -7,24 +7,26 @@ public enum FACING : int {UP = 0, LEFT, DOWN, RIGHT};
 
 public class Monster
 {
-    public bool isActive;
     public FACING faceTo;
     public int h;
     public int w;
     public int id;
+    public bool killed;
     public GameObject monSpriteObject = null;
 
-    public Vector3 animBeginPosition;
-    public Vector3 animEndPosition;
+    public Vector3 animBeginPos;
+    public Vector3 animEndPos;
 
     public Monster(int _h, int _w, int _id, GameObject ms)
     {
-        isActive = false;
+        killed = false;
         faceTo = (FACING) Random.Range(0, 4);
         h = _h;
         w = _w;
         id = _id;
         monSpriteObject = ms;
+        animBeginPos = new Vector3();
+        animEndPos = new Vector3();
     }
 
     public void MoveTo(int newh, int neww)
@@ -32,6 +34,7 @@ public class Monster
         h = newh;
         w = neww;
     }
+
 }
 
 public class Monsters : MonoBehaviour {
@@ -135,8 +138,7 @@ public class Monsters : MonoBehaviour {
                 else if (spawn_on_obs && walkable_neighbor_count < 3 && walkable_neighbor_count > 1 && Random.Range(-1, 6) >= 0)
                 {
                     levelMap.theObstacles.ObsDestroy(pos);
-                    Spawn(h, w, spawnedCount);
-                    spawnedCount++;
+                    Spawn(h, w, spawnedCount++);
                 }
             }
         }
@@ -160,61 +162,43 @@ public class Monsters : MonoBehaviour {
                 else                                        w += (Random.Range((minDisBtwnMons + posRandMin) / 2, posRandMax / 2) * (Random.Range(-1, 1) == 0 ? 1 : -1));
                 //Debug.Log("Monster Spawn Try:" + h + ", " + w);
                 tryCount++;
-
                 // check boundry
                 if (h < 1 || h > levelMap.height - 1 || w < 1 || w > levelMap.width - 1)
-                {
                     continue;
-                }
                 // is a valid leaf, no matter it will spawn or not
                 prePos = new int[2] { h, w };
                 emegercyJumpOut++;
-
                 // check if too close to other monsters
                 bool tooClose = false;
                 if (minDisBtwnMons > (System.Math.Abs(levelMap.playerStartTile[0] - h) + System.Math.Abs(levelMap.playerStartTile[1] - w))
                     || minDisBtwnMons > (System.Math.Abs(levelMap.finishTile[0] - h) + System.Math.Abs(levelMap.finishTile[1] - w)))
-                {
                     tooClose = true;
-                }
                 for (int i = 0; i < monsterList.Count; ++i)
                 {
                     if (tooClose = (minDisBtwnMons > System.Math.Abs(monsterList[i].h - h) + System.Math.Abs(monsterList[i].w - w)))
                         break; // break this for
                 }
                 // if it is too close, dont spawn
-                if (tooClose) 
-                {
-                    continue;
-                }
-
+                if (tooClose) continue;
                 // check if is WALL or Obs
                 if (levelMap.tiles[h, w] == (int)Level_Map.TILE_TYPE.WALL || levelMap.theObstacles.positionList.Exists(x => x == (h * levelMap.width + w)))
-                {
                     continue;
-                }
-
                 // check if is stuck
                 int walkable_neighbor_count = 0, direction = 0;
                 int h_tocheck = 0, w_tocheck = 0;
                 while (direction < 4)
                 {
-                    h_tocheck = h;
-                    w_tocheck = w;
+                    h_tocheck = h; w_tocheck = w;
                     switch (direction)
                     {
                         case 0: // top
-                            h_tocheck--;
-                            break;
+                            h_tocheck--; break;
                         case 1: // left
-                            w_tocheck--;
-                            break;
+                            w_tocheck--; break;
                         case 2: // down
-                            h_tocheck++;
-                            break;
+                            h_tocheck++; break;
                         case 3: // right
-                            w_tocheck++;
-                            break;
+                            w_tocheck++; break;
                     }
                     direction++;
                     if (levelMap.tiles[h_tocheck, w_tocheck] != (int)Level_Map.TILE_TYPE.WALL || !levelMap.theObstacles.positionList.Exists(x => x == (h_tocheck * mapWidth + w_tocheck)))
@@ -222,8 +206,7 @@ public class Monsters : MonoBehaviour {
                 }
                 if (walkable_neighbor_count > 0)
                 {
-                    Spawn(h, w, spawnedCount);
-                    spawnedCount++;
+                    Spawn(h, w, spawnedCount++);
                 }
             }
             // even if doesnt find a good spot, we continue anyway, but it just dont spawn enough monsters
@@ -247,29 +230,15 @@ public class Monsters : MonoBehaviour {
 
     public bool TryAttackPlayer(int playerPos)
     {
-        int found;
         // true: attack success; false: attack fail
-        if ((found = monsterList.FindIndex(x => x.h * levelMap.width + x.w == playerPos)) >= 0)
+        int found = monsterList.FindIndex(x => x.h * levelMap.width + x.w == playerPos);
+        if (found >= 0)
         {
-            Debug.Log("destroy monster #" + monsterList[found].id + "because it attack player");
-            Destroy(monsterList[found].monSpriteObject, 0.175f);
-            monsterList.RemoveAt(found);
+            KillMonsterByIndex(found);
+            Debug.Log("because it attacked player in last round");
             return true;
         }
         return false;
-    }
-
-    public void TryKillMonsterByPos(int pos)
-    {
-        int found;
-        if ((found = monsterList.FindIndex(x => (x.h * levelMap.width + x.w == pos))) >= 0)
-        {
-            //Debug.Log("kill monster #" + monsterList[found].id + " at pos:" + pos);
-            Destroy(monsterList[found].monSpriteObject, 0.075f);
-            monsterList.RemoveAt(found);
-        }
-        //else
-        //    Debug.Log("failed to kill monster at pos:" + pos);
     }
 
     public void MonstersMove()
@@ -287,9 +256,7 @@ public class Monsters : MonoBehaviour {
     private void MonsterMoveToPlayer(int i)
     {
         int goingTo = -1;
-        int[] monPosTile = new int[2] {monsterList[i].h, monsterList[i].w};
-        int[] playerPosTile = new int[2] { levelMap.thePlayer.h, levelMap.thePlayer.w };
-        Astar m_astar = new Astar(levelMap.tiles, levelMap.height, levelMap.width, levelMap.theObstacles.positionList, monPosTile, playerPosTile);
+        Astar m_astar = new Astar(levelMap.tiles, levelMap.height, levelMap.width, levelMap.theObstacles.positionList, new int[2] {monsterList[i].h, monsterList[i].w}, new int[2] { levelMap.thePlayer.h, levelMap.thePlayer.w });
         m_astar.FindPathLength(false, true);
         List<int> pathList = m_astar.GetPath();
         if(pathList.Count > 1) goingTo = pathList[1];
@@ -327,8 +294,8 @@ public class Monsters : MonoBehaviour {
                 {
                     //Debug.Log("Monster " + i + "moved from " + monsterList[i].h + "," + monsterList[i].w + " to " + newh + "," + neww);
                     monsterList[i].MoveTo(newh, neww);
-                    monsterList[i].monSpriteObject.transform.position = new Vector3((neww - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - newh - 0.5f), 0);
                     monsterList[i].faceTo = (FACING) goingTo;
+                    MonsterAnimSetup(i, monsterList[i].monSpriteObject.transform.position, new Vector3((neww - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - newh - 0.5f), 0));
                 }
             }
         }
@@ -341,11 +308,11 @@ public class Monsters : MonoBehaviour {
         if (monsterList[i].h == levelMap.thePlayer.h && monsterList[i].w == levelMap.thePlayer.w)
             return;
 
-        while (tryCount <= 6)
+        while (tryCount <= 8)
         {
             int goingTo = Random.Range(0, 4);
             int newh = monsterList[i].h, neww = monsterList[i].w;
-            if (Random.Range(-1, 12) < 0) break;
+            if (Random.Range(-1, 8) < 0) break;
             switch (goingTo)
             {
                 case 0:
@@ -356,8 +323,6 @@ public class Monsters : MonoBehaviour {
                     newh++; break;
                 case 3:
                     neww++; break;
-                default:
-                    break;
             }
             //Debug.Log("montser try" + newh + "," + neww);
             if (levelMap.tiles[newh, neww] != (int)Level_Map.TILE_TYPE.WALL
@@ -373,8 +338,8 @@ public class Monsters : MonoBehaviour {
                 {
                     //Debug.Log("Monster " + i + "moved from " + monsterList[i].h + "," + monsterList[i].w + " to " + newh + "," + neww);
                     monsterList[i].MoveTo(newh, neww);
-                    monsterList[i].monSpriteObject.transform.position = new Vector3((neww - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - newh - 0.5f), 0);
                     monsterList[i].faceTo = (FACING) goingTo;
+                    MonsterAnimSetup(i, monsterList[i].monSpriteObject.transform.position, new Vector3((neww - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - newh - 0.5f), 0));
                     break;
                 }
             }
@@ -383,21 +348,46 @@ public class Monsters : MonoBehaviour {
         } // end of while(trycount < 4)
     }
 
-    private void TryKillMonsterById(int id)
+    private void MonsterAnimSetup(int index, Vector3 begin, Vector3 end)
     {
-        for (int k = 0; k < monsterList.Count; k++)
-        {
-            if (monsterList[k].id == id)
-            {
-                Destroy(monsterList[k].monSpriteObject);
-                Debug.Log("destroy monster #" + id);
-                monsterList.RemoveAt(k);
-                return;
-            }
-        }
-        Debug.Log("failed to destroy monster by id " + id);
+        monsterList[index].animBeginPos = begin;
+        monsterList[index].animEndPos = end;
     }
 
+    public void MonstersAnim()
+    {
+        monsterList.ForEach(delegate(Monster x) {
+            if (x.animBeginPos != new Vector3(0.0f, 0.0f, 0.0f))
+                x.monSpriteObject.transform.position = x.monSpriteObject.transform.position + (x.animEndPos - x.animBeginPos) / (Time.deltaTime / 0.0014f);
+        });
+    }
+
+    public void MonstersAnimEnd()
+    {
+        monsterList.ForEach(delegate(Monster x) {
+            if (x.animBeginPos != new Vector3(0.0f, 0.0f, 0.0f))
+            {
+                x.monSpriteObject.transform.position = x.animEndPos;
+                x.animEndPos = new Vector3(0.0f, 0.0f, 0.0f);
+                x.animBeginPos = new Vector3(0.0f, 0.0f, 0.0f);
+            }
+        });
+    }
+
+    private void KillMonsterByIndex(int i)
+    {
+        Debug.Log("destroy monster #" + monsterList[i].id);
+        Destroy(monsterList[i].monSpriteObject, 0.175f);
+        monsterList.RemoveAt(i);
+    }
+
+    public void TryKillMonsterByPos(int pos)
+    {
+        int found = monsterList.FindIndex(x => pos == x.h * levelMap.width + x.w);
+        if (found >= 0)
+            KillMonsterByIndex(found);
+    }
+    
     public void DestroyMonsters()
     {
         int k = 0;
@@ -409,13 +399,9 @@ public class Monsters : MonoBehaviour {
         Debug.Log("destroy " + k + " monsters");
     }
 
-    float times_irreponsive = 0;
-    float animDurTime = 0.2f;
-    Vector3 animBeginPos;
-    Vector3 animEndPos;
-    bool moveAnimation = false;
     // Update is called once per frame
-    void Update () {
+    void Update ()
+    {
 		
 	}
 }

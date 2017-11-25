@@ -22,7 +22,6 @@ public class Level_Map : MonoBehaviour
     public Monsters theMonsters = null;
     public Player_Control thePlayer = null;
 
-    public Sprite minimap = null;
     public string mapFileName = null;
     private Color32[] mapPixels = null;
 
@@ -52,7 +51,8 @@ public class Level_Map : MonoBehaviour
         // initialize map
         mapFileName = "map" + thisMapLevel.ToString();
         Debug.Log("mapFileMap: " + mapFileName);
-        Sprite mpsr = GameObject.Find("Mini Map").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(mapFileName);
+        // load mini map
+        GameObject.Find("Mini Map").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(mapFileName);
         LoadMapImg();
     }
 
@@ -154,13 +154,15 @@ public class Level_Map : MonoBehaviour
         estimatedStep = astar.FindPathLength(true, false);
         Debug.Log("estimatedStep:" + estimatedStep);
         // add bonus steps
-        /*int bonusLimit = (int)(width * height * 0.1);
+        /*
+        int bonusLimit = (int)(width * height * 0.1);
         if ((int)(estimatedStep / 6) < bonusLimit)
             estimatedStep += (int)(estimatedStep / 6);
         else
-            estimatedStep += bonusLimit;*/
+            estimatedStep += bonusLimit;
+        */
         thePlayer.Initialize();
-        thePlayer.SetEnergyPoint(estimatedStep + (int)(monsterNumber * 2.4));
+        thePlayer.SetEnergyPoint(estimatedStep + (int)(monsterNumber * 2.25));
         thePlayer.SetHealthPoint(2);
         thePlayer.SetAbilityCooldown(0);
         thePlayer.SetPositionTo(playerStartTile[0], playerStartTile[1]);

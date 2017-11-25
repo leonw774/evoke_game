@@ -43,7 +43,8 @@ public class Player_Control : MonoBehaviour {
         faceTo = FACING.UP;
         if (Move(-1, 0)) // it is monster's turn only if player did change position
         {
-            MonstersTurn();
+            levelMap.theMonsters.MonstersMove();
+            AnimSetup();
             if (energyPoint == 0) theControlPanel.toggleFailMenu();
         }
     }
@@ -53,7 +54,8 @@ public class Player_Control : MonoBehaviour {
         faceTo = FACING.LEFT;
         if (Move(0, -1))
         {
-            MonstersTurn();
+            levelMap.theMonsters.MonstersMove();
+            AnimSetup();
             if (energyPoint == 0) theControlPanel.toggleFailMenu();
         }
     }
@@ -63,7 +65,8 @@ public class Player_Control : MonoBehaviour {
         faceTo = FACING.DOWN;
         if (Move(1, 0))
         {
-            MonstersTurn();
+            levelMap.theMonsters.MonstersMove();
+            AnimSetup();
             if (energyPoint == 0) theControlPanel.toggleFailMenu();
         }
     }
@@ -73,7 +76,8 @@ public class Player_Control : MonoBehaviour {
         faceTo = FACING.RIGHT;
         if (Move(0, 1))
         {
-            MonstersTurn();
+            levelMap.theMonsters.MonstersMove();
+            AnimSetup();
             if (energyPoint == 0) theControlPanel.toggleFailMenu();
         }
     }
@@ -81,8 +85,12 @@ public class Player_Control : MonoBehaviour {
     public void playerDoAbility()
     {
         DoAbility();
+        levelMap.theMonsters.MonstersMove();
+        AnimSetup();
         if (energyPoint == 0) theControlPanel.toggleFailMenu();
     }
+
+    /* HANDEL REAL THING THERE */
 
     // retrun true: player did change position; return false: player didn't move
     private bool Move(int dh, int dw)
@@ -97,13 +105,13 @@ public class Player_Control : MonoBehaviour {
             h = h + dh;
             w = w + dw;
             //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
-            MoveAnimStart(playerSpriteObject.transform.position, new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0));
+            PlayerAnimSetup(playerSpriteObject.transform.position, new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0));
             energyPointObject.text = (--energyPoint).ToString();
             SetAbilityCooldown(--abilityCooldown);
         }
         else if ((h + dh) == levelMap.finishTile[0] && (w + dw) == levelMap.finishTile[1])
         {
-            MoveAnimStart(playerSpriteObject.transform.position, new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0));
+            PlayerAnimSetup(playerSpriteObject.transform.position, new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0));
             theControlPanel.toggleFinishMenu();
             levelMap.GameFinish();
         }
@@ -131,14 +139,12 @@ public class Player_Control : MonoBehaviour {
             else if (dh == 0 & dw == -1) dw = 1;
             else dw++;
         }
-        AbilityAnimStart();
         SetAbilityCooldown(1);
         energyPointObject.text = (--energyPoint).ToString();
     }
 
-    private void MonstersTurn()
+    private void CheckPlayerAttacked()
     {
-        levelMap.theMonsters.MonstersMove();
         bool success = levelMap.theMonsters.TryAttackPlayer(h * levelMap.width + w);
         if (success)
         {
@@ -148,6 +154,8 @@ public class Player_Control : MonoBehaviour {
                 theControlPanel.toggleFailMenu();
         }
     }
+
+    /* SET VALUES */
 
     public void SetPositionTo(int newh, int neww)
     {
@@ -200,20 +208,51 @@ public class Player_Control : MonoBehaviour {
         }
     }
 
-    void AbilityAnimStart()
-    {
-        times_irreponsive = Time.time + animDurTime;
-    }
+    /* ANIMATION */
 
-    void MoveAnimStart(Vector3 begin, Vector3 end)
+    /*
+     * in player.move() -> setup begin & end pos (become not 0,0,0)
+     * in monsters.move() -> sset up begin & end pos (become not 0,0,0)
+     * 
+     * animsetup()
+     * 
+     * Update begin to call Anim()
+     * 
+     * Anim() do PlayerAnim & monsterAnim
+     * Anim() find it should stop
+     * Anim() call PlayerAnimEnd() & MonsterAnimEnd()
+     * 
+     * PlayerAnimEnd() set begin & end back to 0,0,0
+     * PlayerAnimEnd() check if player is attcked
+     * MonsterAnimEnd() set begin & end back to 0,0,0
+     * */
+
+    void PlayerAnimSetup(Vector3 begin, Vector3 end)
     {
-        times_irreponsive = Time.time + animDurTime;
         animBeginPos = begin;
         animEndPos = end;
+    }
+
+    void PlayerAnim()
+    {
+        playerSpriteObject.transform.position = playerSpriteObject.transform.position + (animEndPos - animBeginPos) / (Time.deltaTime / 0.0014f);
+    }
+
+    void PlayerAnimEnd()
+    {
+        playerSpriteObject.transform.position = animEndPos;
+        animEndPos = new Vector3(0.0f, 0.0f, 0.0f);
+        animBeginPos = new Vector3(0.0f, 0.0f, 0.0f);
+        CheckPlayerAttacked();
+    }
+
+    void AnimSetup()
+    {
+        times_irreponsive = Time.time + animDurTime;
         moveAnimation = true;
     }
 
-    void moveAnim()
+    void Anim()
     {
         // do animation in the irreponsive time
         if (times_irreponsive <= Time.time
@@ -221,13 +260,17 @@ public class Player_Control : MonoBehaviour {
          || (animEndPos - playerSpriteObject.transform.position).normalized == (animBeginPos - animEndPos).normalized)
         {
             moveAnimation = false;
-            playerSpriteObject.transform.position = animEndPos;
-            animEndPos = new Vector3();
-            animBeginPos = new Vector3();
+            // tidy up player pos
+            if (animBeginPos != new Vector3(0.0f, 0.0f, 0.0f))
+                PlayerAnimEnd();
+            // tidy up monster pos
+            levelMap.theMonsters.MonstersAnimEnd();
         }
         else
         {
-            playerSpriteObject.transform.position = playerSpriteObject.transform.position + (animEndPos - animBeginPos) / (Time.deltaTime / 0.0014f);
+            if (animBeginPos != new Vector3(0.0f, 0.0f, 0.0f))
+                PlayerAnim();
+            levelMap.theMonsters.MonstersAnim();
         }
     }
 
@@ -264,7 +307,7 @@ public class Player_Control : MonoBehaviour {
         }
         if (moveAnimation)
         {
-            moveAnim();
+            Anim();
         }
     }
 }
