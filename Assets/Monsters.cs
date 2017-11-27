@@ -42,6 +42,7 @@ public class Monsters : MonoBehaviour {
     private List<Monster> monsterList = null;  // store obstacle position in as integer(h * width + w)
     private Level_Map levelMap;
     public GameObject prototype;
+    public Sprite sprite_frame1, sprite_frame2;
 
     // Use this for initialization
     void Start()
@@ -53,7 +54,9 @@ public class Monsters : MonoBehaviour {
     {
         monsterList = new List<Monster>();
         levelMap = gameObject.GetComponent<Level_Map>();
-        prototype = GameObject.Find("Prototype Monster Sprite");
+        prototype = GameObject.Find("Prototype Monster Sprite Frame 1");
+        sprite_frame1 = prototype.GetComponent<SpriteRenderer>().sprite;
+        sprite_frame2 = GameObject.Find("Prototype Monster Sprite Frame 2").GetComponent<SpriteRenderer>().sprite;
     }
 
     public void Generate(int totalNum)
@@ -241,11 +244,28 @@ public class Monsters : MonoBehaviour {
         return false;
     }
 
+    public void MonstersChangeFrame()
+    {
+        Sprite sp_to_change = null;
+        for (int i = 0; i < monsterList.Count; i++)
+        {
+            if (i == 0)
+            {
+                if (monsterList[i].monSpriteObject.GetComponent<SpriteRenderer>().sprite == sprite_frame1)
+                    sp_to_change = sprite_frame2;
+                else
+                    sp_to_change = sprite_frame1;
+            }
+            monsterList[i].monSpriteObject.GetComponent<SpriteRenderer>().sprite = sp_to_change;
+        }
+    }
+
     public void MonstersMove()
     {
         int monsterSensePlayer = 6; // == minDisBtwnMon
         for (int i = 0; i < monsterList.Count; i++)
         {
+            // change position
             if (monsterSensePlayer >= (System.Math.Abs(levelMap.thePlayer.h - monsterList[i].h) + System.Math.Abs(levelMap.thePlayer.w - monsterList[i].w))
              && Random.Range(-1, 16) > 0)
                 MonsterMoveToPlayer(i);

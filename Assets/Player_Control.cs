@@ -287,7 +287,6 @@ public class Player_Control : MonoBehaviour {
         animEndPos = new Vector3(0.0f, 0.0f, 0.0f);
         animBeginPos = new Vector3(0.0f, 0.0f, 0.0f);
         CheckPlayerAttacked();
-        CheckPlayerBlocked()
     }
 
     void AnimSetup()
@@ -308,6 +307,8 @@ public class Player_Control : MonoBehaviour {
             // tidy up player pos
             if (animBeginPos != new Vector3(0.0f, 0.0f, 0.0f))
                 PlayerAnimEnd();
+            else
+                CheckPlayerBlocked();
             // tidy up monster pos
             levelMap.theMonsters.MonstersAnimEnd();
         }
@@ -324,6 +325,7 @@ public class Player_Control : MonoBehaviour {
     }
 
     float times_irreponsive = 0;
+    float times_monster_change_sprite = 0;
     float animDurTime = 0.2f;
     Vector3 animBeginPos;
     Vector3 animEndPos;
@@ -332,6 +334,11 @@ public class Player_Control : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
+        if (times_monster_change_sprite <= Time.time)
+        {
+            levelMap.theMonsters.MonstersChangeFrame();
+            times_monster_change_sprite += 1.1f;
+        }
         if (times_irreponsive <= Time.time)
         {
             if (Input.GetKey(KeyCode.UpArrow))

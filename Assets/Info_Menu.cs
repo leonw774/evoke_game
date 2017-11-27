@@ -26,13 +26,13 @@ public class Info_Menu : MonoBehaviour {
     {
         if (isMenuActive)
         {
-            gameObject.transform.Translate(new Vector3(0.0f, 0.0f, -2.0f));
+            gameObject.transform.Translate(new Vector3(0.0f, 0.0f, -1.0f));
             MenuBtn.transform.Translate(new Vector3(0, 0, -1000));
             MenuBtn.GetComponent<Button>().enabled = true;
         }
         else
         {
-            gameObject.transform.Translate(new Vector3(0.0f, 0.0f, 2.0f));
+            gameObject.transform.Translate(new Vector3(0.0f, 0.0f, 1.0f));
             MenuBtn.transform.Translate(new Vector3(0, 0, 1000));
             MenuBtn.GetComponent<Button>().enabled = false;
         }
