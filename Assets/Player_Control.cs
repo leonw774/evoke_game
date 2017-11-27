@@ -12,7 +12,6 @@ public class Player_Control : MonoBehaviour {
     public int energyPoint;
     public int healthPoint;
 
-    private FACING faceTo;
     private int abilityCooldown;
 
     private GameObject playerPositionObject;
@@ -240,7 +239,6 @@ public class Player_Control : MonoBehaviour {
                 return;
         }
         playerFacingSprite.enabled = true;
-        faceTo = ft;
     }
 
     /* ANIMATION */

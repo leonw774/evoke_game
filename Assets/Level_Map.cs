@@ -163,7 +163,7 @@ public class Level_Map : MonoBehaviour
             estimatedStep += bonusLimit;
         */
         thePlayer.Initialize();
-        thePlayer.SetEnergyPoint((int)(estimatedStep * 0.9) + (int)(monsterNumber * 2.5));
+        thePlayer.SetEnergyPoint((int)(estimatedStep) + (int)(monsterNumber * 2.4));
         thePlayer.SetHealthPoint(2);
         thePlayer.SetAbilityCooldown(0);
         thePlayer.SetFaceTo(Player_Control.FACING.FRONT);
