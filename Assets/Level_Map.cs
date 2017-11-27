@@ -25,6 +25,9 @@ public class Level_Map : MonoBehaviour
     public string mapFileName = null;
     private Color32[] mapPixels = null;
 
+    private bool introAnim = false;
+    private SpriteRenderer introSR = null;
+    private Sprite[] introSp = null;
     // Use this for initialization
     void Start()
     {
@@ -33,6 +36,8 @@ public class Level_Map : MonoBehaviour
         theMonsters = gameObject.AddComponent<Monsters>();
         theMonsters.Initialize();
         thePlayer = GameObject.Find("Player Control Canvas").GetComponent<Player_Control>();
+        introSR = GameObject.Find("Intro Image").GetComponent<SpriteRenderer>();
+
         if (Save_Data.SelectedLevel != -1)
         {
             GameInitial(Save_Data.SelectedLevel);
@@ -51,10 +56,20 @@ public class Level_Map : MonoBehaviour
         // initialize map
         mapFileName = "map" + thisMapLevel.ToString();
         Debug.Log("mapFileMap: " + mapFileName);
-        // load mini map
-        //GameObject.Find("Mini Map").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(mapFileName);
-        GameObject.Find("Mini Map").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("map_noload");
+        // show intro images
+        IntroAnimStart();
+        // at the same time, make maps
         LoadMapImg();
+        makeMiniMap();
+    }
+
+    private void makeMiniMap()
+    {
+        // load mini map
+        Texture2D minimapTx = Resources.Load<Texture2D>(mapFileName);
+        Rect minimapRect = new Rect(0.0f, 0.0f, (float)width, (float)height);
+        Sprite minimapSp = Sprite.Create(minimapTx, minimapRect, new Vector2(0.5f, 0.5f));
+        GameObject.Find("Mini Map").GetComponent<SpriteRenderer>().sprite = minimapSp;
     }
 
     public void LoadMapImg()
@@ -241,6 +256,55 @@ public class Level_Map : MonoBehaviour
             //Debug.Log("Destroy a wall");
             Destroy(wallsToDelete[i]);
             wallsToDelete[i] = null;
+        }
+    }
+
+    private void IntroAnimStart()
+    {
+        Texture2D[] introTxs = Resources.LoadAll<Texture2D>("Intro_map" + Save_Data.SelectedLevel.ToString());
+        if (introTxs.Length == 0)
+            return;
+
+        introSp = new Sprite[5];
+        introSR.enabled = true;
+        introAnim = true;
+        intro_image_num = 0;
+        
+        for (int i = 0; i < introTxs.Length; i++)
+        {
+            Rect introTxRect = new Rect(0.0f, 0.0f, introTxs[i].width, introTxs[i].height);
+            introSp[i] = Sprite.Create(introTxs[i], introTxRect, new Vector2(0.5f, 0.5f));
+        }
+    }
+
+    private void IntroAnimEnd()
+    {
+        intro_image_num = -1;
+        introAnim = false;
+        introSR.enabled = false;
+        introSp = null;
+        time_change_intro_image = 0.0f;
+    }
+
+    float time_change_intro_image = 0.0f;
+    int intro_image_num = -1;
+    void Update()
+    {
+        if (introAnim)
+        {
+            if (time_change_intro_image <= Time.time)
+            {
+                if (intro_image_num < 5 && intro_image_num >= 0)
+                {
+                    introSR.sprite = introSp[intro_image_num];
+                    intro_image_num++;
+                    time_change_intro_image += 3.0f;
+                }
+                else
+                {
+                    IntroAnimEnd();
+                }
+            }
         }
     }
 }
