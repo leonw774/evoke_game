@@ -41,6 +41,7 @@ public class Player_Control : MonoBehaviour {
 
     public void playerMoveUp()
     {
+        //Debug.Log("playerMoveUp");
         if (Move(-1, 0)) // it is monster's turn only if player did change position
         {
             SetFaceTo(FACING.BACK);
@@ -52,6 +53,7 @@ public class Player_Control : MonoBehaviour {
 
     public void playerMoveLeft()
     {
+        //Debug.Log("playerMoveLeft");
         if (Move(0, -1))
         {
             SetFaceTo(FACING.LEFT);
@@ -63,6 +65,7 @@ public class Player_Control : MonoBehaviour {
 
     public void playerMoveDown()
     {
+        //Debug.Log("playerMoveDown");
         if (Move(1, 0))
         {
             SetFaceTo(FACING.FRONT);
@@ -74,6 +77,7 @@ public class Player_Control : MonoBehaviour {
 
     public void playerMoveRight()
     {
+        //Debug.Log("playerMoveRight");
         if (Move(0, 1))
         {
             SetFaceTo(FACING.RIGHT);
@@ -85,10 +89,13 @@ public class Player_Control : MonoBehaviour {
 
     public void playerDoAbility()
     {
-        DoAbility();
-        levelMap.theMonsters.MonstersMove();
-        AnimSetup();
-        if (energyPoint == 0) theControlPanel.toggleFailMenu();
+        //Debug.Log("playerDoAbility");
+        if (DoAbility())
+        {
+            levelMap.theMonsters.MonstersMove();
+            AnimSetup();
+            if (energyPoint == 0) theControlPanel.toggleFailMenu();
+        }
     }
 
     /* HANDEL REAL THING THERE */
@@ -123,11 +130,12 @@ public class Player_Control : MonoBehaviour {
         return true;
     }
 
-    private void DoAbility()
+    // retrun true: player did do ability; return false: player didn't make it
+    private bool DoAbility()
     {
         int dh = -1, dw = -1;
         if (theControlPanel.isMenuActive || abilityCooldown > 0)
-            return;
+            return false;
         while (dh <= 1)
         {
             levelMap.theObstacles.ObsUpdate(h + dh, w + dw);
@@ -142,6 +150,7 @@ public class Player_Control : MonoBehaviour {
         }
         SetAbilityCooldown(1);
         energyPointObject.text = (--energyPoint).ToString();
+        return true;
     }
 
     private void CheckPlayerAttacked()
@@ -281,11 +290,12 @@ public class Player_Control : MonoBehaviour {
     void Anim()
     {
         // do animation in the irreponsive time
-        if (times_irreponsive <= Time.time
-         || (animEndPos - playerPositionObject.transform.position).magnitude < 0.01
-         || (animEndPos - playerPositionObject.transform.position).normalized == (animBeginPos - animEndPos).normalized)
+        if (times_irreponsive <= Time.time || player_ask_for_end_anim || monsters_ask_for_end_anim)
         {
             moveAnimation = false;
+            monsters_ask_for_end_anim = false;
+            player_ask_for_end_anim = false;
+
             // tidy up player pos
             if (animBeginPos != new Vector3(0.0f, 0.0f, 0.0f))
                 PlayerAnimEnd();
@@ -295,8 +305,12 @@ public class Player_Control : MonoBehaviour {
         else
         {
             if (animBeginPos != new Vector3(0.0f, 0.0f, 0.0f))
+            {
                 PlayerAnim();
-            levelMap.theMonsters.MonstersAnim();
+                player_ask_for_end_anim = (animEndPos - playerPositionObject.transform.position).magnitude < 0.01
+                                    || (animEndPos - playerPositionObject.transform.position).normalized == (animBeginPos - animEndPos).normalized;
+            }
+            monsters_ask_for_end_anim = levelMap.theMonsters.MonstersAnim();
         }
     }
 
@@ -305,6 +319,7 @@ public class Player_Control : MonoBehaviour {
     Vector3 animBeginPos;
     Vector3 animEndPos;
     bool moveAnimation = false;
+    bool monsters_ask_for_end_anim = false, player_ask_for_end_anim = false;
     // Update is called once per frame
     void Update()
     {

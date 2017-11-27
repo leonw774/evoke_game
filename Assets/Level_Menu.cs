@@ -20,18 +20,22 @@ public class Level_Menu : MonoBehaviour {
         mainCam = GameObject.Find("Main Camera");
         titleImg = GameObject.Find("Main Title").GetComponent<SpriteRenderer>();
         titleImgIcon = GameObject.Find("Main Title Icon").GetComponent<SpriteRenderer>();
+        Text saveFileDebugOutput = GameObject.Find("Save File Debug Output").GetComponent<Text>();
 
 		SaveFilePath = Application.persistentDataPath + "/save.dat";
 
 		// if it is the the first to the main menu
         if (Save_Data.levelPassed == 0)
         {
+            saveFileDebugOutput.text = "true\n";
             if (File.Exists(SaveFilePath))
             {
+                saveFileDebugOutput.text += "true\n";
                 loadSaveData();
             }
             else
             {
+                saveFileDebugOutput.text += "false\n";
                 string cbt = GameObject.Find("Continue Button Text").GetComponent<Text>().text;
                 cbt = "Begin";
                 // leave it unloaded
@@ -40,16 +44,20 @@ public class Level_Menu : MonoBehaviour {
         // if the game has been played over some level
         else
         {
+            saveFileDebugOutput.text = "false\n";
             if (File.Exists(SaveFilePath))
             {
+                saveFileDebugOutput.text += "true\n";
                 writeSaveData(Save_Data.levelPassed);
             }
             else // and there is not a save file yet!
             {
+                saveFileDebugOutput.text += "false\n";
                 writeSaveData(Save_Data.levelPassed);
             }
         }
 		
+        saveFileDebugOutput.text += Save_Data.levelPassed;
 	    //Save_Data.levelPassed = 2;
 
         SetupLevelMenuButton();

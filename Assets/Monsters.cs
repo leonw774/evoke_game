@@ -58,7 +58,7 @@ public class Monsters : MonoBehaviour {
 
     public void Generate(int totalNum)
     {
-        int minDisBtwnMons = 6;
+        int minDisBtwnMons = 5;
         int posRandMin = (levelMap.tiles.Length - levelMap.wallsNumber) / totalNum - minDisBtwnMons;
         int posRandMax = (levelMap.tiles.Length - levelMap.wallsNumber) / totalNum + (minDisBtwnMons * 2);
         int spawnedCount = 0;
@@ -243,10 +243,11 @@ public class Monsters : MonoBehaviour {
 
     public void MonstersMove()
     {
-        int monsterSensePlayer = 8; // == minDisBtwnMon + 2
+        int monsterSensePlayer = 6; // == minDisBtwnMon
         for (int i = 0; i < monsterList.Count; i++)
         {
-            if (monsterSensePlayer >= (System.Math.Abs(levelMap.thePlayer.h - monsterList[i].h) + System.Math.Abs(levelMap.thePlayer.w - monsterList[i].w)))
+            if (monsterSensePlayer >= (System.Math.Abs(levelMap.thePlayer.h - monsterList[i].h) + System.Math.Abs(levelMap.thePlayer.w - monsterList[i].w))
+             && Random.Range(-1, 16) > 0)
                 MonsterMoveToPlayer(i);
             else
                 MonsterMoveRandom(i);
@@ -312,7 +313,7 @@ public class Monsters : MonoBehaviour {
         {
             int goingTo = Random.Range(0, 4);
             int newh = monsterList[i].h, neww = monsterList[i].w;
-            if (Random.Range(-1, 8) < 0) break;
+            if (Random.Range(-1, 8) < 0) break; // monter wont move
             switch (goingTo)
             {
                 case 0:
@@ -343,7 +344,6 @@ public class Monsters : MonoBehaviour {
                     break;
                 }
             }
-
             tryCount++;
         } // end of while(trycount < 4)
     }
@@ -354,12 +354,16 @@ public class Monsters : MonoBehaviour {
         monsterList[index].animEndPos = end;
     }
 
-    public void MonstersAnim()
+    public bool MonstersAnim()
     {
         monsterList.ForEach(delegate(Monster x) {
             if (x.animBeginPos != new Vector3(0.0f, 0.0f, 0.0f))
-                x.monSpriteObject.transform.position = x.monSpriteObject.transform.position + (x.animEndPos - x.animBeginPos) / (Time.deltaTime / 0.0014f);
+                x.monSpriteObject.transform.position = x.monSpriteObject.transform.position + (x.animEndPos - x.animBeginPos) / (Time.deltaTime / 0.0013f);
         });
+        if (monsterList[0].animEndPos != new Vector3(0.0f, 0.0f, 0.0f)
+        && (monsterList[0].animEndPos - monsterList[0].monSpriteObject.transform.position).normalized == (monsterList[0].animBeginPos - monsterList[0].animEndPos).normalized)
+            return true;
+        return false;
     }
 
     public void MonstersAnimEnd()
@@ -377,7 +381,7 @@ public class Monsters : MonoBehaviour {
     private void KillMonsterByIndex(int i)
     {
         Debug.Log("destroy monster #" + monsterList[i].id);
-        Destroy(monsterList[i].monSpriteObject, 0.175f);
+        Destroy(monsterList[i].monSpriteObject, 0.15f);
         monsterList.RemoveAt(i);
     }
 

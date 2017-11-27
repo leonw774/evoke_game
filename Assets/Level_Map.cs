@@ -52,7 +52,8 @@ public class Level_Map : MonoBehaviour
         mapFileName = "map" + thisMapLevel.ToString();
         Debug.Log("mapFileMap: " + mapFileName);
         // load mini map
-        GameObject.Find("Mini Map").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(mapFileName);
+        //GameObject.Find("Mini Map").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(mapFileName);
+        GameObject.Find("Mini Map").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("map_noload");
         LoadMapImg();
     }
 
@@ -143,7 +144,7 @@ public class Level_Map : MonoBehaviour
 
         // set monster number
         wallsNumber = 0;
-        monsterNumber = (tiles.Length - wallsNumber - 10) / 45 + 3;
+        monsterNumber = (tiles.Length - wallsNumber - 10) / 36 + 3;
         Debug.Log("the map ask for " + monsterNumber + " monsters");
     }
 
@@ -162,7 +163,7 @@ public class Level_Map : MonoBehaviour
             estimatedStep += bonusLimit;
         */
         thePlayer.Initialize();
-        thePlayer.SetEnergyPoint(estimatedStep + (int)(monsterNumber * 2.4));
+        thePlayer.SetEnergyPoint((int)(estimatedStep * 0.9) + (int)(monsterNumber * 2.5));
         thePlayer.SetHealthPoint(2);
         thePlayer.SetAbilityCooldown(0);
         thePlayer.SetFaceTo(Player_Control.FACING.FRONT);
