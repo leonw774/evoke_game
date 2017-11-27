@@ -164,6 +164,16 @@ public class Player_Control : MonoBehaviour {
         }
     }
 
+    private void CheckPlayerBlocked()
+    {
+        bool blocked = (levelMap.tiles[(h + 1), w] == (int)Level_Map.TILE_TYPE.WALL || levelMap.theObstacles.positionList.Exists(x => x == (h + 1) * levelMap.width + w))
+            && (levelMap.tiles[(h - 1), w] == (int)Level_Map.TILE_TYPE.WALL || levelMap.theObstacles.positionList.Exists(x => x == (h - 1) * levelMap.width + w))
+            && (levelMap.tiles[h, (w + 1)] == (int)Level_Map.TILE_TYPE.WALL || levelMap.theObstacles.positionList.Exists(x => x == h * levelMap.width + (w + 1)))
+                && (levelMap.tiles[h, (w - 1)] == (int)Level_Map.TILE_TYPE.WALL || levelMap.theObstacles.positionList.Exists(x => x == h * levelMap.width + (w - 1)));
+        if (blocked)
+            theControlPanel.toggleFailMenu();
+    }
+
     /* SET VALUES */
 
     public void SetPositionTo(int newh, int neww)
@@ -277,6 +287,7 @@ public class Player_Control : MonoBehaviour {
         animEndPos = new Vector3(0.0f, 0.0f, 0.0f);
         animBeginPos = new Vector3(0.0f, 0.0f, 0.0f);
         CheckPlayerAttacked();
+        CheckPlayerBlocked()
     }
 
     void AnimSetup()

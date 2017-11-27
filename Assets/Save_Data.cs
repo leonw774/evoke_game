@@ -3,7 +3,7 @@
      * GAME FILE SAVE
      * thing that will read from/write to the save file when Menu_Script is loaded
      * */
-    public static int levelPassed = 0; // when player fifnish the level, this variable++
+    public static int levelPassed = -1; // when player fifnish the level, this variable++
 	public static void UpdateLevel()
 	{
 		Save_Data.levelPassed++;

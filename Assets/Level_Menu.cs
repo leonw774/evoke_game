@@ -25,7 +25,7 @@ public class Level_Menu : MonoBehaviour {
 		SaveFilePath = Application.persistentDataPath + "/save.dat";
 
 		// if it is the the first to the main menu
-        if (Save_Data.levelPassed == 0)
+        if (Save_Data.levelPassed == -1)
         {
             saveFileDebugOutput.text = "true\n";
             if (File.Exists(SaveFilePath))
@@ -66,6 +66,7 @@ public class Level_Menu : MonoBehaviour {
     void SetupLevelMenuButton()
     {
         Button[] lvlBtns = FindObjectsOfType<Button>();
+
         for(int i = 0; i < lvlBtns.Length; ++i)
         {
             if(lvlBtns[i].name.CompareTo("LevelBtn" + (Save_Data.levelPassed + 1).ToString()) <= 0)

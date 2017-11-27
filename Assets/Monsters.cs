@@ -356,13 +356,16 @@ public class Monsters : MonoBehaviour {
 
     public bool MonstersAnim()
     {
-        monsterList.ForEach(delegate(Monster x) {
-            if (x.animBeginPos != new Vector3(0.0f, 0.0f, 0.0f))
-                x.monSpriteObject.transform.position = x.monSpriteObject.transform.position + (x.animEndPos - x.animBeginPos) / (Time.deltaTime / 0.0013f);
-        });
-        if (monsterList[0].animEndPos != new Vector3(0.0f, 0.0f, 0.0f)
-        && (monsterList[0].animEndPos - monsterList[0].monSpriteObject.transform.position).normalized == (monsterList[0].animBeginPos - monsterList[0].animEndPos).normalized)
-            return true;
+        if (monsterList.Count > 0)
+        {
+            monsterList.ForEach(delegate(Monster x) {
+                if (x.animBeginPos != new Vector3(0.0f, 0.0f, 0.0f))
+                    x.monSpriteObject.transform.position = x.monSpriteObject.transform.position + (x.animEndPos - x.animBeginPos) / (Time.deltaTime / 0.0013f);
+            });
+            if (monsterList[0].animEndPos != new Vector3(0.0f, 0.0f, 0.0f)
+                && (monsterList[0].animEndPos - monsterList[0].monSpriteObject.transform.position).normalized == (monsterList[0].animBeginPos - monsterList[0].animEndPos).normalized)
+                return true;
+        }
         return false;
     }
 

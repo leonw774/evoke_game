@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
 
@@ -8,6 +9,7 @@ public class Game_Menu : MonoBehaviour {
     GameObject FinishGO;
     GameObject FailGO;
     GameObject MenuBtn;
+    GameObject InfoBtn;
     GameObject ResumeBtn;
     public bool isMenuActive = false;
     public bool isFinishMenu = false, isFailMenu = false;
@@ -19,6 +21,7 @@ public class Game_Menu : MonoBehaviour {
         FinishGO = GameObject.Find("Finish Objects");
         FailGO = GameObject.Find("Fail Objects");
         MenuBtn = GameObject.Find("Menu Button");
+        InfoBtn = GameObject.Find("Info Button");
         ResumeBtn = GameObject.Find("Resume Button");
     }
 	
@@ -34,11 +37,17 @@ public class Game_Menu : MonoBehaviour {
         {
             menuCanvas.transform.Translate(new Vector3(0.0f, 0.0f, -2.0f));
             MenuBtn.transform.Translate(new Vector3(0, 0, -1000));
+            InfoBtn.transform.Translate(new Vector3(0, 0, -1000));
+            MenuBtn.GetComponent<Button>().enabled = true;
+            InfoBtn.GetComponent<Button>().enabled = true;
         }
         else
         {
             menuCanvas.transform.Translate(new Vector3(0.0f, 0.0f, 2.0f));
             MenuBtn.transform.Translate(new Vector3(0, 0, 1000));
+            InfoBtn.transform.Translate(new Vector3(0, 0, 1000));
+            MenuBtn.GetComponent<Button>().enabled = false;
+            InfoBtn.GetComponent<Button>().enabled = false;
         }
         isMenuActive = !isMenuActive;
 

@@ -49,6 +49,7 @@
      <Compile Include="Assets\Astar.cs" />
      <Compile Include="Assets\BMPLoader.cs" />
      <Compile Include="Assets\Game_Menu.cs" />
+     <Compile Include="Assets\Info_Menu.cs" />
      <Compile Include="Assets\Level_Map.cs" />
      <Compile Include="Assets\Level_Menu.cs" />
      <Compile Include="Assets\Monsters.cs" />
