@@ -301,7 +301,7 @@ public class Level_Map : MonoBehaviour
                     Debug.Log("show intro image #" + intro_image_num + "at time of " + Time.time);
                     introImage.sprite = introSp[intro_image_num];
                     intro_image_num++;
-                    time_change_intro_image += 1.5f;
+                    time_change_intro_image += 2.0f;
                 }
                 else
                 {
