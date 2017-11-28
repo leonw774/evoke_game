@@ -192,8 +192,8 @@ public class Level_Map : MonoBehaviour
             estimatedStep += bonusLimit;
         */
         thePlayer.Initialize();
-        thePlayer.SetEnergyPoint((int)(estimatedStep * 1.3) + (int)(monsterNumber * 2.3));
-        thePlayer.SetHealthPoint(5);
+        thePlayer.SetEnergyPoint((int)(estimatedStep * 1.2) + (int)(monsterNumber * 2.3));
+        thePlayer.SetHealthPoint(3);
         thePlayer.SetAbilityCooldown(0);
         thePlayer.SetFaceTo(Player_Control.FACING.FRONT);
         thePlayer.SetPositionTo(playerStartTile[0], playerStartTile[1]);
@@ -218,7 +218,8 @@ public class Level_Map : MonoBehaviour
         theObstacles.DestroyAllObstacles();
         theMonsters.DestroyMonsters();
         theObstacles.Construct();
-        theMonsters.Generate(monsterNumber);
+        if(monsterNumber > 0)
+            theMonsters.Generate(monsterNumber);
         SetPlayerInfo();
     }
 
@@ -265,7 +266,7 @@ public class Level_Map : MonoBehaviour
         if (introTxs.Length == 0)
             return;
 
-        introSp = new Sprite[5];
+        introSp = new Sprite[introTxs.Length];
         introImage.enabled = true;
         introAnim = true;
         intro_image_num = 0;
@@ -295,12 +296,12 @@ public class Level_Map : MonoBehaviour
         {
             if (time_change_intro_image <= Time.time)
             {
-                if (intro_image_num < 5 && intro_image_num >= 0)
+                if (intro_image_num < introSp.Length && intro_image_num >= 0)
                 {
                     Debug.Log("show intro image #" + intro_image_num + "at time of " + Time.time);
                     introImage.sprite = introSp[intro_image_num];
                     intro_image_num++;
-                    time_change_intro_image += 3.0f;
+                    time_change_intro_image += 1.5f;
                 }
                 else
                 {

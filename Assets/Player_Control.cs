@@ -159,8 +159,7 @@ public class Player_Control : MonoBehaviour {
         {
             healthPoint--;
             healthPointObject.text = healthPoint.ToString();
-            if (healthPoint == 0)
-                theControlPanel.toggleFailMenu();
+            AttackedAnimStart();
         }
     }
 
@@ -269,7 +268,7 @@ public class Player_Control : MonoBehaviour {
      * PlayerAnimEnd() check if player is attcked
      * MonsterAnimEnd() set begin & end back to 0,0,0
      * */
-
+    
     void PlayerAnimSetup(Vector3 begin, Vector3 end)
     {
         animBeginPos = begin;
@@ -287,6 +286,21 @@ public class Player_Control : MonoBehaviour {
         animEndPos = new Vector3(0.0f, 0.0f, 0.0f);
         animBeginPos = new Vector3(0.0f, 0.0f, 0.0f);
         CheckPlayerAttacked();
+    }
+
+    void AttackedAnimStart()
+    {
+        times_irreponsive = Time.time + 0.2f;
+        playerAttackedAnimation = true;
+        GameObject.Find("Player Attacked Effect").GetComponent<SpriteRenderer>().enabled = true;
+    }
+
+    void AttackedAnimEnd()
+    {
+        playerAttackedAnimation = false;
+        GameObject.Find("Player Attacked Effect").GetComponent<SpriteRenderer>().enabled = false;
+        if (healthPoint == 0)
+            theControlPanel.toggleFailMenu();
     }
 
     void AnimSetup()
@@ -330,6 +344,7 @@ public class Player_Control : MonoBehaviour {
     Vector3 animBeginPos;
     Vector3 animEndPos;
     bool moveAnimation = false;
+    bool playerAttackedAnimation = false;
     bool monsters_ask_for_end_anim = false, player_ask_for_end_anim = false;
     // Update is called once per frame
     void Update()
@@ -339,6 +354,12 @@ public class Player_Control : MonoBehaviour {
             levelMap.theMonsters.MonstersChangeFrame();
             times_monster_change_sprite += 1.1f;
         }
+
+        if (playerAttackedAnimation && times_irreponsive <= Time.time)
+        {
+            AttackedAnimEnd();
+        }
+
         if (times_irreponsive <= Time.time)
         {
             if (Input.GetKey(KeyCode.UpArrow))
@@ -362,6 +383,7 @@ public class Player_Control : MonoBehaviour {
                 playerDoAbility();
             }
         }
+
         if (moveAnimation)
         {
             Anim();

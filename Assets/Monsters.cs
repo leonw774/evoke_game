@@ -61,6 +61,9 @@ public class Monsters : MonoBehaviour {
 
     public void Generate(int totalNum)
     {
+        if (totalNum == 0)
+            return;
+
         int minDisBtwnMons = 5;
         int posRandMin = (levelMap.tiles.Length - levelMap.wallsNumber) / totalNum - minDisBtwnMons;
         int posRandMax = (levelMap.tiles.Length - levelMap.wallsNumber) / totalNum + (minDisBtwnMons * 2);
