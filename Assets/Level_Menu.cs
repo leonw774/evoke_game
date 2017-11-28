@@ -6,10 +6,9 @@ using System.IO;
 
 public class Level_Menu : MonoBehaviour {
 
-	public StreamWriter SaveW = null;
-	public StreamReader SaveR = null;
 	public string SaveFilePath = null;
-
+    public StreamReader SaveR = null;
+    public StreamWriter SaveW = null;
     public bool isTitleAnimPlaying = false;
     public SpriteRenderer titleImg;
     public SpriteRenderer titleImgIcon;

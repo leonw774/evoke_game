@@ -6,16 +6,11 @@ using UnityEngine.UI;
 public class Info_Menu : MonoBehaviour {
 
     GameObject MenuBtn;
-    //GameObject InfoBtn;
-    GameObject infoCanvas;
     public bool isMenuActive = false;
 
 	// Use this for initialization
 	void Start () {
-        infoCanvas = GameObject.Find("Info Menu Canvas");
         MenuBtn = GameObject.Find("Menu Button");
-        //InfoBtn = GameObject.Find("Info Button");
-
         if (Save_Data.SelectedLevel == 0) // level zero is tutoriel level
         {
             toggleInfoMenu();

@@ -2,8 +2,12 @@
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using System.IO;
 
 public class Game_Menu : MonoBehaviour {
+
+    public StreamReader SaveR = null;
+    public StreamWriter SaveW = null;
 
     GameObject menuCanvas;
     GameObject FinishGO;
@@ -74,6 +78,7 @@ public class Game_Menu : MonoBehaviour {
             ResumeBtn.transform.Translate(new Vector3(0, 0, 1000));
             isFinishMenu = true;
         }
+        writeSaveData(Application.persistentDataPath + "/save.dat", Save_Data.levelPassed);
     }
 
     public void toggleFailMenu()
@@ -89,7 +94,25 @@ public class Game_Menu : MonoBehaviour {
 
     public void gameExitButton()
     {
+        writeSaveData(Application.persistentDataPath + "/save.dat", Save_Data.levelPassed);
         SceneManager.LoadScene("Menu Scene");
         //Application.Quit();
+    }
+
+    void loadSaveData(string SaveFilePath)
+    {
+        SaveR = new StreamReader(SaveFilePath);
+        Save_Data.levelPassed = int.Parse(SaveR.ReadLine());
+        SaveR.Close();
+    }
+
+    void writeSaveData(string SaveFilePath, int level)
+    {
+        if (File.Exists(SaveFilePath))
+        {
+            SaveW = new StreamWriter(SaveFilePath, false);
+            SaveW.WriteLine(level.ToString() + "\n");
+            SaveW.Close();
+        }
     }
 }
