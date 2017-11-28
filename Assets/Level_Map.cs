@@ -26,7 +26,7 @@ public class Level_Map : MonoBehaviour
     private Color32[] mapPixels = null;
 
     private bool introAnim = false;
-    private SpriteRenderer introSR = null;
+    private SpriteRenderer introImage = null;
     private Sprite[] introSp = null;
     // Use this for initialization
     void Start()
@@ -36,7 +36,7 @@ public class Level_Map : MonoBehaviour
         theMonsters = gameObject.AddComponent<Monsters>();
         theMonsters.Initialize();
         thePlayer = GameObject.Find("Player Control Canvas").GetComponent<Player_Control>();
-        introSR = GameObject.Find("Intro Image").GetComponent<SpriteRenderer>();
+        introImage = GameObject.Find("Intro Image").GetComponent<SpriteRenderer>();
 
         if (Save_Data.SelectedLevel != -1)
         {
@@ -266,9 +266,10 @@ public class Level_Map : MonoBehaviour
             return;
 
         introSp = new Sprite[5];
-        introSR.enabled = true;
+        introImage.enabled = true;
         introAnim = true;
         intro_image_num = 0;
+        time_change_intro_image = Time.time;
         
         for (int i = 0; i < introTxs.Length; i++)
         {
@@ -281,7 +282,7 @@ public class Level_Map : MonoBehaviour
     {
         intro_image_num = -1;
         introAnim = false;
-        introSR.enabled = false;
+        introImage.enabled = false;
         introSp = null;
         time_change_intro_image = 0.0f;
     }
@@ -296,7 +297,8 @@ public class Level_Map : MonoBehaviour
             {
                 if (intro_image_num < 5 && intro_image_num >= 0)
                 {
-                    introSR.sprite = introSp[intro_image_num];
+                    Debug.Log("show intro image #" + intro_image_num + "at time of " + Time.time);
+                    introImage.sprite = introSp[intro_image_num];
                     intro_image_num++;
                     time_change_intro_image += 3.0f;
                 }
