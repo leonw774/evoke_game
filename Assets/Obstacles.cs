@@ -192,10 +192,8 @@ public class Obstacles : MonoBehaviour {
                     ObsUpdate(i, j);
                     if (sameNeighborCount == 8)
                     {
-                        if (Random.Range(-1, 1) == 0)
-                            ObsUpdate(i + Random.Range(-1, 2), j);
-                        else
-                            ObsUpdate(i, j + Random.Range(-1, 2));
+                        ObsUpdate(i + Random.Range(-1, 2), j);
+                        ObsUpdate(i, j + Random.Range(-1, 2));
                     }
                 }
             } // end of for: j

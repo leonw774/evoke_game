@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.IO;
+using System.Text.RegularExpressions;
+using System;
 
 public class Level_Menu : MonoBehaviour {
 
@@ -65,10 +67,18 @@ public class Level_Menu : MonoBehaviour {
     void SetupLevelMenuButton()
     {
         Button[] lvlBtns = FindObjectsOfType<Button>();
-
+        int bnum;
         for(int i = 0; i < lvlBtns.Length; ++i)
         {
-            if(lvlBtns[i].name.CompareTo("LevelBtn" + (Save_Data.levelPassed + 1).ToString()) <= 0)
+            try
+            {
+                bnum = int.Parse(lvlBtns[i].name.Substring(8, 2));
+            }
+            catch(FormatException)
+            {
+                continue;
+            }
+            if (bnum <= (Save_Data.levelPassed + 1))
             {
                 lvlBtns[i].interactable = true;
             }

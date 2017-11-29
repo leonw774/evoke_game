@@ -1,4 +1,6 @@
 ﻿
+MAP SIZES: Small(10x15) Middle(20x30) Large(24x36) Super-Large(32x48)
+
 體力值: EP 
 
 血量: HP 
