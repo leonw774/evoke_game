@@ -129,17 +129,23 @@ public class Level_Menu : MonoBehaviour {
     public void CameraMenu2Main()
     {
         mainCam.transform.Translate(new Vector3(20, 0, 0));
-
     }
 
     public void TitleAnimation()
     {
         Color toFadeInColor = titleImgIcon.color;
         Color toFadeOutColor = titleImg.color;
-        if (toFadeInColor.a < 0.88f)
+        if (toFadeInColor.a < 0.2f)
         {
-            toFadeInColor.a = Mathf.Lerp(toFadeInColor.a, 1.0f, 2.7f * Time.deltaTime);
-            toFadeOutColor.a = Mathf.Lerp(toFadeOutColor.a, 0.0f, 2.7f * Time.deltaTime);
+            toFadeInColor.a = Mathf.Lerp(toFadeInColor.a, 1.0f, 2.4f * Time.deltaTime);
+            toFadeOutColor.a = Mathf.Lerp(toFadeOutColor.a, 0.0f, 2.4f * Time.deltaTime);
+            titleImgIcon.color = toFadeInColor;
+            titleImg.color = toFadeOutColor;
+        }
+        else if (toFadeInColor.a < 0.96f)
+        {
+            toFadeInColor.a = Mathf.Lerp(toFadeInColor.a, 1.0f, 3.2f * Time.deltaTime);
+            toFadeOutColor.a = Mathf.Lerp(toFadeOutColor.a, 0.0f, 3.2f * Time.deltaTime);
             titleImgIcon.color = toFadeInColor;
             titleImg.color = toFadeOutColor;
         }
