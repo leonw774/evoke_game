@@ -192,9 +192,9 @@ public class Level_Map : MonoBehaviour
             estimatedStep += bonusLimit;
         */
         int emptyTilesNnum = height * width - wallsNumber;
-        double MonsterNumAdjust = 2.4;
-        Debug.Log("MonsterNumAdjust /= " + (int)(emptyTilesNnum / (estimatedStep * 4.2)));
-        MonsterNumAdjust /= (int)(emptyTilesNnum / (estimatedStep * 4.2));
+        double MonsterNumAdjust = 2.3;
+        Debug.Log("MonsterNumAdjust /= " + (int)(emptyTilesNnum / (estimatedStep * 4.4)));
+        MonsterNumAdjust /= (int)(emptyTilesNnum / (estimatedStep * 4.4));
         thePlayer.Initialize();
         thePlayer.SetEnergyPoint((int)(estimatedStep * 1.2) + (int)(monsterNumber * MonsterNumAdjust));
         thePlayer.SetHealthPoint(3 + monsterNumber / 20);
