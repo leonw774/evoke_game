@@ -100,7 +100,7 @@ public class Monsters : MonoBehaviour {
             bool tooClose = false;
             // check if too close to player or finsh
             if (minDisBtwnMons > (System.Math.Abs(levelMap.playerStartTile[0] - h) + System.Math.Abs(levelMap.playerStartTile[1] - w))
-             || minDisBtwnMons > (System.Math.Abs(levelMap.finishTile[0] - h) + System.Math.Abs(levelMap.finishTile[1] - w)))
+             || 2 > (System.Math.Abs(levelMap.finishTile[0] - h) + System.Math.Abs(levelMap.finishTile[1] - w)))
                 tooClose = true;
             // check if too close to other monster
             for (int i = 0; i < monsterList.Count && !tooClose; ++i)

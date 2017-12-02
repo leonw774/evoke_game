@@ -158,6 +158,8 @@ public class Level_Menu : MonoBehaviour {
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape))
+            Application.Quit();
         if (isTitleAnimPlaying)
             TitleAnimation();
     }
