@@ -30,9 +30,15 @@ public class Game_Menu : MonoBehaviour {
     }
 	
 	// Update is called once per frame
-	void Update () {
+	void Update ()
+    {
         if (Input.GetKeyDown(KeyCode.Escape))
-            Application.Quit();
+        {
+            if (isMenuActive)
+                toggleGameMenu();
+            else
+                gameExitButton();
+        }
     }
 
     public void toggleGameMenu()

@@ -148,77 +148,6 @@ public class Monsters : MonoBehaviour {
                 }
             }
         }
-        /**/
-        /* TREE SPAWN (is buggy)
-        while (spawnedCount < totalNum && emegercyJumpOut < totalNum * 2)
-        {
-            prePos = new int[2] { levelMap.playerStartTile[0], levelMap.playerStartTile[1] };
-            tryCount = 0;
-            while (tryCount < tryLimit)
-            {
-                h = prePos[0];
-                w = prePos[1];
-                // make random h
-                if (prePos[0] > levelMap.height - minDisBtwnMons)   h -= Random.Range((minDisBtwnMons + posRandMin) / 2, posRandMax / 2);
-                else if (prePos[0] < minDisBtwnMons)                h += Random.Range((minDisBtwnMons + posRandMin) / 2, posRandMax / 2);
-                else                                        h += (Random.Range((minDisBtwnMons + posRandMin) / 2, posRandMax / 2) * (Random.Range(-1, 1) == 0 ? 1 : -1));
-                // make random w
-                if (prePos[1] > levelMap.width - minDisBtwnMons)    w -= Random.Range((minDisBtwnMons + posRandMin) / 2, posRandMax / 2);
-                else if (prePos[1] < minDisBtwnMons)                w += Random.Range((minDisBtwnMons + posRandMin) / 2, posRandMax / 2);
-                else                                        w += (Random.Range((minDisBtwnMons + posRandMin) / 2, posRandMax / 2) * (Random.Range(-1, 1) == 0 ? 1 : -1));
-                //Debug.Log("Monster Spawn Try:" + h + ", " + w);
-                tryCount++;
-                // check boundry
-                if (h < 1 || h > levelMap.height - 1 || w < 1 || w > levelMap.width - 1)
-                    continue;
-                // is a valid leaf, no matter it will spawn or not
-                prePos = new int[2] { h, w };
-                emegercyJumpOut++;
-                // check if too close to other monsters
-                bool tooClose = false;
-                if (minDisBtwnMons > (System.Math.Abs(levelMap.playerStartTile[0] - h) + System.Math.Abs(levelMap.playerStartTile[1] - w))
-                    || minDisBtwnMons > (System.Math.Abs(levelMap.finishTile[0] - h) + System.Math.Abs(levelMap.finishTile[1] - w)))
-                    tooClose = true;
-                for (int i = 0; i < monsterList.Count; ++i)
-                {
-                    if (tooClose = (minDisBtwnMons > System.Math.Abs(monsterList[i].h - h) + System.Math.Abs(monsterList[i].w - w)))
-                        break; // break this for
-                }
-                // if it is too close, dont spawn
-                if (tooClose) continue;
-                // check if is WALL or Obs
-                if (levelMap.tiles[h, w] == (int)Level_Map.TILE_TYPE.WALL || levelMap.theObstacles.positionList.Exists(x => x == (h * levelMap.width + w)))
-                    continue;
-                // check if is stuck
-                int walkable_neighbor_count = 0, direction = 0;
-                int h_tocheck = 0, w_tocheck = 0;
-                while (direction < 4)
-                {
-                    h_tocheck = h; w_tocheck = w;
-                    switch (direction)
-                    {
-                        case 0: // top
-                            h_tocheck--; break;
-                        case 1: // left
-                            w_tocheck--; break;
-                        case 2: // down
-                            h_tocheck++; break;
-                        case 3: // right
-                            w_tocheck++; break;
-                    }
-                    direction++;
-                    if (levelMap.tiles[h_tocheck, w_tocheck] != (int)Level_Map.TILE_TYPE.WALL || !levelMap.theObstacles.positionList.Exists(x => x == (h_tocheck * mapWidth + w_tocheck)))
-                        walkable_neighbor_count++;
-                }
-                if (walkable_neighbor_count > 0)
-                {
-                    Spawn(h, w, spawnedCount++);
-                }
-            }
-            // even if doesnt find a good spot, we continue anyway, but it just dont spawn enough monsters
-        }
-        */
-
         Debug.Log("Monster Ganeration: " + monsterList.Count + "mons are spawned.");
     }
 
@@ -370,6 +299,8 @@ public class Monsters : MonoBehaviour {
             tryCount++;
         } // end of while(trycount < 4)
     }
+
+    /* MONSTER ANIM */
 
     private void MonsterAnimSetup(int index, Vector3 begin, Vector3 end)
     {

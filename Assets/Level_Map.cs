@@ -28,6 +28,7 @@ public class Level_Map : MonoBehaviour
     private bool introAnim = false;
     private SpriteRenderer introImage = null;
     private Sprite[] introSp = null;
+
     // Use this for initialization
     void Start()
     {
@@ -53,26 +54,59 @@ public class Level_Map : MonoBehaviour
 
     public void GameInitial(int thisMapLevel)
     {
-        // initialize map
+        // initialize all the Resources which this level need
         mapFileName = "map" + thisMapLevel.ToString();
         Debug.Log("mapFileMap: " + mapFileName);
-        // show intro images
+        // set up prototype sprites of themes
+        LoadThemeSprites();
+        // try show intro images
         IntroAnimStart();
         // at the same time, make maps
         LoadMapImg();
-        makeMiniMap();
     }
 
-    private void makeMiniMap()
+    private void LoadThemeSprites()
     {
-        // load mini map
-        Texture2D minimapTx = Resources.Load<Texture2D>(mapFileName);
-        Rect minimapRect = new Rect(0.0f, 0.0f, (float)width, (float)height);
-        Sprite minimapSp = Sprite.Create(minimapTx, minimapRect, new Vector2(0.5f, 0.5f));
-        GameObject.Find("Mini Map").GetComponent<SpriteRenderer>().sprite = minimapSp;
+        Texture2D thisThemeTex;
+        Rect Rect;
+        Sprite Sp;
+
+        // get backgrounds
+        thisThemeTex = Resources.Load<Texture2D>("Themes/Background/background_" + Save_Data.SelectedTheme.ToString());
+        Rect = new Rect(0.0f, 0.0f, (float)thisThemeTex.width, (float)thisThemeTex.height);
+        Sp = Sprite.Create(thisThemeTex, Rect, new Vector2(0.5f, 0.5f));
+        GameObject.Find("Field Background").GetComponent<SpriteRenderer>().sprite = Sp;
+
+        thisThemeTex = Resources.Load<Texture2D>("Themes/Background/background_outring_" + Save_Data.SelectedTheme.ToString());
+        Rect = new Rect(0.0f, 0.0f, (float)thisThemeTex.width, (float)thisThemeTex.height);
+        Sp = Sprite.Create(thisThemeTex, Rect, new Vector2(0.5f, 0.5f));
+        GameObject.Find("Field Frontground Outring").GetComponent<SpriteRenderer>().sprite = Sp;
+
+        // get wall spaite
+        thisThemeTex = Resources.Load<Texture2D>("Themes/Wall/wall_" + Save_Data.SelectedTheme.ToString());
+        Rect = new Rect(0.0f, 0.0f, (float)thisThemeTex.width, (float)thisThemeTex.height);
+        Sp = Sprite.Create(thisThemeTex, Rect, new Vector2(0.5f, 0.5f));
+        GameObject.Find("Prototype Wall Sprite").GetComponent<SpriteRenderer>().sprite = Sp;
+
+        // get obs sprite
+        thisThemeTex = Resources.Load<Texture2D>("Themes/Obs/obs_" + Save_Data.SelectedTheme.ToString());
+        Rect = new Rect(0.0f, 0.0f, (float)thisThemeTex.width, (float)thisThemeTex.height);
+        Sp = Sprite.Create(thisThemeTex, Rect, new Vector2(0.5f, 0.5f));
+        GameObject.Find("Prototype Obstacle Sprite").GetComponent<SpriteRenderer>().sprite = Sp;
+
+        // get monster sprite
+        thisThemeTex = Resources.Load<Texture2D>("Themes/Monster/monster_frame1_" + Save_Data.SelectedTheme.ToString());
+        Rect = new Rect(0.0f, 0.0f, (float)thisThemeTex.width, (float)thisThemeTex.height);
+        Sp = Sprite.Create(thisThemeTex, Rect, new Vector2(0.5f, 0.5f));
+        GameObject.Find("Prototype Monster Sprite Frame 1").GetComponent<SpriteRenderer>().sprite = Sp;
+
+        thisThemeTex = Resources.Load<Texture2D>("Themes/Monster/monster_frame2_" + Save_Data.SelectedTheme.ToString());
+        Rect = new Rect(0.0f, 0.0f, (float)thisThemeTex.width, (float)thisThemeTex.height);
+        Sp = Sprite.Create(thisThemeTex, Rect, new Vector2(0.5f, 0.5f));
+        GameObject.Find("Prototype Monster Sprite Frame 2").GetComponent<SpriteRenderer>().sprite = Sp;
     }
 
-    public void LoadMapImg()
+    private void LoadMapImg()
     {
         // read img
         if (mapFileName != null)
@@ -83,7 +117,13 @@ public class Level_Map : MonoBehaviour
             height = bmp.height;
             width = bmp.width;
             Debug.Log("Image loaded: " + height + ", " + width);
-            Resources.UnloadAsset(bmp);
+
+            // make mini map
+            Rect minimapRect = new Rect(0.0f, 0.0f, (float)width, (float)height);
+            Sprite minimapSp = Sprite.Create(bmp, minimapRect, new Vector2(0.5f, 0.5f));
+            GameObject.Find("Mini Map").GetComponent<SpriteRenderer>().sprite = minimapSp;
+
+            //Resources.UnloadAsset(bmp);
         }
         else
             Debug.Log("No file path!");
@@ -119,12 +159,15 @@ public class Level_Map : MonoBehaviour
         return true;
     }
 
+    /* GAME START */
+
+    // Don't call this function in GameRestart()
     public void MapConstruction()
     {
         // delete previous walls
-        DeleteWalls();
+        DeleteWalls(); // where wallNumber is set to 0
 
-        // make objects on map
+        // make wall objects on map
         for (int h = 0; h < height; h++)
         {
             for (int w = 0; w < width; w++)
@@ -154,22 +197,34 @@ public class Level_Map : MonoBehaviour
             }
         }
 
-        Debug.Log("playerStartTile: " + playerStartTile[0] + "," + playerStartTile[1]);
-        Debug.Log("finishTile: " + finishTile[0] + "," + finishTile[1]);
+        //Debug.Log("playerStartTile: " + playerStartTile[0] + "," + playerStartTile[1]);
+        //Debug.Log("finishTile: " + finishTile[0] + "," + finishTile[1]);
 
-        // set monster number
+        SetMonsterNumber();
+    }
+
+    public void DeleteWalls()
+    {
+        GameObject[] wallsToDelete = GameObject.FindGameObjectsWithTag("Wall");
+        for (int i = 0; i < wallsToDelete.Length; ++i)
+        {
+            //Debug.Log("Destroy a wall");
+            Destroy(wallsToDelete[i]);
+            wallsToDelete[i] = null;
+        }
         wallsNumber = 0;
+    }
+
+    public void SetMonsterNumber()
+    {
         switch (Save_Data.SelectedLevel)
         {
             case 0:
-                monsterNumber = 2;
-                break;
+                monsterNumber = 2; break;
             case 1:
-                monsterNumber = 0;
-                break;
+                monsterNumber = 4; break;
             case 2:
-                monsterNumber = 5;
-                break;
+                monsterNumber = 6; break;
             default:
                 monsterNumber = (tiles.Length - wallsNumber - 10) / 36 + ((Save_Data.SelectedLevel > 5) ? 3 : Save_Data.SelectedLevel - 2);
                 break;
@@ -192,12 +247,15 @@ public class Level_Map : MonoBehaviour
             estimatedStep += bonusLimit;
         */
         int emptyTilesNnum = height * width - wallsNumber;
-        double MonsterNumAdjust = 2.3;
-        Debug.Log("MonsterNumAdjust /= " + (int)(emptyTilesNnum / (estimatedStep * 4.3)));
-        MonsterNumAdjust /= (int)(emptyTilesNnum / (estimatedStep * 4.3) * 10) / 10.0;
+        double monsterNumAdjust = 2.3;
+        double diviedPathAdjustmant = ((int)(emptyTilesNnum / (estimatedStep * 4.3) * 10) / 10.0);
+        Debug.Log("diviedPathAdjustmant: " + diviedPathAdjustmant);
+        if (diviedPathAdjustmant > 1.0)
+            monsterNumAdjust /= diviedPathAdjustmant;
+        Debug.Log("monsterNumAdjust: " + monsterNumAdjust);
         thePlayer.Initialize();
-        thePlayer.SetEnergyPoint((int)(estimatedStep * 1.2) + (int)(monsterNumber * MonsterNumAdjust));
-        thePlayer.SetHealthPoint(3 + monsterNumber / 20);
+        thePlayer.SetEnergyPoint((int)(estimatedStep * 1.15) + (int)(monsterNumber * monsterNumAdjust));
+        thePlayer.SetHealthPoint(2 + monsterNumber / 10);
         thePlayer.SetAbilityCooldown(0);
         thePlayer.SetFaceTo(Player_Control.FACING.FRONT);
         thePlayer.SetPositionTo(playerStartTile[0], playerStartTile[1]);
@@ -209,7 +267,6 @@ public class Level_Map : MonoBehaviour
         MapConstruction();
         // construct obstacles
         theObstacles.Construct();
-        //Debug.Break();
         // generate monsters
         if(monsterNumber > 0)
             theMonsters.Generate(monsterNumber);
@@ -253,16 +310,8 @@ public class Level_Map : MonoBehaviour
             Debug.Log("Level Read Map Failed.");
     }
 
-    public void DeleteWalls()
-    {
-        GameObject[] wallsToDelete = GameObject.FindGameObjectsWithTag("Wall");
-        for (int i = 0; i < wallsToDelete.Length; ++i)
-        {
-            //Debug.Log("Destroy a wall");
-            Destroy(wallsToDelete[i]);
-            wallsToDelete[i] = null;
-        }
-    }
+
+    /* INTRO ANIM */
 
     private void IntroAnimStart()
     {

@@ -135,6 +135,7 @@ public class Obstacles : MonoBehaviour {
             count++;
             Debug.Log("Obstacles Adjusted");
         } while (find_something_to_adjust && count < 4);
+        DistributeAdjust();
 
         /*
         DistributeAdjust();
@@ -224,7 +225,7 @@ public class Obstacles : MonoBehaviour {
                         is_middle_all_walkable = is_middle_all_walkable && !(positionList.Exists(x => x == pos + d) || levelMap.tiles[i, j + d] == 1);
                         d++;
                     }
-                    if (is_middle_all_walkable && is_up_all_obs && is_down_all_obs)
+                    if (is_middle_all_walkable && is_up_all_obs && is_down_all_obs && Random.Range(0, 6) > 0)
                     {
                         ObsUpdate(i, j); // add an obs in the walk way
                         ObsUpdate(i + ((Random.Range(0, 2) == 0) ? 1 : -1), j);// then randomly delete a obs
@@ -240,7 +241,7 @@ public class Obstacles : MonoBehaviour {
                         is_middle_all_walkable = is_middle_all_walkable && !(positionList.Exists(x => x == pos + d * mw) || levelMap.tiles[i + d, j] == 1);
                         d++;
                     }
-                    if (is_middle_all_walkable && is_left_all_obs && is_right_all_obs)
+                    if (is_middle_all_walkable && is_left_all_obs && is_right_all_obs && Random.Range(0, 6) > 0)
                     {
                         ObsUpdate(i, j); // add an obs in the walk way
                         ObsUpdate(i, j + ((Random.Range(0, 2) == 0) ? 1 : -1)); // then randomly delete a obs

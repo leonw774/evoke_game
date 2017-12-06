@@ -104,7 +104,7 @@ public class Level_Menu : MonoBehaviour {
 
     public void LoadLevel(int level)
     {
-        Save_Data.SelectedLevel = level;
+        Save_Data.SelectLevel(level);
         SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
         SceneManager.LoadScene("Game Scene");
     }
