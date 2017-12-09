@@ -283,8 +283,8 @@ public class Player_Control : MonoBehaviour {
     void PlayerAnimEnd()
     {
         playerPositionObject.transform.position = animEndPos;
-        animEndPos = new Vector3(0.0f, 0.0f, 0.0f);
-        animBeginPos = new Vector3(0.0f, 0.0f, 0.0f);
+        animEndPos = new Vector3(0.0f, 0.0f, -1.0f);
+        animBeginPos = new Vector3(0.0f, 0.0f, -1.0f);
         CheckPlayerAttacked();
     }
 
@@ -319,7 +319,7 @@ public class Player_Control : MonoBehaviour {
             player_ask_for_end_anim = false;
 
             // tidy up player pos
-            if (animBeginPos != new Vector3(0.0f, 0.0f, 0.0f))
+            if (animBeginPos != new Vector3(0.0f, 0.0f, -1.0f))
                 PlayerAnimEnd();
             else
                 CheckPlayerBlocked();
@@ -328,7 +328,7 @@ public class Player_Control : MonoBehaviour {
         }
         else
         {
-            if (animBeginPos != new Vector3(0.0f, 0.0f, 0.0f))
+            if (animBeginPos != new Vector3(0.0f, 0.0f, -1.0f))
             {
                 PlayerAnim();
                 player_ask_for_end_anim = (animEndPos - playerPositionObject.transform.position).magnitude < 0.01

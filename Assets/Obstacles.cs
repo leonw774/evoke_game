@@ -85,13 +85,15 @@ public class Obstacles : MonoBehaviour {
         for (int i = 1; i < levelMap.height - 1; ++i) // for every height
         {
             bool putObs = Random.Range(-5, 5) > 0;
+            int obslength = 0;
             for (int j = 1; j < levelMap.width - 1; ++j)
             {
                 if (putObs && levelMap.tiles[i, j] == (int)Level_Map.TILE_TYPE.WALKABLE)
                 {
                     // STATE: PUT OBS
                     ObsUpdate(i, j);
-                    if (Random.Range(-5, 5) < 0) // possibility to change state 
+                    obslength++;
+                    if (Random.Range(-5, 5) < 0 || obslength > Random.Range(8, 10)) // possibility to change state 
                         putObs = !putObs;
                 }
                 else
@@ -135,7 +137,7 @@ public class Obstacles : MonoBehaviour {
             count++;
             Debug.Log("Obstacles Adjusted");
         } while (find_something_to_adjust && count < 4);
-        DistributeAdjust();
+        //DistributeAdjust();
 
         /*
         DistributeAdjust();
@@ -169,6 +171,7 @@ public class Obstacles : MonoBehaviour {
                     continue;
                 // else
                 bool this_is_obs = (positionList.Exists(x => x == thisTilePos));
+                int chi_of_this = 4;
                 int di = -1, dj = -1, sameNeighborCount = 0;
                 while (di <= 1)
                 {
@@ -177,7 +180,12 @@ public class Obstacles : MonoBehaviour {
                     // no matter the neighbor block is really a obstacle or a wall, it all count as obstacle
                     bool neighbor_is_obs = (positionList.Exists(x => x == neighborTilePos)) || (levelMap.tiles[i + di, j + dj] != (int)Level_Map.TILE_TYPE.WALKABLE);
                     // check if neighbor is same with this block
-                    if (this_is_obs == neighbor_is_obs) sameNeighborCount++;
+                    if (this_is_obs == neighbor_is_obs)
+                    {
+                        sameNeighborCount++;
+                        if( di == 0 || dj == 0)
+                            chi_of_this--;
+                    }
                     // upadte neighbor tiles ij
                     if (dj == 1)
                     {
@@ -187,7 +195,7 @@ public class Obstacles : MonoBehaviour {
                     else if (di == 0 & dj == -1) dj = 1;
                     else dj++;
                 }
-                if (sameNeighborCount >= (this_is_obs ? 7 : 5))
+                if (sameNeighborCount >= (this_is_obs ? (7 - ((chi_of_this < 1) ? 1 : 0)) : 5))
                 {
                     some_adjustment_are_done = true;
                     ObsUpdate(i, j);

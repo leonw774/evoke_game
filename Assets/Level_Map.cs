@@ -162,12 +162,32 @@ public class Level_Map : MonoBehaviour
     /* GAME START */
 
     // Don't call this function in GameRestart()
-    public void MapConstruction()
+    public void MapFirstConstruction()
     {
         // delete previous walls
         DeleteWalls(); // where wallNumber is set to 0
-
         // make wall objects on map
+        CreateWalls();
+        //Debug.Log("playerStartTile: " + playerStartTile[0] + "," + playerStartTile[1]);
+        //Debug.Log("finishTile: " + finishTile[0] + "," + finishTile[1]);
+        SetMonsterNumber();
+    }
+
+    public void DeleteWalls()
+    {
+        GameObject[] wallsToDelete = GameObject.FindGameObjectsWithTag("Wall");
+        for (int i = 0; i < wallsToDelete.Length; ++i)
+        {
+            //Debug.Log("Destroy a wall");
+            Destroy(wallsToDelete[i]);
+            wallsToDelete[i] = null;
+        }
+        wallsNumber = 0;
+    }
+
+    public void CreateWalls()
+    {
+        if (tiles.Length <= 1) return;
         for (int h = 0; h < height; h++)
         {
             for (int w = 0; w < width; w++)
@@ -196,23 +216,6 @@ public class Level_Map : MonoBehaviour
                 }
             }
         }
-
-        //Debug.Log("playerStartTile: " + playerStartTile[0] + "," + playerStartTile[1]);
-        //Debug.Log("finishTile: " + finishTile[0] + "," + finishTile[1]);
-
-        SetMonsterNumber();
-    }
-
-    public void DeleteWalls()
-    {
-        GameObject[] wallsToDelete = GameObject.FindGameObjectsWithTag("Wall");
-        for (int i = 0; i < wallsToDelete.Length; ++i)
-        {
-            //Debug.Log("Destroy a wall");
-            Destroy(wallsToDelete[i]);
-            wallsToDelete[i] = null;
-        }
-        wallsNumber = 0;
     }
 
     public void SetMonsterNumber()
@@ -224,7 +227,7 @@ public class Level_Map : MonoBehaviour
             case 1:
                 monsterNumber = 4; break;
             case 2:
-                monsterNumber = 6; break;
+                monsterNumber = 8; break;
             default:
                 monsterNumber = (tiles.Length - wallsNumber - 10) / 36 + ((Save_Data.SelectedLevel > 5) ? 3 : Save_Data.SelectedLevel - 2);
                 break;
@@ -238,14 +241,7 @@ public class Level_Map : MonoBehaviour
         Astar astar = new Astar(tiles, height, width, theObstacles.positionList, playerStartTile, finishTile);
         estimatedStep = astar.FindPathLength(true, false);
         Debug.Log("estimatedStep:" + estimatedStep);
-        // add bonus steps
-        /*
-        int bonusLimit = (int)(width * height * 0.1);
-        if ((int)(estimatedStep / 6) < bonusLimit)
-            estimatedStep += (int)(estimatedStep / 6);
-        else
-            estimatedStep += bonusLimit;
-        */
+
         int emptyTilesNnum = height * width - wallsNumber;
         double monsterNumAdjust = 2.3;
         double diviedPathAdjustmant = ((int)(emptyTilesNnum / (estimatedStep * 4.3) * 10) / 10.0);
@@ -253,6 +249,7 @@ public class Level_Map : MonoBehaviour
         if (diviedPathAdjustmant > 1.0)
             monsterNumAdjust /= diviedPathAdjustmant;
         Debug.Log("monsterNumAdjust: " + monsterNumAdjust);
+
         thePlayer.Initialize();
         thePlayer.SetEnergyPoint((int)(estimatedStep * 1.15) + (int)(monsterNumber * monsterNumAdjust));
         thePlayer.SetHealthPoint(2 + monsterNumber / 10);
@@ -264,12 +261,12 @@ public class Level_Map : MonoBehaviour
     public void GameStart()
     {
         // only do MapConstruct in first start
-        MapConstruction();
+        MapFirstConstruction();
         // construct obstacles
         theObstacles.Construct();
         // generate monsters
         if(monsterNumber > 0)
-            theMonsters.Generate(monsterNumber);
+            theMonsters.SpawnMonsters(monsterNumber);
         SetPlayerInfo();
     }
 
@@ -280,7 +277,7 @@ public class Level_Map : MonoBehaviour
         theMonsters.DestroyMonsters();
         theObstacles.Construct();
         if(monsterNumber > 0)
-            theMonsters.Generate(monsterNumber);
+            theMonsters.SpawnMonsters(monsterNumber);
         SetPlayerInfo();
     }
 

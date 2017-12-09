@@ -64,13 +64,13 @@ public class Game_Menu : MonoBehaviour {
         if (isFailMenu)
         {
             FailGO.transform.Translate(new Vector3(0, 0, -1000));
-            ResumeBtn.transform.Translate(new Vector3(0, 0, -1000));
+            ResumeBtn.transform.Translate(new Vector3(0, 0, -999.9f));
             isFailMenu = false;
         }
         if (isFinishMenu)
         {
             FinishGO.transform.Translate(new Vector3(0, 0, -1000));
-            ResumeBtn.transform.Translate(new Vector3(0, 0, -1000));
+            ResumeBtn.transform.Translate(new Vector3(0, 0, -999.9f));
             isFinishMenu = false;
         }
     }
