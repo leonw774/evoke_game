@@ -93,7 +93,7 @@ public class Monsters : MonoBehaviour {
         /* ITERATIVE SPAWN */
         while (spawnedCount < totalNum)
         {
-            if(emegercyJumpOut++ > (totalNum * 1024))
+            if(emegercyJumpOut++ > (totalNum * 2048))
             {
                 Debug.Log("Emegercy Jump-Out Happened.");
                 Debug.Log("tryCount: " + emegercyJumpOut + "\ntotalNum: " + totalNum);
@@ -148,7 +148,7 @@ public class Monsters : MonoBehaviour {
                     Spawn(h, w, spawnedCount);
                     spawnedCount++;
                 }
-                else if (spawn_on_obs && walkable_neighbor_count < 3 && walkable_neighbor_count > 1 && Random.Range(-1, 3) > 0)
+                else if (spawn_on_obs && walkable_neighbor_count < 3 && walkable_neighbor_count > 1 && Random.Range(-1, 8) > 0)
                 {
                     levelMap.theObstacles.ObsDestroy(pos);
                     Spawn(h, w, spawnedCount++);
@@ -169,13 +169,13 @@ public class Monsters : MonoBehaviour {
         switch (bossIndex)
         {
             case 1:
-                boss.bossAbility = new Boss1Ability(boss);
+                boss.bossAbility = new Boss1Ability(boss, levelMap);
                 break;
             default:
                 break;
         }
 
-        // load sprites to frames
+        // load boss sprites
         BossTex = Resources.Load<Texture2D>("Bosses/boss_frame1_" + bossIndex.ToString());
         Rect = new Rect(0.0f, 0.0f, (float)BossTex.width, (float)BossTex.height);
         Sp = Sprite.Create(BossTex, Rect, new Vector2(0.5f, 0.5f));
@@ -188,7 +188,7 @@ public class Monsters : MonoBehaviour {
 
     private void Spawn(int h, int w, int index)
     {
-        //Debug.Log("monster creation happened at " + h + "," + w);
+        //Debug.Log("monster spawn happened at " + h + "," + w);
         Vector3 trans = new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0);
         GameObject created = Instantiate(prototype);
         created.name = "Monster Sprite" + index.ToString();
@@ -230,6 +230,13 @@ public class Monsters : MonoBehaviour {
             else
                 monsterList[i].SpriteObj.GetComponent<SpriteRenderer>().sprite = sp_to_change;
         }
+
+        if (boss != null)
+        {
+            bool t = boss.bossAbility.sr_frame1.enabled;
+            boss.bossAbility.sr_frame1.enabled = boss.bossAbility.sr_frame2.enabled;
+            boss.bossAbility.sr_frame2.enabled = t;
+        }
     }
 
     public void MonstersMove()
@@ -239,20 +246,35 @@ public class Monsters : MonoBehaviour {
         {
             // change position
             if (monsterSensePlayer >= (System.Math.Abs(levelMap.thePlayer.h - monsterList[i].h) + System.Math.Abs(levelMap.thePlayer.w - monsterList[i].w))
-             && Random.Range(-1, 16) > 0)
+             && Random.Range(-1, 18) > 0)
                 MonsterMoveToPlayer(i);
             else
                 MonsterMoveRandom(i);
+        }
+
+        if (boss != null)
+        {
+            if (monsterSensePlayer * 2 >= (System.Math.Abs(levelMap.thePlayer.h - boss.h) + System.Math.Abs(levelMap.thePlayer.w - boss.w)))
+            {
+                //if(boss.bossAbility.TryDoAbility() == false)
+                    MonsterMoveToPlayer(-1);
+            }   
+            else
+                MonsterMoveRandom(-1);
         }
     }
 
     private void MonsterMoveToPlayer(int i)
     {
         int goingTo = -1;
-        Astar m_astar = new Astar(levelMap.tiles, levelMap.height, levelMap.width, levelMap.theObstacles.positionList, new int[2] {monsterList[i].h, monsterList[i].w}, new int[2] { levelMap.thePlayer.h, levelMap.thePlayer.w });
+        Monster thisMon = (i >= 0) ? monsterList[i] : boss;
+        Astar m_astar;
+        List<int> pathList;
+
+        m_astar = new Astar(levelMap.tiles, levelMap.height, levelMap.width, levelMap.theObstacles.positionList, new int[2] { thisMon.h, thisMon.w}, new int[2] { levelMap.thePlayer.h, levelMap.thePlayer.w });
         m_astar.FindPathLength(false, true);
-        List<int> pathList = m_astar.GetPath();
-        if(pathList.Count > 1) goingTo = pathList[1];
+        pathList = m_astar.GetPath();
+        if (pathList.Count > 1) goingTo = pathList[1];
 
         //for (int k = 0; k < pathList.Count; k++) Debug.Log("[" + k + "]" + ": " + pathList[k]);
         //Debug.Log("goingTo = " + goingTo);
@@ -264,7 +286,7 @@ public class Monsters : MonoBehaviour {
         else
         {
             //Debug.Log("MonsterMoveToPlayer()");
-            int newh = monsterList[i].h, neww = monsterList[i].w;
+            int newh = thisMon.h, neww = thisMon.w;
             switch(goingTo)
             {
                 case 0: // up
@@ -281,14 +303,14 @@ public class Monsters : MonoBehaviour {
                 int j = 0;
                 for (; j < monsterList.Count; j++)
                 { // there is another mon on the way
-                    if (monsterList[j].h == newh && monsterList[j].w == neww) break;
+                    if (thisMon.h == newh && thisMon.w == neww) break;
                 }
                 if (j == monsterList.Count)
                 {
-                    //Debug.Log("Monster " + i + "moved from " + monsterList[i].h + "," + monsterList[i].w + " to " + newh + "," + neww);
-                    monsterList[i].MoveTo(newh, neww);
-                    monsterList[i].FaceTo((FACING) goingTo);
-                    MonsterAnimSetup(i, monsterList[i].SpriteObj.transform.position, new Vector3((neww - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - newh - 0.5f), 0));
+                    //Debug.Log("Monster " + i + "moved from " + thisMon.h + "," + thisMon.w + " to " + newh + "," + neww);
+                    thisMon.MoveTo(newh, neww);
+                    thisMon.FaceTo((FACING) goingTo);
+                    MonsterAnimSetup(i, thisMon.SpriteObj.transform.position, new Vector3((neww - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - newh - 0.5f), 0));
                 }
             }
         }

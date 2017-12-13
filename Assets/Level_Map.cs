@@ -229,7 +229,7 @@ public class Level_Map : MonoBehaviour
             case 2:
                 monsterNumber = 8; break;
             default:
-                monsterNumber = (tiles.Length - wallsNumber - 10) / 36 + ((Save_Data.SelectedLevel > 5) ? 3 : Save_Data.SelectedLevel - 2);
+                monsterNumber = (tiles.Length - wallsNumber - 10) / 36 + ((Save_Data.SelectedLevel > 5) ? 4 : Save_Data.SelectedLevel - 1);
                 break;
         }
         Debug.Log("the map ask for " + monsterNumber + " monsters");
