@@ -220,6 +220,7 @@ public class Level_Map : MonoBehaviour
 
     public void SetMonsterNumber()
     {
+        // normal monster
         switch (Save_Data.SelectedLevel)
         {
             case 0:
@@ -229,7 +230,7 @@ public class Level_Map : MonoBehaviour
             case 2:
                 monsterNumber = 8; break;
             default:
-                monsterNumber = (tiles.Length - wallsNumber - 10) / 36 + ((Save_Data.SelectedLevel > 5) ? 4 : Save_Data.SelectedLevel - 1);
+                monsterNumber = (tiles.Length - wallsNumber - 8) / 36 + ((Save_Data.SelectedLevel > 5) ? 4 : Save_Data.SelectedLevel - 1);
                 break;
         }
         Debug.Log("the map ask for " + monsterNumber + " monsters");
@@ -243,7 +244,7 @@ public class Level_Map : MonoBehaviour
         Debug.Log("estimatedStep:" + estimatedStep);
 
         int emptyTilesNnum = height * width - wallsNumber;
-        double monsterNumAdjust = 2.3;
+        double monsterNumAdjust = 2.25;
         double diviedPathAdjustmant = ((int)(emptyTilesNnum / (estimatedStep * 4.3) * 10) / 10.0);
         Debug.Log("diviedPathAdjustmant: " + diviedPathAdjustmant);
         if (diviedPathAdjustmant > 1.0)
@@ -252,7 +253,7 @@ public class Level_Map : MonoBehaviour
 
         thePlayer.Initialize();
         thePlayer.SetEnergyPoint((int)(estimatedStep * 1.15) + (int)(monsterNumber * monsterNumAdjust));
-        thePlayer.SetHealthPoint(2 + monsterNumber / 10);
+        thePlayer.SetHealthPoint(2 + monsterNumber / 15);
         thePlayer.SetAbilityCooldown(0);
         thePlayer.SetFaceTo(Player_Control.FACING.FRONT);
         thePlayer.SetPositionTo(playerStartTile[0], playerStartTile[1]);

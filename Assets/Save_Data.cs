@@ -36,7 +36,7 @@
 
     public static void SetThemeSelectedLevel()
     {
-        if (SelectedLevel < 6)
+        if (SelectedLevel < 9)
             SelectedTheme = 1;
         else if (SelectedLevel < 10)
             SelectedTheme = 2;

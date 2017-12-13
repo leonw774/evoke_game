@@ -323,6 +323,7 @@ public class Player_Control : MonoBehaviour {
                 PlayerAnimEnd();
             else
                 CheckPlayerBlocked();
+
             // tidy up monster pos
             levelMap.theMonsters.MonstersAnimEnd();
         }

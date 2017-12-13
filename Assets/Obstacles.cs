@@ -81,7 +81,7 @@ public class Obstacles : MonoBehaviour {
 
     public void Generate()
     {
-        // make vertical obs
+        // make horizonal obs
         for (int i = 1; i < levelMap.height - 1; ++i) // for every height
         {
             bool putObs = Random.Range(-5, 5) > 0;
@@ -104,11 +104,11 @@ public class Obstacles : MonoBehaviour {
                 }
             }
         }
-        // make horizonal obs
+        // make vertical obs
         for (int j = 1; j < levelMap.width - 1; ++j)
         {
             bool putObs = Random.Range(-5, 5) > 0;
-            for (int i = 1; i < levelMap.height - 1; ++i)
+            for (int i = levelMap.height - 2; i > 0; --i)
             {
                 if (putObs && levelMap.tiles[i, j] == (int)Level_Map.TILE_TYPE.WALKABLE)
                 {

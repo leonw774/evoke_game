@@ -20,7 +20,7 @@ MonoBehaviour:
   m_ShowMode: 4
   m_Title: 
   m_RootView: {fileID: 6}
-  m_MinSize: {x: 950, y: 392}
+  m_MinSize: {x: 950, y: 371}
   m_MaxSize: {x: 10000, y: 10000}
 --- !u!114 &2
 MonoBehaviour:
@@ -42,10 +42,10 @@ MonoBehaviour:
     y: 30
     width: 1573
     height: 774
-  m_MinSize: {x: 681, y: 342}
-  m_MaxSize: {x: 12006, y: 8042}
+  m_MinSize: {x: 681, y: 321}
+  m_MaxSize: {x: 12006, y: 8021}
   vertical: 0
-  controlID: 9
+  controlID: 45
 --- !u!114 &3
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -207,10 +207,10 @@ MonoBehaviour:
     y: 0
     width: 1228
     height: 774
-  m_MinSize: {x: 406, y: 342}
-  m_MaxSize: {x: 8006, y: 8042}
+  m_MinSize: {x: 406, y: 321}
+  m_MaxSize: {x: 8006, y: 8021}
   vertical: 1
-  controlID: 10
+  controlID: 46
 --- !u!114 &10
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -234,7 +234,7 @@ MonoBehaviour:
   m_MinSize: {x: 406, y: 221}
   m_MaxSize: {x: 8006, y: 4021}
   vertical: 0
-  controlID: 11
+  controlID: 47
 --- !u!114 &11
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -443,19 +443,19 @@ MonoBehaviour:
     m_ShowAllHits: 0
     m_SearchArea: 0
     m_Folders:
-    - Assets
+    - Assets/Resources
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets
+  - Assets/Resources
   m_LastFoldersGridSize: -1
   m_LastProjectPath: E:\Game Design Project\evoke_game
   m_IsLocked: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 21}
-    m_SelectedIDs: d8240000
-    m_LastClickedID: 9432
-    m_ExpandedIDs: 00000000d8240000ae2500000426000000ca9a3bffffff7f
+    scrollPos: {x: 0, y: 0}
+    m_SelectedIDs: ae250000
+    m_LastClickedID: 9646
+    m_ExpandedIDs: 00000000d8240000ae25000000ca9a3bffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -483,7 +483,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 00000000d8240000ae25000004260000
+    m_ExpandedIDs: 00000000d8240000ae25000008260000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -508,8 +508,8 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
   m_ListAreaState:
-    m_SelectedInstanceIDs: f8280000
-    m_LastClickedInstanceID: 10488
+    m_SelectedInstanceIDs: e4fbffff
+    m_LastClickedInstanceID: -1052
     m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs: c623000042250000
     m_RenameOverlay:
@@ -599,27 +599,28 @@ MonoBehaviour:
     height: 458
   m_TreeViewState:
     scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: e4fbffff
-    m_LastClickedID: -1052
-    m_ExpandedIDs: e4fbffff00000000fc260000d02800009e290000
+    m_SelectedIDs: 8ecd0000
+    m_LastClickedID: 52622
+    m_ExpandedIDs: 82f5faffde77fbffec98fbff22cdfbffe002fcff7214fcff6089fcff4ca5fcff80adfcff68b6fcff8ecefcffe4fbffffe6fbffff00000000a8360000b2360000dc3d0000e63d00008e6f0000986f0000947900009e7900002e9c0000389c000042a6000010a7000012a800001ca8000030a80000fea8000040b000000eb1000092b300006ec90000c0cc0000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
-      m_Name: 
-      m_OriginalName: 
+      m_Name: Boss Sprites
+      m_OriginalName: Boss Sprites
       m_EditFieldRect:
         serializedVersion: 2
         x: 0
         y: 0
         width: 0
         height: 0
-      m_UserData: 0
+      m_UserData: 45326
       m_IsWaitingForDelay: 0
       m_IsRenaming: 0
-      m_OriginalEventType: 11
+      m_OriginalEventType: 0
       m_IsRenamingFilename: 0
       m_ClientGUIView: {fileID: 4}
     m_SearchString: 
   m_ExpandedScenes:
+  - Menu Scene
   - Game Scene
   m_CurrenRootInstanceID: 0
   m_Locked: 0
@@ -651,14 +652,14 @@ MonoBehaviour:
     width: 916
     height: 458
   m_SceneLighting: 1
-  lastFramingTime: 7976.347073124962
+  lastFramingTime: 6492.723856655853
   m_2DMode: 1
   m_isRotationLocked: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: -1.0776633, y: -7.8134007, z: -2.2382812}
+    m_Target: {x: 0.5, y: 0.5, z: -2}
     speed: 2
-    m_Value: {x: -1.0776633, y: -7.8134007, z: -2.2382812}
+    m_Value: {x: 0.5, y: 0.5, z: -2}
   m_RenderMode: 0
   m_ValidateTrueMetals: 0
   m_SceneViewState:
@@ -685,9 +686,9 @@ MonoBehaviour:
     speed: 2
     m_Value: {x: 0, y: 0, z: 0, w: 1}
   m_Size:
-    m_Target: 17.492096
+    m_Target: 18.584566
     speed: 2
-    m_Value: 17.492096
+    m_Value: 18.584566
   m_Ortho:
     m_Target: 1
     speed: 2
@@ -767,7 +768,7 @@ MonoBehaviour:
       width: 1046.8572
       height: 504
     m_MinimalGUI: 1
-  m_defaultScale: 0.91875
+  m_defaultScale: 1
   m_TargetTexture: {fileID: 0}
   m_CurrentColorSpace: 0
   m_LastWindowPixelSize: {x: 916, y: 458}
