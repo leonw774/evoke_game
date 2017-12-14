@@ -19,7 +19,7 @@ public class Level_Map : MonoBehaviour
     public int monsterNumber = 0;
 
     public Obstacles theObstacles = null;
-    public Monsters theMonsters = null;
+    public Monsters_Control theMonsters = null;
     public Player_Control thePlayer = null;
 
     public string mapFileName = null;
@@ -34,7 +34,7 @@ public class Level_Map : MonoBehaviour
     {
         theObstacles = gameObject.AddComponent<Obstacles>();
         theObstacles.Initialize();
-        theMonsters = gameObject.AddComponent<Monsters>();
+        theMonsters = gameObject.AddComponent<Monsters_Control>();
         theMonsters.Initialize();
         thePlayer = GameObject.Find("Player Control Canvas").GetComponent<Player_Control>();
         introImage = GameObject.Find("Intro Image").GetComponent<SpriteRenderer>();
@@ -244,8 +244,8 @@ public class Level_Map : MonoBehaviour
         Debug.Log("estimatedStep:" + estimatedStep);
 
         int emptyTilesNnum = height * width - wallsNumber;
-        double monsterNumAdjust = 2.25;
-        double diviedPathAdjustmant = ((int)(emptyTilesNnum / (estimatedStep * 4.3) * 10) / 10.0);
+        double monsterNumAdjust = 2.3;
+        double diviedPathAdjustmant = ((int)(emptyTilesNnum / (estimatedStep * 4.3) * 100) / 100.0);
         Debug.Log("diviedPathAdjustmant: " + diviedPathAdjustmant);
         if (diviedPathAdjustmant > 1.0)
             monsterNumAdjust /= diviedPathAdjustmant;

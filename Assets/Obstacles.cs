@@ -93,8 +93,11 @@ public class Obstacles : MonoBehaviour {
                     // STATE: PUT OBS
                     ObsUpdate(i, j);
                     obslength++;
-                    if (Random.Range(-5, 5) < 0 || obslength > Random.Range(8, 10)) // possibility to change state 
+                    if (Random.Range(-5, 5) < 0 || obslength > Random.Range(8, 10)) // possibility to change state
+                    {
                         putObs = !putObs;
+                        obslength = 0;
+                    }
                 }
                 else
                 {

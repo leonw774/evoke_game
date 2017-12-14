@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Xml.Linq;
 
 public enum FACING : int {UP = 0, LEFT, DOWN, RIGHT};
 
@@ -10,23 +11,19 @@ public class Monster
     public FACING faceTo;
     public int h;
     public int w;
-    public int id;
-    public BossMonsterAbility bossAbility;
+    public int id; // -1 to identify the boss, >=0 to label normal monsters
     public GameObject SpriteObj;
 
     public Vector3 animBeginPos;
     public Vector3 animEndPos;
 
-    public Monster(int _h, int _w, int _id, GameObject ms)
+    public Monster(int _h, int _w, int _id, GameObject _ms)
     {
         h = _h;
         w = _w;
         id = _id;
-        SpriteObj = ms;
-        bossAbility = null;
-        if (id == -1)
-            faceTo = FACING.LEFT;
-        else
+        SpriteObj = _ms;
+        if (id >= 0)
             FaceTo((FACING)Random.Range(0, 4));
         animBeginPos = new Vector3(0.0f, 0.0f, -1.0f);
         animEndPos = new Vector3(0.0f, 0.0f, -1.0f);
@@ -43,30 +40,40 @@ public class Monster
         w = neww;
     }
 
-    public void FaceTo(FACING direction)
+    virtual public void FaceTo(FACING direction)
     {
         faceTo = direction;
-        if (id >= 0)
-        {
-            if (direction == FACING.RIGHT)
-                SpriteObj.GetComponent<SpriteRenderer>().flipX = true;
-            else if (direction == FACING.LEFT)
-                SpriteObj.GetComponent<SpriteRenderer>().flipX = false;
-        }
-        else
-        {
-            if (direction == FACING.RIGHT)
-                bossAbility.sr_frame1.flipX = bossAbility.sr_frame2.flipX = true;    
-            else if (direction == FACING.LEFT)
-                bossAbility.sr_frame1.flipX = bossAbility.sr_frame2.flipX = false;
-        }
+        if (direction == FACING.RIGHT)
+            SpriteObj.GetComponent<SpriteRenderer>().flipX = true;
+        else if (direction == FACING.LEFT)
+            SpriteObj.GetComponent<SpriteRenderer>().flipX = false;
     }
 }
 
-public class Monsters : MonoBehaviour {
+public class BossMonster : Monster
+{
+    public BossMonsterAbility bossAbility;
+
+    public BossMonster(int _h, int _w, int _id, GameObject _ms, BossMonsterAbility _ba) : base(_h, _w, _id, _ms)
+    {
+        bossAbility = _ba;
+        FaceTo((FACING)Random.Range(0, 4));
+    }
+
+    override public void FaceTo(FACING direction)
+    {
+        faceTo = direction;
+        if (direction == FACING.RIGHT)
+            bossAbility.sr_frame1.flipX = bossAbility.sr_frame2.flipX = true;
+        else if (direction == FACING.LEFT)
+            bossAbility.sr_frame1.flipX = bossAbility.sr_frame2.flipX = false;
+    }
+}
+
+public class Monsters_Control: MonoBehaviour {
 
     private List<Monster> monsList = null;  // store obstacle position in as integer(h * width + w)
-    private Monster boss = null;
+    private BossMonster boss = null;
     private Level_Map levelMap;
     public GameObject prototype;
     public Sprite sprite_frame1, sprite_frame2;
@@ -181,20 +188,22 @@ public class Monsters : MonoBehaviour {
         Texture2D BossTex;
         Rect Rect;
         Sprite Sp;
+
+        // clear space for boss
         int pos = (levelMap.height / 2) * levelMap.width + levelMap.width / 2;
         levelMap.theObstacles.ObsDestroy(pos);
-        boss = new Monster(levelMap.height / 2, levelMap.width / 2, -1, GameObject.Find("Boss Sprites"));
 
-        // give them thier ability
+        // create thier object with right ability
         switch (bossIndex)
         {
             case 1:
-                boss.bossAbility = new Boss1Ability(boss, levelMap);
+                boss = new BossMonster(levelMap.height / 2, levelMap.width / 2, -1, GameObject.Find("Boss Sprites"), new Boss1Ability(boss, levelMap));
                 Debug.Log("Gave Boss its ability");
                 break;
             default:
                 break;
         }
+        monsList.Add(boss);
 
         // load boss sprites
         BossTex = Resources.Load<Texture2D>("Bosses/boss_frame1_test");
@@ -239,54 +248,38 @@ public class Monsters : MonoBehaviour {
     public void MonstersChangeFrame()
     {
         Sprite sp_to_change = null;
-        for (int i = 0; i < monsList.Count; i++)
-        {
-            if (i == 0)
+        monsList.ForEach(delegate (Monster x)
             {
-                if (monsList[i].SpriteObj.GetComponent<SpriteRenderer>().sprite == sprite_frame1)
-                    sp_to_change = sprite_frame2;
+                if (x.id >= 0)
+                {
+                    if (sp_to_change == null)
+                        sp_to_change = (x.SpriteObj.GetComponent<SpriteRenderer>().sprite == sprite_frame1) ? sprite_frame2 : sprite_frame1;
+                    x.SpriteObj.GetComponent<SpriteRenderer>().sprite = sp_to_change;
+                }
                 else
-                    sp_to_change = sprite_frame1;
+                {
+                    bool t = boss.bossAbility.sr_frame1.enabled;
+                    boss.bossAbility.sr_frame1.enabled = boss.bossAbility.sr_frame2.enabled;
+                    boss.bossAbility.sr_frame2.enabled = t;
+                }
             }
-            if(monsList[i].bossAbility != null)
-            {
-                // do boss' change frame here
-            }
-            else
-                monsList[i].SpriteObj.GetComponent<SpriteRenderer>().sprite = sp_to_change;
-        }
-
-        if (boss != null)
-        {
-            bool t = boss.bossAbility.sr_frame1.enabled;
-            boss.bossAbility.sr_frame1.enabled = boss.bossAbility.sr_frame2.enabled;
-            boss.bossAbility.sr_frame2.enabled = t;
-        }
+        );
     }
 
     public void MonstersMove()
     {
-        int monsterSensePlayer = 6; // == minDisBtwnMon
         for (int i = 0; i < monsList.Count; i++)
         {
-            // change position
-            if (monsterSensePlayer >= (System.Math.Abs(levelMap.thePlayer.h - monsList[i].h) + System.Math.Abs(levelMap.thePlayer.w - monsList[i].w))
-             && Random.Range(-1, 18) > 0)
-                MonsterMoveToPlayer(i);
+            if (((monsList[i].id >= 0) ? 6 : 12) >= (System.Math.Abs(levelMap.thePlayer.h - monsList[i].h) + System.Math.Abs(levelMap.thePlayer.w - monsList[i].w))
+                && Random.Range(-1, 20) > 0)
+            {
+                if (monsList[i].id >= 0)
+                    MonsterMoveToPlayer(i);
+                else //if (boss.bossAbility.TryDoAbility() == false)
+                    MonsterMoveToPlayer(i);
+            }
             else
                 MonsterMoveRandom(i);
-        }
-
-        if (boss != null)
-        {
-            //Debug.Log("Boss moving!");
-            if (monsterSensePlayer * 2 >= (System.Math.Abs(levelMap.thePlayer.h - boss.h) + System.Math.Abs(levelMap.thePlayer.w - boss.w)))
-            {
-                //if(boss.bossAbility.TryDoAbility() == false)
-                    MonsterMoveToPlayer(-1);
-            }   
-            else
-                MonsterMoveRandom(-1);
         }
     }
 
@@ -294,14 +287,14 @@ public class Monsters : MonoBehaviour {
     {
         int goingTo = -1;
         Monster thisMon = (i >= 0) ? monsList[i] : boss;
-        Astar m_astar;
+        Astar monAstar;
         List<int> pathList;
 
-        m_astar = new Astar(levelMap.tiles, levelMap.height, levelMap.width, levelMap.theObstacles.positionList,
+        monAstar = new Astar(levelMap.tiles, levelMap.height, levelMap.width, levelMap.theObstacles.positionList,
                             new int[2] { thisMon.h, thisMon.w},
                             new int[2] { levelMap.thePlayer.h, levelMap.thePlayer.w });
-        m_astar.FindPathLength(false, true);
-        pathList = m_astar.GetPath();
+        monAstar.FindPathLength(false, true);
+        pathList = monAstar.GetPath();
         if (pathList.Count > 1) goingTo = pathList[1];
 
         //for (int k = 0; k < pathList.Count; k++) Debug.Log("[" + k + "]" + ": " + pathList[k]);
@@ -446,7 +439,10 @@ public class Monsters : MonoBehaviour {
     private void KillMonsterByIndex(int i)
     {
         //Debug.Log("destroy monster #" + monsList[i].id);
-        Destroy(monsList[i].SpriteObj, 0.15f);
+        if (monsList[i].id >= 0)
+            Destroy(monsList[i].SpriteObj, 0.15f);
+        else
+            boss.SpriteObj.transform.Translate(new Vector3(0, 0, -9));
         monsList.RemoveAt(i);
     }
 
@@ -456,25 +452,20 @@ public class Monsters : MonoBehaviour {
         if (found >= 0)
             KillMonsterByIndex(found);
     }
-
-    public void KillBoss()
-    {
-        boss.SpriteObj.transform.Translate(new Vector3(0, 0, -9));
-        boss.bossAbility = null;
-        boss = null;
-    }
     
     public void DestroyMonsters()
     {
         int k = 0;
-        for (; k < monsList.Count; k++)
-        {
-            Destroy(monsList[k].SpriteObj);
-        }
+        monsList.ForEach(delegate (Monster x)
+            {
+                if (x.id >= 0)
+                    Destroy(x.SpriteObj);
+                else
+                    boss.SpriteObj.transform.Translate(new Vector3(0, 0, -9));
+            }
+        );
         monsList.Clear();
-        Debug.Log("destroy " + k + " monsters");
-        if (boss != null)
-            KillBoss();
+        //Debug.Log("destroy " + k + " monsters");
     }
 
     // Update is called once per frame
