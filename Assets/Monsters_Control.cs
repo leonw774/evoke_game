@@ -197,12 +197,14 @@ public class Monsters_Control: MonoBehaviour {
         switch (bossIndex)
         {
             case 1:
-                boss = new BossMonster(levelMap.height / 2, levelMap.width / 2, -1, GameObject.Find("Boss Sprites"), new Boss1Ability(boss, levelMap));
+                boss = new BossMonster(levelMap.height / 2, levelMap.width / 2, -1, GameObject.Find("Boss Sprites"),
+                                       new Boss1_Ability(levelMap, 7));
                 Debug.Log("Gave Boss its ability");
                 break;
             default:
                 break;
         }
+        boss.bossAbility.self = boss;
         monsList.Add(boss);
 
         // load boss sprites
@@ -232,17 +234,24 @@ public class Monsters_Control: MonoBehaviour {
         monsList.Add(new Monster(h, w, index, created));
     }
 
-    public bool TryAttackPlayer(int playerPos)
+    public int TryAttackPlayer(int playerPos)
     {
-        // true: attack success; false: attack fail
+        // returns the hp the player to be loss
+        int loss = 0;
+
+        // normal monster's attack
         int found = monsList.FindIndex(x => x.GetPostion(levelMap.width) == playerPos);
         if (found >= 0)
         {
-            KillMonsterByIndex(found);
+            KillMonsterByListIndex(found);
+            loss++;
             //Debug.Log("because it attacked player in last round");
-            return true;
         }
-        return false;
+
+        if (boss != null)
+            loss += boss.bossAbility.TryAttackPlayer(playerPos);
+
+        return loss;
     }
 
     public void MonstersChangeFrame()
@@ -275,8 +284,17 @@ public class Monsters_Control: MonoBehaviour {
             {
                 if (monsList[i].id >= 0)
                     MonsterMoveToPlayer(i);
-                else //if (boss.bossAbility.TryDoAbility() == false)
-                    MonsterMoveToPlayer(i);
+                else
+                {
+                    if (!boss.bossAbility.TryDoAbility())
+                    {
+                        MonsterMoveToPlayer(i);
+                        if (boss.bossAbility.attackCooldown > 0)
+                            boss.bossAbility.attackCooldown = 1;
+                    }
+                    else
+                        boss.bossAbility.attackCooldown = 0;
+                }
             }
             else
                 MonsterMoveRandom(i);
@@ -293,9 +311,19 @@ public class Monsters_Control: MonoBehaviour {
         monAstar = new Astar(levelMap.tiles, levelMap.height, levelMap.width, levelMap.theObstacles.positionList,
                             new int[2] { thisMon.h, thisMon.w},
                             new int[2] { levelMap.thePlayer.h, levelMap.thePlayer.w });
-        monAstar.FindPathLength(false, true);
-        pathList = monAstar.GetPath();
-        if (pathList.Count > 1) goingTo = pathList[1];
+
+        if(i >= 0)
+        {
+            monAstar.FindPathLength(false, true);
+            pathList = monAstar.GetPath();
+            if (pathList.Count > 1) goingTo = pathList[1];
+        }
+        else
+        {
+            monAstar.FindPathLength(true, true);
+            pathList = monAstar.GetPath();
+            if (pathList.Count > 1) goingTo = pathList[1];
+        }
 
         //for (int k = 0; k < pathList.Count; k++) Debug.Log("[" + k + "]" + ": " + pathList[k]);
         //Debug.Log("goingTo = " + goingTo);
@@ -324,7 +352,7 @@ public class Monsters_Control: MonoBehaviour {
                 int j = 0;
                 for (; j < monsList.Count; j++)
                 { // there is another mon on the way
-                    if (thisMon.h == newh && thisMon.w == neww) break;
+                    if (monsList[j].h == newh && monsList[j].w == neww) break;
                 }
                 if (j == monsList.Count)
                 {
@@ -389,16 +417,8 @@ public class Monsters_Control: MonoBehaviour {
 
     private void MonsterAnimSetup(int index, Vector3 begin, Vector3 end)
     {
-        if (index >= 0)
-        {
-            monsList[index].animBeginPos = begin;
-            monsList[index].animEndPos = end;
-        }
-        else
-        {
-            boss.animBeginPos = begin;
-            boss.animEndPos = end;
-        }
+        monsList[index].animBeginPos = begin;
+        monsList[index].animEndPos = end;
     }
 
     public bool MonstersAnim()
@@ -409,8 +429,6 @@ public class Monsters_Control: MonoBehaviour {
                 if (x.animBeginPos != new Vector3(0.0f, 0.0f, -1.0f))
                     x.SpriteObj.transform.position = x.SpriteObj.transform.position + (x.animEndPos - x.animBeginPos) / (Time.deltaTime / 0.00135f);
             });
-            if (boss != null)
-                boss.SpriteObj.transform.position = boss.SpriteObj.transform.position + (boss.animEndPos - boss.animBeginPos) / (Time.deltaTime / 0.00135f);
             if (monsList[0].animEndPos != new Vector3(0.0f, 0.0f, -1.0f)
                 && (monsList[0].animEndPos - monsList[0].SpriteObj.transform.position).normalized == (monsList[0].animBeginPos - monsList[0].animEndPos).normalized)
                 return true;
@@ -427,22 +445,24 @@ public class Monsters_Control: MonoBehaviour {
                 x.animEndPos = new Vector3(0.0f, 0.0f, -1.0f);
                 x.animBeginPos = new Vector3(0.0f, 0.0f, -1.0f);
             }
-            if (boss != null)
-            {
-                boss.SpriteObj.transform.position = boss.animEndPos;
-                boss.animEndPos = new Vector3(0.0f, 0.0f, -1.0f);
-                boss.animBeginPos = new Vector3(0.0f, 0.0f, -1.0f);
-            }
         });
     }
 
-    private void KillMonsterByIndex(int i)
+    private void KillMonsterByListIndex(int i)
     {
         //Debug.Log("destroy monster #" + monsList[i].id);
         if (monsList[i].id >= 0)
             Destroy(monsList[i].SpriteObj, 0.15f);
         else
-            boss.SpriteObj.transform.Translate(new Vector3(0, 0, -9));
+        {
+            if (--boss.bossAbility.healthPoint == 0)
+            {
+                boss.SpriteObj.transform.Translate(new Vector3(0, 0, -10));
+                boss = null;
+            }
+            else
+                return;
+        } 
         monsList.RemoveAt(i);
     }
 
@@ -450,18 +470,17 @@ public class Monsters_Control: MonoBehaviour {
     {
         int found = monsList.FindIndex(x => pos == x.GetPostion(levelMap.width));
         if (found >= 0)
-            KillMonsterByIndex(found);
+            KillMonsterByListIndex(found);
     }
     
     public void DestroyMonsters()
     {
-        int k = 0;
         monsList.ForEach(delegate (Monster x)
             {
                 if (x.id >= 0)
                     Destroy(x.SpriteObj);
                 else
-                    boss.SpriteObj.transform.Translate(new Vector3(0, 0, -9));
+                    boss.SpriteObj.transform.Translate(new Vector3(0, 0, -10));
             }
         );
         monsList.Clear();

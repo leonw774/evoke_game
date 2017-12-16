@@ -253,7 +253,7 @@ public class Level_Map : MonoBehaviour
 
         thePlayer.Initialize();
         thePlayer.SetEnergyPoint((int)(estimatedStep * 1.15) + (int)(monsterNumber * monsterNumAdjust));
-        thePlayer.SetHealthPoint(2 + monsterNumber / 15);
+        thePlayer.SetHealthPoint(monsterNumber / 15 + ((Save_Data.SelectedLevel == 8) ? 3 : 2));
         thePlayer.SetAbilityCooldown(0);
         thePlayer.SetFaceTo(Player_Control.FACING.FRONT);
         thePlayer.SetPositionTo(playerStartTile[0], playerStartTile[1]);

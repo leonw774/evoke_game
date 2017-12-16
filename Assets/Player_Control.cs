@@ -154,10 +154,10 @@ public class Player_Control : MonoBehaviour {
 
     private void CheckPlayerAttacked()
     {
-        bool success = levelMap.theMonsters.TryAttackPlayer(h * levelMap.width + w);
-        if (success)
+        int success = levelMap.theMonsters.TryAttackPlayer(h * levelMap.width + w);
+        if (success > 0)
         {
-            healthPoint--;
+            healthPoint -= success;
             healthPointObject.text = healthPoint.ToString();
             AttackedAnimStart();
         }
@@ -299,7 +299,7 @@ public class Player_Control : MonoBehaviour {
     {
         playerAttackedAnimation = false;
         GameObject.Find("Player Attacked Effect").GetComponent<SpriteRenderer>().enabled = false;
-        if (healthPoint == 0)
+        if (healthPoint <= 0)
             theControlPanel.toggleFailMenu();
     }
 
