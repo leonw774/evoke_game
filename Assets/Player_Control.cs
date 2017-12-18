@@ -1,8 +1,6 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using System;
 
 public class Player_Control : MonoBehaviour {
     public enum FACING : int {FRONT = 0, LEFT, BACK, RIGHT};

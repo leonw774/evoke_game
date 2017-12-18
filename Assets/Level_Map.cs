@@ -4,7 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using B83.Image.BMP;
 using UnityEngine.UI;
-using System.Reflection;
 
 
 public class Level_Map : MonoBehaviour
@@ -77,6 +76,7 @@ public class Level_Map : MonoBehaviour
         Sp = Sprite.Create(thisThemeTex, Rect, new Vector2(0.5f, 0.5f));
         GameObject.Find("Field Background").GetComponent<SpriteRenderer>().sprite = Sp;
 
+        // get outring
         thisThemeTex = Resources.Load<Texture2D>("Themes/Background/background_outring_" + Save_Data.SelectedTheme.ToString());
         Rect = new Rect(0.0f, 0.0f, (float)thisThemeTex.width, (float)thisThemeTex.height);
         Sp = Sprite.Create(thisThemeTex, Rect, new Vector2(0.5f, 0.5f));
@@ -251,9 +251,17 @@ public class Level_Map : MonoBehaviour
             monsterNumAdjust /= diviedPathAdjustmant;
         Debug.Log("monsterNumAdjust: " + monsterNumAdjust);
 
+        int ep_to_set = (int)(estimatedStep * 1.16) + (int)(monsterNumber * monsterNumAdjust);
+        int hp_to_set = monsterNumber / 15 + 2;
+
+        if (Save_Data.SelectedLevel == 8)
+        {
+            ep_to_set += (int) (monsterNumber * monsterNumAdjust) + 10;
+            hp_to_set *= 2;
+        }
         thePlayer.Initialize();
-        thePlayer.SetEnergyPoint((int)(estimatedStep * 1.15) + (int)(monsterNumber * monsterNumAdjust));
-        thePlayer.SetHealthPoint(monsterNumber / 15 + ((Save_Data.SelectedLevel == 8) ? 3 : 2));
+        thePlayer.SetEnergyPoint(ep_to_set);
+        thePlayer.SetHealthPoint(hp_to_set);
         thePlayer.SetAbilityCooldown(0);
         thePlayer.SetFaceTo(Player_Control.FACING.FRONT);
         thePlayer.SetPositionTo(playerStartTile[0], playerStartTile[1]);

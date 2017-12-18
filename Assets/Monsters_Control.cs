@@ -1,8 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using System.Xml.Linq;
 
 public enum FACING : int {UP = 0, LEFT, DOWN, RIGHT};
 
@@ -198,7 +196,7 @@ public class Monsters_Control: MonoBehaviour {
         {
             case 1:
                 boss = new BossMonster(levelMap.height / 2, levelMap.width / 2, -1, GameObject.Find("Boss Sprites"),
-                                       new Boss1_Ability(levelMap, 7));
+                                       new Boss1_Ability(levelMap, 14));
                 Debug.Log("Gave Boss its ability");
                 break;
             default:
@@ -280,20 +278,34 @@ public class Monsters_Control: MonoBehaviour {
         for (int i = 0; i < monsList.Count; i++)
         {
             if (((monsList[i].id >= 0) ? 6 : 12) >= (System.Math.Abs(levelMap.thePlayer.h - monsList[i].h) + System.Math.Abs(levelMap.thePlayer.w - monsList[i].w))
-                && Random.Range(-1, 20) > 0)
+                && Random.Range(-1, 32) > 0)
             {
                 if (monsList[i].id >= 0)
+                {
                     MonsterMoveToPlayer(i);
+                }
                 else
                 {
-                    if (!boss.bossAbility.TryDoAbility())
+                    boss.bossAbility.Decide();
+                    Debug.Log("boss decision: " + boss.bossAbility.decision);
+                    switch (boss.bossAbility.decision)
                     {
-                        MonsterMoveToPlayer(i);
-                        if (boss.bossAbility.attackCooldown > 0)
-                            boss.bossAbility.attackCooldown = 1;
+                        case 0: // move
+                            MonsterMoveToPlayer(i);
+                            break;
+                        case 1: // attack behavier wont happen until every other monster are done moving 
+                            break;
+                        case 2:
+                            boss.bossAbility.DoAbility();
+                            break;
+                        case 3:
+                            boss.bossAbility.DoSpecialMove();
+                            MonsterMoveToPlayer(i);
+                            break;
+                        default:
+                            Debug.Log("Boss can not decide!");
+                            break;
                     }
-                    else
-                        boss.bossAbility.attackCooldown = 0;
                 }
             }
             else
@@ -304,7 +316,7 @@ public class Monsters_Control: MonoBehaviour {
     private void MonsterMoveToPlayer(int i)
     {
         int goingTo = -1;
-        Monster thisMon = (i >= 0) ? monsList[i] : boss;
+        Monster thisMon = (monsList[i].id >= 0) ? monsList[i] : boss;
         Astar monAstar;
         List<int> pathList;
 
@@ -312,23 +324,14 @@ public class Monsters_Control: MonoBehaviour {
                             new int[2] { thisMon.h, thisMon.w},
                             new int[2] { levelMap.thePlayer.h, levelMap.thePlayer.w });
 
-        if(i >= 0)
-        {
-            monAstar.FindPathLength(false, true);
-            pathList = monAstar.GetPath();
-            if (pathList.Count > 1) goingTo = pathList[1];
-        }
-        else
-        {
-            monAstar.FindPathLength(true, true);
-            pathList = monAstar.GetPath();
-            if (pathList.Count > 1) goingTo = pathList[1];
-        }
+        monAstar.FindPathLength(false, true);
+        pathList = monAstar.GetPath();
+        if (pathList.Count > 1) goingTo = pathList[1];
 
         //for (int k = 0; k < pathList.Count; k++) Debug.Log("[" + k + "]" + ": " + pathList[k]);
         //Debug.Log("goingTo = " + goingTo);
 
-        if (goingTo == -1 || pathList.Count > 16)
+        if (goingTo == -1 || pathList.Count > ((i >= 0) ? 16 : 24))
         { // Monster sense player but cannot find path //Debug.Log("try MonsterMoveToPlayer() failed");
             MonsterMoveRandom(i);
         }
@@ -368,7 +371,7 @@ public class Monsters_Control: MonoBehaviour {
     private void MonsterMoveRandom(int i)
     {
         //Debug.Log("MonsterMoveRandom()");
-        Monster thisMon = (i >= 0) ? monsList[i] : boss;
+        Monster thisMon = (monsList[i].id >= 0) ? monsList[i] : boss;
 
         int tryCount = 0;
         if (thisMon.h == levelMap.thePlayer.h && thisMon.w == levelMap.thePlayer.w)
@@ -455,12 +458,12 @@ public class Monsters_Control: MonoBehaviour {
             Destroy(monsList[i].SpriteObj, 0.15f);
         else
         {
-            if (--boss.bossAbility.healthPoint == 0)
+            if ((boss.bossAbility.hp = boss.bossAbility.hp - 1) == 0)
             {
                 boss.SpriteObj.transform.Translate(new Vector3(0, 0, -10));
                 boss = null;
             }
-            else
+            else // boss not dead yet
                 return;
         } 
         monsList.RemoveAt(i);
