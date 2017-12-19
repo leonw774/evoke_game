@@ -55,23 +55,27 @@ public class Boss1_Ability : BossMonsterAbility {
         Astar monAstar = new Astar(levelMap.tiles, levelMap.height, levelMap.width, levelMap.theObstacles.positionList,
                             new int[2] { self.h, self.h },
                             new int[2] { levelMap.thePlayer.h, levelMap.thePlayer.w });
-        monAstar.FindPathLength(true, true, true);
+        monAstar.FindPathLength(false, true, true);
         List<int> pathList = monAstar.GetPath();
         if (pathList.Count > 1)
-            self.FaceTo((FACING) ((pathList[1] + 2) % 4));
+            self.FaceTo((FACING) (pathList[1]));
+
+        for (int k = 0; k < pathList.Count; k++) Debug.Log("[" + k + "]" + ": " + pathList[k]);
+        Debug.Log("self.FaceTo = " + (int) self.faceTo);
+
         int h_tocheck = self.h, w_tocheck = self.w;
         switch ((int)self.faceTo)
         {
             case 0: // up
-                h_tocheck++; break;
-            case 1: // left
-                w_tocheck++; break;
-            case 2: // down
                 h_tocheck--; break;
-            case 3: // right
+            case 1: // left
                 w_tocheck--; break;
+            case 2: // down
+                h_tocheck++; break;
+            case 3: // right
+                w_tocheck++; break;
         }
-        Debug.Log("boss TryDoAbility(): boss at " + self.h + ", " + self.w + "; found " + h_tocheck + ", " + w_tocheck);
+        Debug.Log("boss TryDoAbility(): boss at " + self.h + ", " + self.w + "; try at " + h_tocheck + ", " + w_tocheck);
         return levelMap.theObstacles.positionList.Exists(x => x == h_tocheck * levelMap.width + w_tocheck);
     }
 
@@ -82,13 +86,13 @@ public class Boss1_Ability : BossMonsterAbility {
         switch ((int)self.faceTo)
         {
             case 0: // up
-                h_tocheck++; break;
-            case 1: // left
-                w_tocheck++; break;
-            case 2: // down
                 h_tocheck--; break;
-            case 3: // right
+            case 1: // left
                 w_tocheck--; break;
+            case 2: // down
+                h_tocheck++; break;
+            case 3: // right
+                w_tocheck++; break;
         }
         while (lookat < 1)
         {

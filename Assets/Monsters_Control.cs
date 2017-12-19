@@ -324,7 +324,7 @@ public class Monsters_Control: MonoBehaviour {
                             new int[2] { thisMon.h, thisMon.w},
                             new int[2] { levelMap.thePlayer.h, levelMap.thePlayer.w });
 
-        monAstar.FindPathLength(false, false, true);
+        monAstar.FindPathLength(false, (monsList[i].id < 0), true);
         pathList = monAstar.GetPath();
         if (pathList.Count > 1) goingTo = pathList[1];
 

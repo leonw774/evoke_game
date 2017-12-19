@@ -158,7 +158,7 @@ public class Astar {
                 {
                     if (canBreakThroughObs)
                     { // yes: add random steps for this obs 
-                        nbCostScore += ((Random.Range(0, 4) == 0) ? Random.Range(-1, 2) : -1);
+                        nbCostScore += ((Random.Range(0, 2) == 0) ? 0 : -1);
                     }
                     else
                     { // no: then it function as a wall
