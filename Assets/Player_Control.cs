@@ -152,6 +152,10 @@ public class Player_Control : MonoBehaviour {
 
     private void CheckPlayerAttacked()
     {
+        // if player finish the map, monster can not fail it afterward.
+        if (theControlPanel.isFinishMenu)
+            return;
+        
         int success = levelMap.theMonsters.TryAttackPlayer(h * levelMap.width + w);
         if (success > 0)
         {

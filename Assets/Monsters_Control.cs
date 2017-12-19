@@ -196,7 +196,7 @@ public class Monsters_Control: MonoBehaviour {
         {
             case 1:
                 boss = new BossMonster(levelMap.height / 2, levelMap.width / 2, -1, GameObject.Find("Boss Sprites"),
-                                       new Boss1_Ability(levelMap, 14));
+                                       new Boss1_Ability(levelMap, 13));
                 Debug.Log("Gave Boss its ability");
                 break;
             default:
@@ -324,14 +324,14 @@ public class Monsters_Control: MonoBehaviour {
                             new int[2] { thisMon.h, thisMon.w},
                             new int[2] { levelMap.thePlayer.h, levelMap.thePlayer.w });
 
-        monAstar.FindPathLength(false, true);
+        monAstar.FindPathLength(false, false, true);
         pathList = monAstar.GetPath();
         if (pathList.Count > 1) goingTo = pathList[1];
 
         //for (int k = 0; k < pathList.Count; k++) Debug.Log("[" + k + "]" + ": " + pathList[k]);
         //Debug.Log("goingTo = " + goingTo);
 
-        if (goingTo == -1 || pathList.Count > ((i >= 0) ? 16 : 24))
+        if (goingTo == -1 || pathList.Count > ((i >= 0) ? 16 : 32))
         { // Monster sense player but cannot find path //Debug.Log("try MonsterMoveToPlayer() failed");
             MonsterMoveRandom(i);
         }
@@ -458,7 +458,7 @@ public class Monsters_Control: MonoBehaviour {
             Destroy(monsList[i].SpriteObj, 0.15f);
         else
         {
-            if ((boss.bossAbility.hp = boss.bossAbility.hp - 1) == 0)
+            if ((boss.bossAbility.hp = boss.bossAbility.hp - 1) == 0) // boss dead
             {
                 boss.SpriteObj.transform.Translate(new Vector3(0, 0, -10));
                 boss = null;

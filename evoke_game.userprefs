@@ -1,15 +1,15 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Monsters_Control.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Boss1Ability.cs">
     <Files>
       <File FileName="Assets\Level_Menu.cs" Line="1" Column="1" />
-      <File FileName="Assets\Save_Data.cs" Line="1" Column="1" />
-      <File FileName="Assets\Game_Menu.cs" Line="1" Column="1" />
+      <File FileName="Assets\Game_Menu.cs" Line="19" Column="29" />
       <File FileName="Assets\Info_Menu.cs" Line="1" Column="1" />
-      <File FileName="Assets\Level_Map.cs" Line="248" Column="83" />
-      <File FileName="Assets\Player_Control.cs" Line="1" Column="1" />
-      <File FileName="Assets\Monsters_Control.cs" Line="462" Column="42" />
-      <File FileName="Assets\Obstacles.cs" Line="99" Column="39" />
+      <File FileName="Assets\Level_Map.cs" Line="254" Column="30" />
+      <File FileName="Assets\Player_Control.cs" Line="156" Column="31" />
+      <File FileName="Assets\Obstacles.cs" Line="1" Column="1" />
+      <File FileName="Assets\Monsters_Control.cs" Line="334" Column="66" />
+      <File FileName="Assets\Boss1Ability.cs" Line="74" Column="9" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

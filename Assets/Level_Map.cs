@@ -230,7 +230,7 @@ public class Level_Map : MonoBehaviour
             case 2:
                 monsterNumber = 8; break;
             default:
-                monsterNumber = (tiles.Length - wallsNumber - 8) / 36 + ((Save_Data.SelectedLevel > 5) ? 4 : Save_Data.SelectedLevel - 1);
+                monsterNumber = (tiles.Length - wallsNumber - 8) / 32 + ((Save_Data.SelectedLevel > 4) ? 4 : Save_Data.SelectedLevel);
                 break;
         }
         Debug.Log("the map ask for " + monsterNumber + " monsters");
@@ -240,7 +240,7 @@ public class Level_Map : MonoBehaviour
     {
         // use A-star to find least steps to finish
         Astar astar = new Astar(tiles, height, width, theObstacles.positionList, playerStartTile, finishTile);
-        estimatedStep = astar.FindPathLength(true, false);
+        estimatedStep = astar.FindPathLength(false, true, false);
         Debug.Log("estimatedStep:" + estimatedStep);
 
         int emptyTilesNnum = height * width - wallsNumber;
@@ -251,13 +251,13 @@ public class Level_Map : MonoBehaviour
             monsterNumAdjust /= diviedPathAdjustmant;
         Debug.Log("monsterNumAdjust: " + monsterNumAdjust);
 
-        int ep_to_set = (int)(estimatedStep * 1.16) + (int)(monsterNumber * monsterNumAdjust);
+        int ep_to_set = (int)estimatedStep + (int)(monsterNumber * monsterNumAdjust);
         int hp_to_set = monsterNumber / 15 + 2;
 
         if (Save_Data.SelectedLevel == 8)
         {
-            ep_to_set += (int) (monsterNumber * monsterNumAdjust) + 10;
-            hp_to_set *= 2;
+            ep_to_set += (int) (monsterNumber * monsterNumAdjust);
+            hp_to_set += monsterNumber / 15;
         }
         thePlayer.Initialize();
         thePlayer.SetEnergyPoint(ep_to_set);

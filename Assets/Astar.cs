@@ -119,7 +119,7 @@ public class Astar {
         EstimatedTotalCostMap[StartTile.h, StartTile.w] = EstimateCost(StartTile);
     }
 
-    public int FindPathLength(bool canBreakThroughObs, bool recordPath) // retrun -1 means failure
+    public int FindPathLength(bool ignoreObs, bool canBreakThroughObs, bool recordPath) // retrun -1 means failure
     {
         while(OpenList.Count > 0)
         {
@@ -154,18 +154,18 @@ public class Astar {
 
                 // calculate cost form start to here
                 int nbCostScore = CostMap[curTile.h, curTile.w] + 1;
-                if (GeoMap[nbTile.h, nbTile.w] == (int)PATH_TILE_TYPE.OBSTACLE)
+                if (!ignoreObs && GeoMap[nbTile.h, nbTile.w] == (int)PATH_TILE_TYPE.OBSTACLE)
                 {
                     if (canBreakThroughObs)
-                    { // yes: add random steps for this obs
-                        int rn = Random.Range(0, 2);
-                        nbCostScore += ((Random.Range(0, 1) == 0) ? 1 : rn);
+                    { // yes: add random steps for this obs 
+                        nbCostScore += ((Random.Range(0, 4) == 0) ? Random.Range(-1, 2) : -1);
                     }
                     else
                     { // no: then it function as a wall
                         continue;
                     }
                 }
+                nbCostScore += 1;
                 // check if it is a newly discovered block
                 if (!OpenList.Exists(x => x.IsEqualTile(nbTile)))
                 {

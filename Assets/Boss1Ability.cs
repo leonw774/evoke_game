@@ -8,7 +8,7 @@ public class Boss1_Ability : BossMonsterAbility {
     {
     }
 
-    public override int Decide()
+    override public int Decide()
     {
         int foundPos = levelMap.theObstacles.positionList.Find(x => x == self.h * levelMap.width + self.w);
         if (foundPos > 0) levelMap.theObstacles.ObsDestroy(foundPos);
@@ -55,22 +55,23 @@ public class Boss1_Ability : BossMonsterAbility {
         Astar monAstar = new Astar(levelMap.tiles, levelMap.height, levelMap.width, levelMap.theObstacles.positionList,
                             new int[2] { self.h, self.h },
                             new int[2] { levelMap.thePlayer.h, levelMap.thePlayer.w });
-        monAstar.FindPathLength(true, true);
+        monAstar.FindPathLength(true, true, true);
         List<int> pathList = monAstar.GetPath();
         if (pathList.Count > 1)
-            self.FaceTo((FACING)pathList[1]);
+            self.FaceTo((FACING) ((pathList[1] + 2) % 4));
         int h_tocheck = self.h, w_tocheck = self.w;
         switch ((int)self.faceTo)
         {
             case 0: // up
-                h_tocheck--; break;
-            case 1: // left
-                w_tocheck--; break;
-            case 2: // down
                 h_tocheck++; break;
-            case 3: // right
+            case 1: // left
                 w_tocheck++; break;
+            case 2: // down
+                h_tocheck--; break;
+            case 3: // right
+                w_tocheck--; break;
         }
+        Debug.Log("boss TryDoAbility(): boss at " + self.h + ", " + self.w + "; found " + h_tocheck + ", " + w_tocheck);
         return levelMap.theObstacles.positionList.Exists(x => x == h_tocheck * levelMap.width + w_tocheck);
     }
 
@@ -81,13 +82,13 @@ public class Boss1_Ability : BossMonsterAbility {
         switch ((int)self.faceTo)
         {
             case 0: // up
-                h_tocheck--; break;
-            case 1: // left
-                w_tocheck--; break;
-            case 2: // down
                 h_tocheck++; break;
+            case 1: // left
+                w_tocheck++; break;
+            case 2: // down
+                h_tocheck--; break;
             case 3: // right
-                w_tocheck++;break;
+                w_tocheck--; break;
         }
         while (lookat < 1)
         {
@@ -108,13 +109,11 @@ public class Boss1_Ability : BossMonsterAbility {
         monAstar = new Astar(levelMap.tiles, levelMap.height, levelMap.width, levelMap.theObstacles.positionList,
                             new int[2] { self.h, self.h },
                             new int[2] { levelMap.thePlayer.h, levelMap.thePlayer.w });
-        monAstar.FindPathLength(true, true);
+        monAstar.FindPathLength(false, true, true);
         pathList = monAstar.GetPath();
         if (pathList.Count > 1) goingTo = pathList[1];
 
-        //for (int k = 0; k < pathList.Count; k++) Debug.Log("[" + k + "]" + ": " + pathList[k]);
-        //Debug.Log("goingTo = " + goingTo);
-
+        int newh = self.h, neww = self.w;
         if (goingTo == -1)
         {
             Debug.Log("boss DoSpecialMove() failed");
@@ -122,48 +121,38 @@ public class Boss1_Ability : BossMonsterAbility {
         }
         else if (pathList.Count > 2)
         {
-            int newh = self.h, neww = self.w;
             switch (goingTo)
             {
                 case 0: // up
-                    newh++; break;
-                case 1: // left
-                    neww++; break;
-                case 2: // down
                     newh--; break;
-                case 3: // right
+                case 1: // left
                     neww--; break;
-            }
-            if (levelMap.tiles[newh, neww] != (int)Level_Map.TILE_TYPE.WALL && !levelMap.theObstacles.positionList.Exists(x => x == (newh * levelMap.width + neww)))
-            {
-                // no need to detect if there is another mon on the way
-                //Debug.Log("Monster " + i + "moved from " + thisMon.h + "," + thisMon.w + " to " + newh + "," + neww);
-                self.MoveTo(newh, neww);
-                self.FaceTo((FACING)goingTo);
+                case 2: // down
+                    newh++; break;
+                case 3: // right
+                    neww++; break;
             }
         }
         else
         {
-            //Debug.Log("MonsterMoveToPlayer()");
-            int newh = self.h, neww = self.w;
             switch (goingTo)
             {
                 case 0: // up
-                    newh--; break;
-                case 1: // left
-                    neww--; break;
-                case 2: // down
                     newh++; break;
-                case 3: // right
+                case 1: // left
                     neww++; break;
+                case 2: // down
+                    newh--; break;
+                case 3: // right
+                    neww--; break;
             }
-            if (levelMap.tiles[newh, neww] != (int)Level_Map.TILE_TYPE.WALL && !levelMap.theObstacles.positionList.Exists(x => x == (newh * levelMap.width + neww)))
-            {
-                // no need to detect if there is another mon on the way
-                //Debug.Log("Monster " + i + "moved from " + thisMon.h + "," + thisMon.w + " to " + newh + "," + neww);
-                self.MoveTo(newh, neww);
-                self.FaceTo((FACING)goingTo);
-            }
+        }
+
+        if (levelMap.tiles[newh, neww] != (int)Level_Map.TILE_TYPE.WALL && !levelMap.theObstacles.positionList.Exists(x => x == (newh * levelMap.width + neww)))
+        {
+            // no need to detect if there is another mon on the way
+            self.MoveTo(newh, neww);
+            self.FaceTo((FACING)goingTo);
         }
     }
 }
