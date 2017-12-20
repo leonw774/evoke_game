@@ -202,7 +202,7 @@ public class Monsters_Control: MonoBehaviour {
             default:
                 break;
         }
-        boss.bossAbility.self = boss;
+        boss.bossAbility.SetSelf(boss);
         monsList.Add(boss);
 
         // load boss sprites
@@ -223,7 +223,7 @@ public class Monsters_Control: MonoBehaviour {
     private void Spawn(int h, int w, int index)
     {
         //Debug.Log("monster spawn happened at " + h + "," + w);
-        Vector3 trans = new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0);
+        Vector3 trans = new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 1);
         GameObject created = Instantiate(prototype);
         created.name = "Monster Sprite" + index.ToString();
         created.tag = "Monster";
@@ -326,12 +326,15 @@ public class Monsters_Control: MonoBehaviour {
 
         monAstar.FindPathLength(false, (monsList[i].id < 0), true);
         pathList = monAstar.GetPath();
-        if (pathList.Count > 1) goingTo = pathList[1];
+        if (pathList.Count > 1) goingTo = pathList[0];
 
-        //for (int k = 0; k < pathList.Count; k++) Debug.Log("[" + k + "]" + ": " + pathList[k]);
-        //Debug.Log("goingTo = " + goingTo);
+        //if (monsList[i].id < 0)
+        //{
+            for (int k = 0; k < pathList.Count; k++) Debug.Log("[" + k + "]" + ": " + pathList[k]);
+            Debug.Log("goingTo = " + goingTo);
+        //}
 
-        if (goingTo == -1 || pathList.Count > ((i >= 0) ? 16 : 32))
+        if (goingTo == -1 || pathList.Count > ((i >= 0) ? 12 : 24))
         { // Monster sense player but cannot find path //Debug.Log("try MonsterMoveToPlayer() failed");
             MonsterMoveRandom(i);
         }
@@ -362,7 +365,7 @@ public class Monsters_Control: MonoBehaviour {
                     //Debug.Log("Monster " + i + "moved from " + thisMon.h + "," + thisMon.w + " to " + newh + "," + neww);
                     thisMon.MoveTo(newh, neww);
                     thisMon.FaceTo((FACING) goingTo);
-                    MonsterAnimSetup(i, thisMon.SpriteObj.transform.position, new Vector3((neww - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - newh - 0.5f), 0));
+                    MonsterAnimSetup(i, thisMon.SpriteObj.transform.position, new Vector3((neww - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - newh - 0.5f), 1));
                 }
             }
         }
@@ -408,7 +411,7 @@ public class Monsters_Control: MonoBehaviour {
                     //Debug.Log("Monster " + i + "moved from " + monsterList[i].h + "," + monsterList[i].w + " to " + newh + "," + neww);
                     thisMon.MoveTo(newh, neww);
                     thisMon.FaceTo((FACING) goingTo);
-                    MonsterAnimSetup(i, thisMon.SpriteObj.transform.position, new Vector3((neww - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - newh - 0.5f), 0));
+                    MonsterAnimSetup(i, thisMon.SpriteObj.transform.position, new Vector3((neww - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - newh - 0.5f), 1));
                     break;
                 }
             }

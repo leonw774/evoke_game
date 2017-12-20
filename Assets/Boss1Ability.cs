@@ -53,15 +53,15 @@ public class Boss1_Ability : BossMonsterAbility {
     override public bool TryDoAbility()
     {
         Astar monAstar = new Astar(levelMap.tiles, levelMap.height, levelMap.width, levelMap.theObstacles.positionList,
-                            new int[2] { self.h, self.h },
+                            new int[2] { self.h, self.w },
                             new int[2] { levelMap.thePlayer.h, levelMap.thePlayer.w });
         monAstar.FindPathLength(false, true, true);
         List<int> pathList = monAstar.GetPath();
         if (pathList.Count > 1)
-            self.FaceTo((FACING) (pathList[1]));
+            self.FaceTo((FACING) pathList[0]);
 
-        for (int k = 0; k < pathList.Count; k++) Debug.Log("[" + k + "]" + ": " + pathList[k]);
-        Debug.Log("self.FaceTo = " + (int) self.faceTo);
+        //monAstar.PrintPath();
+        //Debug.Log("self.FaceTo = " + (int) self.faceTo);
 
         int h_tocheck = self.h, w_tocheck = self.w;
         switch ((int)self.faceTo)
@@ -111,11 +111,11 @@ public class Boss1_Ability : BossMonsterAbility {
         List<int> pathList;
 
         monAstar = new Astar(levelMap.tiles, levelMap.height, levelMap.width, levelMap.theObstacles.positionList,
-                            new int[2] { self.h, self.h },
+                            new int[2] { self.h, self.w },
                             new int[2] { levelMap.thePlayer.h, levelMap.thePlayer.w });
         monAstar.FindPathLength(false, true, true);
         pathList = monAstar.GetPath();
-        if (pathList.Count > 1) goingTo = pathList[1];
+        if (pathList.Count > 1) goingTo = pathList[0];
 
         int newh = self.h, neww = self.w;
         if (goingTo == -1)

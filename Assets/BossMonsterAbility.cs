@@ -6,7 +6,7 @@ public class BossMonsterAbility : MonoBehaviour {
 
     public SpriteRenderer sr_frame1, sr_frame2, sr_frame_hurt, sr_frame_abillity;
     public Text hpOutput;
-    public Monster self;
+    protected Monster self;
     protected Level_Map levelMap;
 
     public int decision;
@@ -37,6 +37,12 @@ public class BossMonsterAbility : MonoBehaviour {
         healthPoint = _hp;
         hpOutput.text = healthPoint.ToString();
         decision = -1;
+        self = null;
+    }
+
+    public void SetSelf(Monster _self)
+    {
+        self = _self;
     }
 
     virtual public int Decide()

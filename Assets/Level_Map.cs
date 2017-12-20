@@ -241,17 +241,19 @@ public class Level_Map : MonoBehaviour
         // use A-star to find least steps to finish
         Astar astar = new Astar(tiles, height, width, theObstacles.positionList, playerStartTile, finishTile);
         estimatedStep = astar.FindPathLength(false, true, false);
+        //astar.PrintPath();
         Debug.Log("estimatedStep:" + estimatedStep);
 
         int emptyTilesNnum = height * width - wallsNumber;
-        double monsterNumAdjust = 2.3;
+        double monsterNumAdjust = 2.4;
         double diviedPathAdjustmant = ((int)(emptyTilesNnum / (estimatedStep * 4.3) * 100) / 100.0);
-        Debug.Log("diviedPathAdjustmant: " + diviedPathAdjustmant);
         if (diviedPathAdjustmant > 1.0)
             monsterNumAdjust /= diviedPathAdjustmant;
-        Debug.Log("monsterNumAdjust: " + monsterNumAdjust);
+        
+        //Debug.Log("diviedPathAdjustmant: " + diviedPathAdjustmant);
+        //Debug.Log("monsterNumAdjust: " + monsterNumAdjust);
 
-        int ep_to_set = (int)estimatedStep + (int)(monsterNumber * monsterNumAdjust);
+        int ep_to_set = (int) (estimatedStep * 1.15) + (int)(monsterNumber * monsterNumAdjust);
         int hp_to_set = monsterNumber / 15 + 2;
 
         if (Save_Data.SelectedLevel == 8)

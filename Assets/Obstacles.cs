@@ -138,10 +138,9 @@ public class Obstacles : MonoBehaviour {
             find_something_to_adjust = DistributeAdjust();
             CorridorAdjust();
             count++;
-            Debug.Log("Obstacles Adjusted");
         } while (find_something_to_adjust && count < 4);
         //DistributeAdjust();
-
+        Debug.Log("Obstacles Adjusted");
         /*
         DistributeAdjust();
         CorridorAdjust();
@@ -273,7 +272,7 @@ public class Obstacles : MonoBehaviour {
             obs[k] = null;
         }
         positionList .Clear();
-        Debug.Log("destroy " + k + " obs");
+        //Debug.Log("Destroyed " + k + " obs");
     }
 	
 	// Update is called once per frame
