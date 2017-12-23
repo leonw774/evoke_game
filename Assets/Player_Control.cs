@@ -17,6 +17,7 @@ public class Player_Control : MonoBehaviour {
     private Text energyPointObject;
     private Text healthPointObject;
     private Text abilityCooldownObject;
+    private AudioSource abilitySound;
     private Game_Menu theControlPanel;
     private Level_Map levelMap;
 
@@ -34,6 +35,8 @@ public class Player_Control : MonoBehaviour {
         energyPointObject = GameObject.Find("EP Output").GetComponent<Text>();
         healthPointObject = GameObject.Find("HP Output").GetComponent<Text>();
         abilityCooldownObject = GameObject.Find("CD Output").GetComponent<Text>();
+        abilitySound = GameObject.Find("Ability Sound").GetComponent<AudioSource>();
+        abilitySound.playOnAwake = false;
     }
 
     public void playerMoveUp()
@@ -89,6 +92,7 @@ public class Player_Control : MonoBehaviour {
         //Debug.Log("playerDoAbility");
         if (DoAbility())
         {
+            abilitySound.Play();
             levelMap.theMonsters.MonstersMove();
             AnimSetup();
             if (energyPoint == 0) theControlPanel.toggleFailMenu();

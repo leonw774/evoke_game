@@ -115,7 +115,7 @@ public class Boss1_Ability : BossMonsterAbility {
                             new int[2] { levelMap.thePlayer.h, levelMap.thePlayer.w });
         monAstar.FindPathLength(false, true, true);
         pathList = monAstar.GetPath();
-        if (pathList.Count > 1) goingTo = pathList[0];
+        if (pathList.Count > 0) goingTo = pathList[0];
 
         int newh = self.h, neww = self.w;
         if (goingTo == -1)

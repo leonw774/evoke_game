@@ -24,8 +24,14 @@ public class Obstacles : MonoBehaviour {
 
     public void Construct()
     {
-        Generate();
-        Adjust();
+        int walkableTilesNum = levelMap.tiles.Length - levelMap.wallsNumber;
+        do
+        {
+            if (positionList.Count > 0) DestroyAllObstacles();
+            Generate();
+            Adjust();
+        } while (positionList.Count < (int) (walkableTilesNum * 0.3) || positionList.Count > (int)(walkableTilesNum * 0.7));
+
         Debug.Log("There are " + positionList.Count + " obs in map");
     }
 

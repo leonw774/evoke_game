@@ -216,7 +216,7 @@ public class Monsters_Control: MonoBehaviour {
         boss.bossAbility.sr_frame2.sprite = Sp;
 
         // make Boss Sprites appear
-        Vector3 trans = new Vector3((levelMap.width / 2 - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - (levelMap.height / 2) - 0.5f), 0);
+        Vector3 trans = new Vector3((levelMap.width / 2 - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - (levelMap.height / 2) - 0.5f), 1);
         boss.SpriteObj.transform.transform.position = trans;
     }
 
@@ -326,13 +326,10 @@ public class Monsters_Control: MonoBehaviour {
 
         monAstar.FindPathLength(false, (monsList[i].id < 0), true);
         pathList = monAstar.GetPath();
-        if (pathList.Count > 1) goingTo = pathList[0];
+        if (pathList.Count > 0) goingTo = pathList[0];
 
-        //if (monsList[i].id < 0)
-        //{
-            for (int k = 0; k < pathList.Count; k++) Debug.Log("[" + k + "]" + ": " + pathList[k]);
-            Debug.Log("goingTo = " + goingTo);
-        //}
+        //Debug.Log("mon #" + monsList[i].id + " goingTo = " + goingTo);
+        //for (int k = 0; k < pathList.Count; k++) Debug.Log("[" + k + "]" + ": " + pathList[k]);
 
         if (goingTo == -1 || pathList.Count > ((i >= 0) ? 12 : 24))
         { // Monster sense player but cannot find path //Debug.Log("try MonsterMoveToPlayer() failed");

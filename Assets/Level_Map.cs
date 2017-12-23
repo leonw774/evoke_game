@@ -245,7 +245,7 @@ public class Level_Map : MonoBehaviour
         Debug.Log("estimatedStep:" + estimatedStep);
 
         int emptyTilesNnum = height * width - wallsNumber;
-        double monsterNumAdjust = 2.4;
+        double monsterNumAdjust = 2.5;
         double diviedPathAdjustmant = ((int)(emptyTilesNnum / (estimatedStep * 4.3) * 100) / 100.0);
         if (diviedPathAdjustmant > 1.0)
             monsterNumAdjust /= diviedPathAdjustmant;
@@ -253,7 +253,7 @@ public class Level_Map : MonoBehaviour
         //Debug.Log("diviedPathAdjustmant: " + diviedPathAdjustmant);
         //Debug.Log("monsterNumAdjust: " + monsterNumAdjust);
 
-        int ep_to_set = (int) (estimatedStep * 1.15) + (int)(monsterNumber * monsterNumAdjust);
+        int ep_to_set = (int) (estimatedStep * 1.2) + (int)(monsterNumber * monsterNumAdjust);
         int hp_to_set = monsterNumber / 15 + 2;
 
         if (Save_Data.SelectedLevel == 8)
