@@ -41,61 +41,71 @@ public class Player_Control : MonoBehaviour {
 
     public void playerMoveUp()
     {
-        //Debug.Log("playerMoveUp");
-        if (Move(-1, 0)) // it is monster's turn only if player did change position
+        if (times_irreponsive <= Time.time)
         {
-            SetFaceTo(FACING.BACK);
-            levelMap.theMonsters.MonstersMove();
-            AnimSetup();
-            if (energyPoint == 0) theControlPanel.toggleFailMenu();
+            if (Move(-1, 0)) // it is monster's turn only if player did change position
+            {
+                SetFaceTo(FACING.BACK);
+                levelMap.theMonsters.MonstersMove();
+                AnimSetup();
+                if (energyPoint == 0) theControlPanel.toggleFailMenu();
+            }
         }
     }
 
     public void playerMoveLeft()
     {
-        //Debug.Log("playerMoveLeft");
-        if (Move(0, -1))
+        if (times_irreponsive <= Time.time)
         {
-            SetFaceTo(FACING.LEFT);
-            levelMap.theMonsters.MonstersMove();
-            AnimSetup();
-            if (energyPoint == 0) theControlPanel.toggleFailMenu();
+            if (Move(0, -1))
+            {
+                SetFaceTo(FACING.LEFT);
+                levelMap.theMonsters.MonstersMove();
+                AnimSetup();
+                if (energyPoint == 0) theControlPanel.toggleFailMenu();
+            }
         }
     }
 
     public void playerMoveDown()
     {
-        //Debug.Log("playerMoveDown");
-        if (Move(1, 0))
+        if (times_irreponsive <= Time.time)
         {
-            SetFaceTo(FACING.FRONT);
-            levelMap.theMonsters.MonstersMove();
-            AnimSetup();
-            if (energyPoint == 0) theControlPanel.toggleFailMenu();
+            if (Move(1, 0))
+            {
+                SetFaceTo(FACING.FRONT);
+                levelMap.theMonsters.MonstersMove();
+                AnimSetup();
+                if (energyPoint == 0) theControlPanel.toggleFailMenu();
+            }
         }
     }
 
     public void playerMoveRight()
     {
-        //Debug.Log("playerMoveRight");
-        if (Move(0, 1))
+        if (times_irreponsive <= Time.time)
         {
-            SetFaceTo(FACING.RIGHT);
-            levelMap.theMonsters.MonstersMove();
-            AnimSetup();
-            if (energyPoint == 0) theControlPanel.toggleFailMenu();
+            if (Move(0, 1))
+            {
+                SetFaceTo(FACING.RIGHT);
+                levelMap.theMonsters.MonstersMove();
+                AnimSetup();
+                if (energyPoint == 0) theControlPanel.toggleFailMenu();
+            }
         }
     }
 
     public void playerDoAbility()
     {
-        //Debug.Log("playerDoAbility");
-        if (DoAbility())
+        if (times_irreponsive <= Time.time)
         {
-            abilitySound.Play();
-            levelMap.theMonsters.MonstersMove();
-            AnimSetup();
-            if (energyPoint == 0) theControlPanel.toggleFailMenu();
+            if (DoAbility())
+            {
+                abilitySound.Play();
+                levelMap.theMonsters.MonstersMove();
+                AnimSetup();
+                if (energyPoint == 0) theControlPanel.toggleFailMenu();
+            }
         }
     }
 
@@ -317,7 +327,7 @@ public class Player_Control : MonoBehaviour {
 
     void Anim()
     {
-        // do animation in the irreponsive time
+        
         if (times_irreponsive <= Time.time || player_ask_for_end_anim || monsters_ask_for_end_anim)
         {
             moveAnimation = false;
@@ -367,29 +377,28 @@ public class Player_Control : MonoBehaviour {
             AttackedAnimEnd();
         }
 
-        if (times_irreponsive <= Time.time)
+        /* for testing on PC */
+        if (Input.GetKey(KeyCode.UpArrow))
         {
-            if (Input.GetKey(KeyCode.UpArrow))
-            {
-                playerMoveUp();
-            }
-            if (Input.GetKey(KeyCode.DownArrow))
-            {
-                playerMoveDown();
-            }
-            if (Input.GetKey(KeyCode.LeftArrow))
-            {
-                playerMoveLeft();
-            }
-            if (Input.GetKey(KeyCode.RightArrow))
-            {
-                playerMoveRight();
-            }
-            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
-            {
-                playerDoAbility();
-            }
+            playerMoveUp();
         }
+        if (Input.GetKey(KeyCode.DownArrow))
+        {
+            playerMoveDown();
+        }
+        if (Input.GetKey(KeyCode.LeftArrow))
+        {
+            playerMoveLeft();
+        }
+        if (Input.GetKey(KeyCode.RightArrow))
+        {
+            playerMoveRight();
+        }
+        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+        {
+            playerDoAbility();
+        }
+        /* for testing on PC */
 
         if (moveAnimation)
         {
