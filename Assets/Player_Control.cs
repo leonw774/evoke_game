@@ -1,6 +1,6 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+using TileTypeDefine;
 
 public class Player_Control : MonoBehaviour {
     public enum FACING : int {FRONT = 0, LEFT, BACK, RIGHT};
@@ -17,7 +17,7 @@ public class Player_Control : MonoBehaviour {
     private Text energyPointObject;
     private Text healthPointObject;
     private Text abilityCooldownObject;
-    private AudioSource abilitySound;
+    private AudioSource abilitySound, moveSound;
     private Game_Menu theControlPanel;
     private Level_Map levelMap;
 
@@ -35,8 +35,8 @@ public class Player_Control : MonoBehaviour {
         energyPointObject = GameObject.Find("EP Output").GetComponent<Text>();
         healthPointObject = GameObject.Find("HP Output").GetComponent<Text>();
         abilityCooldownObject = GameObject.Find("CD Output").GetComponent<Text>();
+        moveSound = GameObject.Find("Move Sound").GetComponent<AudioSource>();
         abilitySound = GameObject.Find("Ability Sound").GetComponent<AudioSource>();
-        abilitySound.playOnAwake = false;
     }
 
     public void playerMoveUp()
@@ -45,6 +45,7 @@ public class Player_Control : MonoBehaviour {
         {
             if (Move(-1, 0)) // it is monster's turn only if player did change position
             {
+                moveSound.Play();
                 SetFaceTo(FACING.BACK);
                 levelMap.theMonsters.MonstersMove();
                 AnimSetup();
@@ -59,6 +60,7 @@ public class Player_Control : MonoBehaviour {
         {
             if (Move(0, -1))
             {
+                moveSound.Play();
                 SetFaceTo(FACING.LEFT);
                 levelMap.theMonsters.MonstersMove();
                 AnimSetup();
@@ -73,6 +75,7 @@ public class Player_Control : MonoBehaviour {
         {
             if (Move(1, 0))
             {
+                moveSound.Play();
                 SetFaceTo(FACING.FRONT);
                 levelMap.theMonsters.MonstersMove();
                 AnimSetup();
@@ -87,6 +90,7 @@ public class Player_Control : MonoBehaviour {
         {
             if (Move(0, 1))
             {
+                moveSound.Play();
                 SetFaceTo(FACING.RIGHT);
                 levelMap.theMonsters.MonstersMove();
                 AnimSetup();
@@ -118,19 +122,18 @@ public class Player_Control : MonoBehaviour {
         //Debug.Log("plar wanna go to " + (h + dh) + ", " + (w + dw));
         if (theControlPanel.isMenuActive)
             return false;
-        else if (levelMap.tiles[(h + dh), (w + dw)] != (int)Level_Map.TILE_TYPE.WALL
-            && !levelMap.theObstacles.positionList.Exists(x => x == (h + dh) * levelMap.width + (w + dw)))
+        else if (levelMap.IsTileWalkable(h + dh, w + dw))
         {
             h = h + dh;
             w = w + dw;
             //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
-            PlayerAnimSetup(playerPositionObject.transform.position, new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0));
+            PlayerAnimSetup(playerPositionObject.transform.position, levelMap.MapCoordToWorldVec3(h, w, 0));
             energyPointObject.text = (--energyPoint).ToString();
             SetAbilityCooldown(--abilityCooldown);
         }
         else if ((h + dh) == levelMap.finishTile[0] && (w + dw) == levelMap.finishTile[1])
         {
-            PlayerAnimSetup(playerPositionObject.transform.position, new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0));
+            PlayerAnimSetup(playerPositionObject.transform.position, levelMap.MapCoordToWorldVec3(h, w, 0));
             theControlPanel.toggleFinishMenu();
             levelMap.GameFinish();
         }
@@ -181,11 +184,11 @@ public class Player_Control : MonoBehaviour {
 
     private void CheckPlayerBlocked()
     {
-        bool blocked = (levelMap.tiles[(h + 1), w] == (int)Level_Map.TILE_TYPE.WALL || levelMap.theObstacles.positionList.Exists(x => x == (h + 1) * levelMap.width + w))
-            && (levelMap.tiles[(h - 1), w] == (int)Level_Map.TILE_TYPE.WALL || levelMap.theObstacles.positionList.Exists(x => x == (h - 1) * levelMap.width + w))
-            && (levelMap.tiles[h, (w + 1)] == (int)Level_Map.TILE_TYPE.WALL || levelMap.theObstacles.positionList.Exists(x => x == h * levelMap.width + (w + 1)))
-                && (levelMap.tiles[h, (w - 1)] == (int)Level_Map.TILE_TYPE.WALL || levelMap.theObstacles.positionList.Exists(x => x == h * levelMap.width + (w - 1)));
-        if (blocked)
+        bool not_blocked = (levelMap.IsTileWalkable(h + 1, w) ||
+                        levelMap.IsTileWalkable(h - 1, w) ||
+                        levelMap.IsTileWalkable(h, w + 1) ||
+                        levelMap.IsTileWalkable(h, w - 1));
+        if (!not_blocked)
             theControlPanel.toggleFailMenu();
     }
 
@@ -200,7 +203,7 @@ public class Player_Control : MonoBehaviour {
             return;
         }
         //Debug.Log("thePlayer.SetPositionTo() is called in Game_Panel");
-        if (levelMap.tiles[newh, neww] != (int)Level_Map.TILE_TYPE.WALL)
+        if (levelMap.tiles[newh, neww] != TILE_TYPE.WALL)
         {
             if (levelMap.theObstacles.positionList.Exists(x => x == (newh * levelMap.width + neww)))
             {
@@ -209,7 +212,7 @@ public class Player_Control : MonoBehaviour {
             h = newh;
             w = neww;
             //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
-            playerPositionObject.transform.position = new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0);
+            playerPositionObject.transform.position = levelMap.MapCoordToWorldVec3(h, w, 0);
         }
         else
         {
@@ -274,17 +277,25 @@ public class Player_Control : MonoBehaviour {
      * 
      * animsetup()
      * 
-     * Update begin to call Anim()
+     * Update call Anim() and find out that it have to work
      * 
-     * Anim() do PlayerAnim & monsterAnim
-     * Anim() find it should stop
-     * Anim() call PlayerAnimEnd() & MonsterAnimEnd()
+     * In Anim(), do PlayerAnim & monsterAnim
+     * when Anim() find it should stop, call PlayerAnimEnd() & MonsterAnimEnd()
      * 
      * PlayerAnimEnd() set begin & end back to 0,0,0
      * PlayerAnimEnd() check if player is attcked
      * MonsterAnimEnd() set begin & end back to 0,0,0
      * */
-    
+
+    public float times_irreponsive = 0;
+    public float times_monster_change_sprite = 0;
+    public readonly float ANIM_DUR_TIME = 0.21f;
+    private Vector3 animBeginPos;
+    private Vector3 animEndPos;
+    private bool moveAnimation = false;
+    private bool playerHurtedAnimation = false;
+    private bool monsters_ask_for_end = false, player_ask_for_end = false;
+
     void PlayerAnimSetup(Vector3 begin, Vector3 end)
     {
         animBeginPos = begin;
@@ -293,7 +304,8 @@ public class Player_Control : MonoBehaviour {
 
     void PlayerAnim()
     {
-        playerPositionObject.transform.position = playerPositionObject.transform.position + (animEndPos - animBeginPos) / (Time.deltaTime / 0.0014f);
+        playerPositionObject.transform.position = 
+            playerPositionObject.transform.position + (animEndPos - animBeginPos) / (Time.deltaTime / ANIM_DUR_TIME / 0.0056f);
     }
 
     void PlayerAnimEnd()
@@ -306,14 +318,14 @@ public class Player_Control : MonoBehaviour {
 
     void AttackedAnimStart()
     {
-        times_irreponsive = Time.time + 0.2f;
-        playerAttackedAnimation = true;
+        times_irreponsive = Time.time + ANIM_DUR_TIME;
+        playerHurtedAnimation = true;
         GameObject.Find("Player Attacked Effect").GetComponent<SpriteRenderer>().enabled = true;
     }
 
     void AttackedAnimEnd()
     {
-        playerAttackedAnimation = false;
+        playerHurtedAnimation = false;
         GameObject.Find("Player Attacked Effect").GetComponent<SpriteRenderer>().enabled = false;
         if (healthPoint <= 0)
             theControlPanel.toggleFailMenu();
@@ -321,18 +333,17 @@ public class Player_Control : MonoBehaviour {
 
     void AnimSetup()
     {
-        times_irreponsive = Time.time + animDurTime;
+        times_irreponsive = Time.time + ANIM_DUR_TIME;
         moveAnimation = true;
     }
 
     void Anim()
     {
-        
-        if (times_irreponsive <= Time.time || player_ask_for_end_anim || monsters_ask_for_end_anim)
+        if (times_irreponsive <= Time.time || player_ask_for_end || monsters_ask_for_end)
         {
             moveAnimation = false;
-            monsters_ask_for_end_anim = false;
-            player_ask_for_end_anim = false;
+            monsters_ask_for_end = false;
+            player_ask_for_end = false;
 
             // tidy up player pos
             if (animBeginPos != new Vector3(0.0f, 0.0f, -1.0f))
@@ -348,21 +359,13 @@ public class Player_Control : MonoBehaviour {
             if (animBeginPos != new Vector3(0.0f, 0.0f, -1.0f))
             {
                 PlayerAnim();
-                player_ask_for_end_anim = (animEndPos - playerPositionObject.transform.position).magnitude < 0.01
+                player_ask_for_end = (animEndPos - playerPositionObject.transform.position).magnitude < 0.01
                                     || (animEndPos - playerPositionObject.transform.position).normalized == (animBeginPos - animEndPos).normalized;
             }
-            monsters_ask_for_end_anim = levelMap.theMonsters.MonstersAnim();
+            monsters_ask_for_end = levelMap.theMonsters.MonstersAnim();
         }
     }
 
-    float times_irreponsive = 0;
-    float times_monster_change_sprite = 0;
-    float animDurTime = 0.2f;
-    Vector3 animBeginPos;
-    Vector3 animEndPos;
-    bool moveAnimation = false;
-    bool playerAttackedAnimation = false;
-    bool monsters_ask_for_end_anim = false, player_ask_for_end_anim = false;
     // Update is called once per frame
     void Update()
     {
@@ -372,7 +375,7 @@ public class Player_Control : MonoBehaviour {
             times_monster_change_sprite += 1.1f;
         }
 
-        if (playerAttackedAnimation && times_irreponsive <= Time.time)
+        if (playerHurtedAnimation && times_irreponsive <= Time.time)
         {
             AttackedAnimEnd();
         }

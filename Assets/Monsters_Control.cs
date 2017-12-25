@@ -1,6 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
+using TileTypeDefine;
 
 public enum FACING : int {UP = 0, LEFT, DOWN, RIGHT};
 
@@ -108,10 +108,7 @@ public class Monsters_Control: MonoBehaviour {
         int h = -1, w = -1;
         int mapWidth = levelMap.width;
         int prePos = levelMap.playerStartTile[0] * mapWidth + levelMap.playerStartTile[1];
-        //int[] prePos = new int[2] {levelMap.playerStartTile[0] , levelMap.playerStartTile[1]};
-
-        Debug.Log("posRandMin:" + posRandMin);
-        Debug.Log("posRandMax: " + posRandMax);
+        //Debug.Log("posRandMin:" + posRandMin + "\nposRandMax: " + posRandMax);
 
         /* ITERATIVE SPAWN */
         while (spawnedCount < totalNum)
@@ -140,7 +137,7 @@ public class Monsters_Control: MonoBehaviour {
                     tooClose = true;
             }
             if (tooClose) prePos = pos;
-            else if (levelMap.tiles[h, w] != (int)Level_Map.TILE_TYPE.WALL)
+            else if (levelMap.tiles[h, w] != TILE_TYPE.WALL)
             {
                 bool spawn_on_obs = levelMap.theObstacles.positionList.Exists(x => x == (h * mapWidth + w));
                 // not too close and this is not wall/obstacle
@@ -162,8 +159,7 @@ public class Monsters_Control: MonoBehaviour {
                         case 3: // right
                             w_tocheck++; break;
                     }
-                    if (levelMap.tiles[h_tocheck, w_tocheck] != (int)Level_Map.TILE_TYPE.WALL
-                     && !levelMap.theObstacles.positionList.Exists(x => x == (h_tocheck * mapWidth + w_tocheck)))
+                    if (levelMap.IsTileWalkable(h_tocheck, w_tocheck))
                         walkable_neighbor_count++;
                 }
                 if (!spawn_on_obs && walkable_neighbor_count > 1)
@@ -216,14 +212,14 @@ public class Monsters_Control: MonoBehaviour {
         boss.bossAbility.sr_frame2.sprite = Sp;
 
         // make Boss Sprites appear
-        Vector3 trans = new Vector3((levelMap.width / 2 - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - (levelMap.height / 2) - 0.5f), 1);
+        Vector3 trans = levelMap.MapCoordToWorldVec3(levelMap.height / 2, levelMap.width / 2, 1);
         boss.SpriteObj.transform.transform.position = trans;
     }
 
     private void Spawn(int h, int w, int index)
     {
         //Debug.Log("monster spawn happened at " + h + "," + w);
-        Vector3 trans = new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 1);
+        Vector3 trans = levelMap.MapCoordToWorldVec3(h, w, 1);
         GameObject created = Instantiate(prototype);
         created.name = "Monster Sprite" + index.ToString();
         created.tag = "Monster";
@@ -350,7 +346,7 @@ public class Monsters_Control: MonoBehaviour {
                 case 3: // right
                     neww++; break;
             }
-            if (levelMap.tiles[newh, neww] != (int)Level_Map.TILE_TYPE.WALL && !levelMap.theObstacles.positionList.Exists(x => x == (newh * levelMap.width + neww)))
+            if (levelMap.IsTileWalkable(newh, neww))
             {
                 int j = 0;
                 for (; j < monsList.Count; j++)
@@ -362,7 +358,7 @@ public class Monsters_Control: MonoBehaviour {
                     //Debug.Log("Monster " + i + "moved from " + thisMon.h + "," + thisMon.w + " to " + newh + "," + neww);
                     thisMon.MoveTo(newh, neww);
                     thisMon.FaceTo((FACING) goingTo);
-                    MonsterAnimSetup(i, thisMon.SpriteObj.transform.position, new Vector3((neww - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - newh - 0.5f), 1));
+                    MonsterAnimSetup(i, thisMon.SpriteObj.transform.position, levelMap.MapCoordToWorldVec3(newh, neww, 1));
                 }
             }
         }
@@ -394,7 +390,7 @@ public class Monsters_Control: MonoBehaviour {
                     neww++; break;
             }
             //Debug.Log("montser try" + newh + "," + neww);
-            if (levelMap.tiles[newh, neww] != (int)Level_Map.TILE_TYPE.WALL
+            if (levelMap.tiles[newh, neww] != TILE_TYPE.WALL
                 && !levelMap.theObstacles.positionList.Exists(x => x == (newh * levelMap.width + neww))
                 && (levelMap.thePlayer.h != newh || levelMap.thePlayer.w != neww))
             {
@@ -408,7 +404,7 @@ public class Monsters_Control: MonoBehaviour {
                     //Debug.Log("Monster " + i + "moved from " + monsterList[i].h + "," + monsterList[i].w + " to " + newh + "," + neww);
                     thisMon.MoveTo(newh, neww);
                     thisMon.FaceTo((FACING) goingTo);
-                    MonsterAnimSetup(i, thisMon.SpriteObj.transform.position, new Vector3((neww - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - newh - 0.5f), 1));
+                    MonsterAnimSetup(i, thisMon.SpriteObj.transform.position, levelMap.MapCoordToWorldVec3(newh, neww, 1));
                     break;
                 }
             }
@@ -428,10 +424,12 @@ public class Monsters_Control: MonoBehaviour {
     {
         if (monsList.Count > 0)
         {
-            monsList.ForEach(delegate(Monster x) {
+            foreach (Monster x in monsList)
+            {
                 if (x.animBeginPos != new Vector3(0.0f, 0.0f, -1.0f))
-                    x.SpriteObj.transform.position = x.SpriteObj.transform.position + (x.animEndPos - x.animBeginPos) / (Time.deltaTime / 0.00135f);
-            });
+                    x.SpriteObj.transform.position += 
+                        (x.animEndPos - x.animBeginPos) / (Time.deltaTime / levelMap.thePlayer.ANIM_DUR_TIME / 0.0054f);
+            }
             if (monsList[0].animEndPos != new Vector3(0.0f, 0.0f, -1.0f)
                 && (monsList[0].animEndPos - monsList[0].SpriteObj.transform.position).normalized == (monsList[0].animBeginPos - monsList[0].animEndPos).normalized)
                 return true;

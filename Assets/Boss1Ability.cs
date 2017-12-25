@@ -152,9 +152,9 @@ public class Boss1_Ability : BossMonsterAbility {
             }
         }
 
-        if (levelMap.tiles[newh, neww] != (int)Level_Map.TILE_TYPE.WALL && !levelMap.theObstacles.positionList.Exists(x => x == (newh * levelMap.width + neww)))
+        if (levelMap.IsTileWalkable(newh, neww))
         {
-            // no need to detect if there is another mon on the way
+            // no need to detect whether there is another mon on the way or not
             self.MoveTo(newh, neww);
             self.FaceTo((FACING)goingTo);
         }

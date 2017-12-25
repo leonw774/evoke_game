@@ -7,7 +7,7 @@
 
     public static int levelPassed = -1; // when player fifnish the level, this variable++
 
-	public static void UpdateLevel()
+	public static void UpdatePassedLevel()
 	{
 		Save_Data.levelPassed++;
 	}

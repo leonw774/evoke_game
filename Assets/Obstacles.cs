@@ -1,6 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
+using TileTypeDefine;
 
 public class Obstacles : MonoBehaviour {
 
@@ -60,7 +60,7 @@ public class Obstacles : MonoBehaviour {
     {
         // Debug.Log("obs creation happened");
         int pos = h * levelMap.width + w;
-        Vector3 trans = new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0);
+        Vector3 trans = levelMap.MapCoordToWorldVec3(h, w, 0);
         GameObject created = Instantiate(prototype);
         positionList.Add(pos);
         positionList.Sort();
@@ -94,7 +94,7 @@ public class Obstacles : MonoBehaviour {
             int obslength = 0;
             for (int j = 1; j < levelMap.width - 1; ++j)
             {
-                if (putObs && levelMap.tiles[i, j] == (int)Level_Map.TILE_TYPE.WALKABLE)
+                if (putObs && levelMap.tiles[i, j] == TILE_TYPE.WALKABLE)
                 {
                     // STATE: PUT OBS
                     ObsUpdate(i, j);
@@ -119,7 +119,7 @@ public class Obstacles : MonoBehaviour {
             bool putObs = Random.Range(-5, 5) > 0;
             for (int i = levelMap.height - 2; i > 0; --i)
             {
-                if (putObs && levelMap.tiles[i, j] == (int)Level_Map.TILE_TYPE.WALKABLE)
+                if (putObs && levelMap.tiles[i, j] == TILE_TYPE.WALKABLE)
                 {
                     ObsUpdate(i, j);
                     if (Random.Range(-5, 5) < 0)
@@ -175,7 +175,7 @@ public class Obstacles : MonoBehaviour {
             for (int j = 1; j < levelMap.width - 1; ++j)
             {
                 int thisTilePos = i * levelMap.width + j;
-                if (levelMap.tiles[i, j] != (int)Level_Map.TILE_TYPE.WALKABLE)
+                if (levelMap.tiles[i, j] != TILE_TYPE.WALKABLE)
                     continue;
                 // else
                 bool this_is_obs = (positionList.Exists(x => x == thisTilePos));
@@ -186,7 +186,7 @@ public class Obstacles : MonoBehaviour {
                     if (di == 0 & dj == 0) continue;
                     int neighborTilePos = (i + di) * levelMap.width + (j + dj);
                     // no matter the neighbor block is really a obstacle or a wall, it all count as obstacle
-                    bool neighbor_is_obs = (positionList.Exists(x => x == neighborTilePos)) || (levelMap.tiles[i + di, j + dj] != (int)Level_Map.TILE_TYPE.WALKABLE);
+                    bool neighbor_is_obs = (positionList.Exists(x => x == neighborTilePos)) || (levelMap.tiles[i + di, j + dj] != TILE_TYPE.WALKABLE);
                     // check if neighbor is same with this block
                     if (this_is_obs == neighbor_is_obs)
                     {
@@ -226,7 +226,7 @@ public class Obstacles : MonoBehaviour {
         {
             for (int j = 1; j < levelMap.width - 1; ++j)
             {
-                if (levelMap.tiles[i, j] == (int)Level_Map.TILE_TYPE.WALKABLE)
+                if (levelMap.tiles[i, j] == TILE_TYPE.WALKABLE)
                 {
                     int pos = i * levelMap.width + j, mw = levelMap.width, d = -1;
                     bool is_up_all_obs = true, is_down_all_obs = true,
@@ -236,9 +236,9 @@ public class Obstacles : MonoBehaviour {
                     while (d <= 1)
                     {
                         // Note: Map.TILE_TYPE.WALL is 1
-                        is_up_all_obs = is_up_all_obs && (positionList.Exists(x => x == pos - mw + d) || levelMap.tiles[i - 1, j + d] == 1);
-                        is_down_all_obs = is_down_all_obs && (positionList.Exists(x => x == pos + mw + d) || levelMap.tiles[i + 1, j + d] == 1);
-                        is_middle_all_walkable = is_middle_all_walkable && !(positionList.Exists(x => x == pos + d) || levelMap.tiles[i, j + d] == 1);
+                        is_up_all_obs = is_up_all_obs && (positionList.Exists(x => x == pos - mw + d) || levelMap.tiles[i - 1, j + d] == TILE_TYPE.WALL);
+                        is_down_all_obs = is_down_all_obs && (positionList.Exists(x => x == pos + mw + d) || levelMap.tiles[i + 1, j + d] == TILE_TYPE.WALL);
+                        is_middle_all_walkable = is_middle_all_walkable && !(positionList.Exists(x => x == pos + d) || levelMap.tiles[i, j + d] == TILE_TYPE.WALL);
                         d++;
                     }
                     if (is_middle_all_walkable && is_up_all_obs && is_down_all_obs && Random.Range(0, 6) > 0)
@@ -252,9 +252,9 @@ public class Obstacles : MonoBehaviour {
                     is_middle_all_walkable = true;
                     while (d <= 1)
                     {
-                        is_left_all_obs = is_left_all_obs && (positionList.Exists(x => x == pos + d * mw - 1) || levelMap.tiles[i + d, j - 1] == 1);
-                        is_right_all_obs = is_right_all_obs && (positionList.Exists(x => x == pos + d * mw + 1) || levelMap.tiles[i + d, j + 1] == 1);
-                        is_middle_all_walkable = is_middle_all_walkable && !(positionList.Exists(x => x == pos + d * mw) || levelMap.tiles[i + d, j] == 1);
+                        is_left_all_obs = is_left_all_obs && (positionList.Exists(x => x == pos + d * mw - 1) || levelMap.tiles[i + d, j - 1] == TILE_TYPE.WALL);
+                        is_right_all_obs = is_right_all_obs && (positionList.Exists(x => x == pos + d * mw + 1) || levelMap.tiles[i + d, j + 1] == TILE_TYPE.WALL);
+                        is_middle_all_walkable = is_middle_all_walkable && !(positionList.Exists(x => x == pos + d * mw) || levelMap.tiles[i + d, j] == TILE_TYPE.WALL);
                         d++;
                     }
                     if (is_middle_all_walkable && is_left_all_obs && is_right_all_obs && Random.Range(0, 6) > 0)

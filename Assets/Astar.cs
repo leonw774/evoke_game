@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
+using TileTypeDefine;
 
 public class Tile
 {
@@ -77,7 +77,7 @@ public class Astar {
     private Tile StartTile;
     private Tile GoalTile;
 
-    public Astar(int[,] tiles, int h, int w, List<int> obstacleList, int[] start, int[] goal)
+    public Astar(TILE_TYPE[,] tiles, int h, int w, List<int> obstacleList, int[] start, int[] goal)
     {
         height = h;
         width = w;
@@ -100,7 +100,7 @@ public class Astar {
         InitializeMaps(tiles, obstacleList);
     }
     
-    private void InitializeMaps(int[,] tiles, List<int> obstaclePostionList)
+    private void InitializeMaps(TILE_TYPE[,] tiles, List<int> obstaclePostionList)
     {
         // Map
         GeoMap = new int[height, width];
@@ -114,7 +114,7 @@ public class Astar {
                 CostMap[i, j] = 2048;
                 CameFromMap[i, j] = -1;
                 EstimatedTotalCostMap[i, j] = 2048;
-                GeoMap[i, j] = tiles[i, j] + ((obstaclePostionList.IndexOf(i * width + j) >= 0) ? 2 : 0);
+                GeoMap[i, j] = (int)tiles[i, j] + ((obstaclePostionList.IndexOf(i * width + j) >= 0) ? 2 : 0);
             }
         }
         CostMap[StartTile.h, StartTile.w] = 0;

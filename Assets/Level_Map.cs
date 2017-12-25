@@ -1,15 +1,14 @@
 ﻿using UnityEngine;
-using System.IO;
-using System.Collections;
-using System.Collections.Generic;
-using B83.Image.BMP;
-using UnityEngine.UI;
+using TileTypeDefine;
 
+namespace TileTypeDefine
+{
+    public enum TILE_TYPE : int { WALKABLE = 0, WALL = 1, ITEM = 2, PLAYER_START_POINT = 3, FINISH_POINT = 4 };
+}
 
 public class Level_Map : MonoBehaviour
 {
-    public enum TILE_TYPE : int { WALKABLE = 0, WALL = 1, ITEM = 2, PLAYER_START_POINT = 3, FINISH_POINT = 4 };
-    public int[,] tiles = null;
+    public TILE_TYPE[,] tiles = null;
     public int[] playerStartTile = new int[2] { -1, -1 };
     public int[] finishTile = new int[2];
     public int width = 0, height = 0;
@@ -40,6 +39,7 @@ public class Level_Map : MonoBehaviour
 
         if (Save_Data.SelectedLevel != -1)
         {
+            // load a level from the very beginning
             GameInitial(Save_Data.SelectedLevel);
             // if parse img succese
             if (ParseMapImg())
@@ -113,7 +113,7 @@ public class Level_Map : MonoBehaviour
         {
             Texture2D bmp = Resources.Load<Texture2D>(mapFileName);
             mapPixels = bmp.GetPixels32();
-            tiles = new int[bmp.height, bmp.width];
+            tiles = new TILE_TYPE[bmp.height, bmp.width];
             height = bmp.height;
             width = bmp.width;
             Debug.Log("Image loaded: " + height + ", " + width);
@@ -143,13 +143,13 @@ public class Level_Map : MonoBehaviour
             {
                 Color32 thisPixel = mapPixels[i * width + j];
                 if (thisPixel.Equals(new Color32(255, 255, 255, 255)))
-                    tiles[height - 1 - i, j] = (int)(TILE_TYPE.WALKABLE);
+                    tiles[height - 1 - i, j] = TILE_TYPE.WALKABLE;
                 else if (thisPixel.Equals(new Color32(0, 0, 0, 255)))
-                    tiles[height - 1 - i, j] = (int)(TILE_TYPE.WALL);
+                    tiles[height - 1 - i, j] = TILE_TYPE.WALL;
                 else if (thisPixel.Equals(new Color32(255, 0, 0, 255)))
-                    tiles[height - 1 - i, j] = (int)(TILE_TYPE.FINISH_POINT);
+                    tiles[height - 1 - i, j] = TILE_TYPE.FINISH_POINT;
                 else if (thisPixel.Equals(new Color32(0, 0, 255, 255)))
-                    tiles[height - 1 - i, j] = (int)(TILE_TYPE.PLAYER_START_POINT);
+                    tiles[height - 1 - i, j] = TILE_TYPE.PLAYER_START_POINT;
                 else
                     return false;
                 //Debug.Log(i + "," + j + ":" + tiles[height - 1 - i, j]);
@@ -173,7 +173,7 @@ public class Level_Map : MonoBehaviour
         SetMonsterNumber();
     }
 
-    public void DeleteWalls()
+    private void DeleteWalls()
     {
         GameObject[] wallsToDelete = GameObject.FindGameObjectsWithTag("Wall");
         for (int i = 0; i < wallsToDelete.Length; ++i)
@@ -185,7 +185,7 @@ public class Level_Map : MonoBehaviour
         wallsNumber = 0;
     }
 
-    public void CreateWalls()
+    private void CreateWalls()
     {
         if (tiles.Length <= 1) return;
         for (int h = 0; h < height; h++)
@@ -193,7 +193,7 @@ public class Level_Map : MonoBehaviour
             for (int w = 0; w < width; w++)
             {
                 Vector3 trans = new Vector3((w - width / 2.0f + 0.5f), (height / 2.0f - h - 0.5f), 0);
-                if (tiles[h, w] == (int)(TILE_TYPE.WALL))
+                if (tiles[h, w] == TILE_TYPE.WALL)
                 {
                     GameObject wallCreated;
                     wallCreated = Instantiate(GameObject.Find("Prototype Wall Sprite"));
@@ -203,22 +203,22 @@ public class Level_Map : MonoBehaviour
                     wallCreated.transform.position = trans;
                     wallsNumber++;
                 }
-                else if (tiles[h, w] == (int)(TILE_TYPE.FINISH_POINT))
+                else if (tiles[h, w] == TILE_TYPE.FINISH_POINT)
                 {
                     finishTile = new int[2] { h, w };
-                    tiles[h, w] = (int)(TILE_TYPE.WALL);
+                    tiles[h, w] = TILE_TYPE.WALL;
                     GameObject.Find("Finish Sprite").transform.position = trans;
                 }
-                else if (tiles[h, w] == (int)(TILE_TYPE.PLAYER_START_POINT))
+                else if (tiles[h, w] == TILE_TYPE.PLAYER_START_POINT)
                 {
                     playerStartTile = new int[2] { h, w };
-                    tiles[h, w] = (int)(TILE_TYPE.WALKABLE);
+                    tiles[h, w] = TILE_TYPE.WALKABLE;
                 }
             }
         }
     }
 
-    public void SetMonsterNumber()
+    private void SetMonsterNumber()
     {
         // normal monster
         switch (Save_Data.SelectedLevel)
@@ -236,7 +236,7 @@ public class Level_Map : MonoBehaviour
         Debug.Log("the map ask for " + monsterNumber + " monsters");
     }
 
-    public void SetPlayerInfo()
+    private void SetPlayerInfo()
     {
         // use A-star to find least steps to finish
         Astar astar = new Astar(tiles, height, width, theObstacles.positionList, playerStartTile, finishTile);
@@ -244,16 +244,16 @@ public class Level_Map : MonoBehaviour
         //astar.PrintPath();
         Debug.Log("estimatedStep:" + estimatedStep);
 
-        int emptyTilesNnum = height * width - wallsNumber;
-        double monsterNumAdjust = 2.5;
-        double diviedPathAdjustmant = ((int)(emptyTilesNnum / (estimatedStep * 4.3) * 100) / 100.0);
+        int walkableTilesNnum = height * width - wallsNumber;
+        float monsterNumAdjust = 2.75f;
+        float diviedPathAdjustmant = ((int)(walkableTilesNnum / (estimatedStep * 4.3f) * 100) / 100f);
         if (diviedPathAdjustmant > 1.0)
             monsterNumAdjust /= diviedPathAdjustmant;
         
         //Debug.Log("diviedPathAdjustmant: " + diviedPathAdjustmant);
         //Debug.Log("monsterNumAdjust: " + monsterNumAdjust);
 
-        int ep_to_set = (int) (estimatedStep * 1.2) + (int)(monsterNumber * monsterNumAdjust);
+        int ep_to_set = (int) (estimatedStep * 1.2) + ((int)((monsterNumber * monsterNumAdjust) * 100) / 100);
         int hp_to_set = monsterNumber / 15 + 2;
 
         if (Save_Data.SelectedLevel == 8)
@@ -269,7 +269,7 @@ public class Level_Map : MonoBehaviour
         thePlayer.SetPositionTo(playerStartTile[0], playerStartTile[1]);
     }
 
-    public void GameStart()
+    private void GameStart()
     {
         // only do MapConstruct in first start
         MapFirstConstruction();
@@ -281,6 +281,7 @@ public class Level_Map : MonoBehaviour
         SetPlayerInfo();
     }
 
+    /* called by retry button */
     public void GameRestart()
     {
         Debug.Log("Restart");
@@ -292,24 +293,23 @@ public class Level_Map : MonoBehaviour
         SetPlayerInfo();
     }
 
-    // this function is called by Player_Control when it find out player is at finish
+    /* this function is called by Player_Control when it find out player is at finish */
     public void GameFinish()
     {
         if (Save_Data.SelectedLevel == Save_Data.levelPassed + 1)
-        {
-            Save_Data.UpdateLevel();
-        }
+            Save_Data.UpdatePassedLevel();
         Debug.Log("SelectedLevel: " + Save_Data.SelectedLevel);
         Debug.Log("levelPassed: " + Save_Data.levelPassed);
     }
 
     public void GameNextLevel()
     {
-        //Debug.Log("next level");
+        //Debug.Log("clean for next level");
         theObstacles.DestroyAllObstacles();
         theMonsters.DestroyMonsters();
-       
         Save_Data.SelectedNextLevel();
+
+        // load a level from the very beginning
         GameInitial(Save_Data.SelectedLevel);
         // if parse img succese
         if (ParseMapImg())
@@ -318,6 +318,17 @@ public class Level_Map : MonoBehaviour
             Debug.Log("Level Read Map Failed.");
     }
 
+    /* SOME USEFUL FUNTION */
+
+    public Vector3 MapCoordToWorldVec3(int h, int w, int z_value)
+    {
+        return new Vector3((w - width / 2.0f + 0.5f), (height / 2.0f - h - 0.5f), (float)z_value);
+    }
+
+    public bool IsTileWalkable(int i, int j)
+    {
+        return !(theObstacles.positionList.Exists(x => x == i * width + j) || tiles[i, j] == TILE_TYPE.WALL);
+    }
 
     /* INTRO ANIM */
 
