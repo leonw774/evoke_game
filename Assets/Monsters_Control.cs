@@ -70,11 +70,12 @@ public class BossMonster : Monster
 
 public class Monsters_Control: MonoBehaviour {
 
-    private List<Monster> monsList = null;  // store obstacle position in as integer(h * width + w)
+    public List<Monster> monsList = null;  // store obstacle position in as integer(h * width + w)
     private BossMonster boss = null;
-    private Level_Map levelMap;
+
     public GameObject prototype;
     public Sprite sprite_frame1, sprite_frame2;
+    private Level_Map levelMap;
 
     // Use this for initialization
     void Start()
@@ -358,7 +359,7 @@ public class Monsters_Control: MonoBehaviour {
                     //Debug.Log("Monster " + i + "moved from " + thisMon.h + "," + thisMon.w + " to " + newh + "," + neww);
                     thisMon.MoveTo(newh, neww);
                     thisMon.FaceTo((FACING) goingTo);
-                    MonsterAnimSetup(i, thisMon.SpriteObj.transform.position, levelMap.MapCoordToWorldVec3(newh, neww, 1));
+                    levelMap.theAnimation.MonsterAnimSetup(i, thisMon.SpriteObj.transform.position, levelMap.MapCoordToWorldVec3(newh, neww, 1));
                 }
             }
         }
@@ -404,49 +405,12 @@ public class Monsters_Control: MonoBehaviour {
                     //Debug.Log("Monster " + i + "moved from " + monsterList[i].h + "," + monsterList[i].w + " to " + newh + "," + neww);
                     thisMon.MoveTo(newh, neww);
                     thisMon.FaceTo((FACING) goingTo);
-                    MonsterAnimSetup(i, thisMon.SpriteObj.transform.position, levelMap.MapCoordToWorldVec3(newh, neww, 1));
+                    levelMap.theAnimation.MonsterAnimSetup(i, thisMon.SpriteObj.transform.position, levelMap.MapCoordToWorldVec3(newh, neww, 1));
                     break;
                 }
             }
             tryCount++;
         } // end of while(trycount < 4)
-    }
-
-    /* MONSTER ANIM */
-
-    private void MonsterAnimSetup(int index, Vector3 begin, Vector3 end)
-    {
-        monsList[index].animBeginPos = begin;
-        monsList[index].animEndPos = end;
-    }
-
-    public bool MonstersAnim()
-    {
-        if (monsList.Count > 0)
-        {
-            foreach (Monster x in monsList)
-            {
-                if (x.animBeginPos != new Vector3(0.0f, 0.0f, -1.0f))
-                    x.SpriteObj.transform.position += 
-                        (x.animEndPos - x.animBeginPos) / (Time.deltaTime / levelMap.thePlayer.ANIM_DUR_TIME / 0.0054f);
-            }
-            if (monsList[0].animEndPos != new Vector3(0.0f, 0.0f, -1.0f)
-                && (monsList[0].animEndPos - monsList[0].SpriteObj.transform.position).normalized == (monsList[0].animBeginPos - monsList[0].animEndPos).normalized)
-                return true;
-        }
-        return false;
-    }
-
-    public void MonstersAnimEnd()
-    {
-        monsList.ForEach(delegate(Monster x) {
-            if (x.animBeginPos != new Vector3(0.0f, 0.0f, -1.0f))
-            {
-                x.SpriteObj.transform.position = x.animEndPos;
-                x.animEndPos = new Vector3(0.0f, 0.0f, -1.0f);
-                x.animBeginPos = new Vector3(0.0f, 0.0f, -1.0f);
-            }
-        });
     }
 
     private void KillMonsterByListIndex(int i)

@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using TileTypeDefine;
+using System.Security.AccessControl;
+using System;
 
 namespace TileTypeDefine
 {
@@ -19,6 +21,7 @@ public class Level_Map : MonoBehaviour
     public Obstacles theObstacles = null;
     public Monsters_Control theMonsters = null;
     public Player_Control thePlayer = null;
+    public Control_Animation theAnimation = null;
 
     public string mapFileName = null;
     private Color32[] mapPixels = null;
@@ -35,6 +38,9 @@ public class Level_Map : MonoBehaviour
         theMonsters = gameObject.AddComponent<Monsters_Control>();
         theMonsters.Initialize();
         thePlayer = GameObject.Find("Player Control Canvas").GetComponent<Player_Control>();
+        thePlayer.Initialize();
+        theAnimation = GameObject.Find("Control Panel").GetComponent<Control_Animation>();
+        theAnimation.Initialize();
         introImage = GameObject.Find("Intro Image").GetComponent<SpriteRenderer>();
 
         if (Save_Data.SelectedLevel != -1)
@@ -261,11 +267,11 @@ public class Level_Map : MonoBehaviour
             ep_to_set += (int) (monsterNumber * monsterNumAdjust);
             hp_to_set += monsterNumber / 15;
         }
-        thePlayer.Initialize();
+
         thePlayer.SetEnergyPoint(ep_to_set);
         thePlayer.SetHealthPoint(hp_to_set);
         thePlayer.SetAbilityCooldown(0);
-        thePlayer.SetFaceTo(Player_Control.FACING.FRONT);
+        thePlayer.thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.FRONT);
         thePlayer.SetPositionTo(playerStartTile[0], playerStartTile[1]);
     }
 
