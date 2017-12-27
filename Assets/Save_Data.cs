@@ -22,6 +22,8 @@
 
     public static int SelectedTheme = -1;
 
+    public readonly static int BossLevel = 11;
+
     public static void SelectLevel(int newlevel)
     {
         SelectedLevel = newlevel;
@@ -36,9 +38,9 @@
 
     public static void SetThemeSelectedLevel()
     {
-        if (SelectedLevel < 9)
+        if (SelectedLevel < 12)
             SelectedTheme = 1;
-        else if (SelectedLevel < 10)
+        else
             SelectedTheme = 2;
     }
 }

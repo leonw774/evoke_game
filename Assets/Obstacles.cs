@@ -51,7 +51,7 @@ public class Obstacles : MonoBehaviour {
         // if there is not obs & block is walkable then
         else if (levelMap.tiles[h, w] == 0)
         {
-            levelMap.theMonsters.TryKillMonsterByPos(pos);
+            levelMap.theMonsters.KillMonsterByPos(pos);
             ObsCreate(h, w);
         }
     }
@@ -78,7 +78,7 @@ public class Obstacles : MonoBehaviour {
         {
             if (obs[k].name == "Obstacle Sprite" + pos.ToString())
             {
-                Destroy(obs[k]);
+                Destroy(obs[k], 0.125f);
                 obs[k] = null;
             }
         }
@@ -87,11 +87,11 @@ public class Obstacles : MonoBehaviour {
 
     public void Generate()
     {
+        int obslength = 0;
         // make horizonal obs
         for (int i = 1; i < levelMap.height - 1; ++i) // for every height
         {
             bool putObs = Random.Range(-5, 5) > 0;
-            int obslength = 0;
             for (int j = 1; j < levelMap.width - 1; ++j)
             {
                 if (putObs && levelMap.tiles[i, j] == TILE_TYPE.WALKABLE)
@@ -99,7 +99,7 @@ public class Obstacles : MonoBehaviour {
                     // STATE: PUT OBS
                     ObsUpdate(i, j);
                     obslength++;
-                    if (Random.Range(-5, 5) < 0 || obslength > Random.Range(8, 10)) // possibility to change state
+                    if (Random.Range(-5, 5) < 0 || obslength > Random.Range(7, 10)) // possibility to change state
                     {
                         putObs = !putObs;
                         obslength = 0;
@@ -113,6 +113,7 @@ public class Obstacles : MonoBehaviour {
                 }
             }
         }
+        obslength = 0;
         // make vertical obs
         for (int j = 1; j < levelMap.width - 1; ++j)
         {
@@ -122,8 +123,12 @@ public class Obstacles : MonoBehaviour {
                 if (putObs && levelMap.tiles[i, j] == TILE_TYPE.WALKABLE)
                 {
                     ObsUpdate(i, j);
-                    if (Random.Range(-5, 5) < 0)
+                    obslength++;
+                    if (Random.Range(-5, 5) < 0 || obslength > Random.Range(7, 10))
+                    {
                         putObs = !putObs;
+                        obslength = 0;
+                    }
                 }
                 else
                 {

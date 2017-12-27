@@ -2,10 +2,11 @@
 using TileTypeDefine;
 using System.Security.AccessControl;
 using System;
+using UnityEngine.UI;
 
 namespace TileTypeDefine
 {
-    public enum TILE_TYPE : int { WALKABLE = 0, WALL = 1, ITEM = 2, PLAYER_START_POINT = 3, FINISH_POINT = 4 };
+    public enum TILE_TYPE : int { WALKABLE = 0, WALL = 1, ITEM = 2, PLAYER_START_POINT = 3, FINISH_POINT = 4, SHORTCUT = 5 };
 }
 
 public class Level_Map : MonoBehaviour
@@ -15,6 +16,7 @@ public class Level_Map : MonoBehaviour
     public int[] finishTile = new int[2];
     public int width = 0, height = 0;
     public int estimatedStep = 0;
+    public int shortcutNum = 0;
     public int wallsNumber = 0;
     public int monsterNumber = 0;
 
@@ -137,29 +139,36 @@ public class Level_Map : MonoBehaviour
 
     private bool ParseMapImg()
     {
+        shortcutNum = 0;
+        
         if (mapPixels == null) return false;
         // parse img
         // white for WALKABLE: 0
-        // red for WALL: 1
-        // green for FINISH: 2
+        // black for WALL: 1
+        // red for FINISH: 2
         // blue for PLAYER_START_POINT: 3
         for (int i = 0; i < height; ++i)
         {
             for (int j = 0; j < width; ++j)
             {
                 Color32 thisPixel = mapPixels[i * width + j];
+                //Debug.Log(i + "," + j + ":" + thisPixel.ToString());
                 if (thisPixel.Equals(new Color32(255, 255, 255, 255)))
                     tiles[height - 1 - i, j] = TILE_TYPE.WALKABLE;
-                else if (thisPixel.Equals(new Color32(0, 0, 0, 255)))
-                    tiles[height - 1 - i, j] = TILE_TYPE.WALL;
                 else if (thisPixel.Equals(new Color32(255, 0, 0, 255)))
                     tiles[height - 1 - i, j] = TILE_TYPE.FINISH_POINT;
                 else if (thisPixel.Equals(new Color32(0, 0, 255, 255)))
                     tiles[height - 1 - i, j] = TILE_TYPE.PLAYER_START_POINT;
+                else if (thisPixel.Equals(new Color32(250, 250, 250, 255)))
+                {
+                    tiles[height - 1 - i, j] = TILE_TYPE.WALKABLE;
+                    shortcutNum++;
+                }
+                else if (thisPixel.Equals(new Color32(0, 0, 0, 255)))
+                    tiles[height - 1 - i, j] = TILE_TYPE.WALL;
                 else
                     return false;
-                //Debug.Log(i + "," + j + ":" + tiles[height - 1 - i, j]);
-                //Debug.Log(thisPixel.ToString());
+                //Debug.Log(":" + tiles[height - 1 - i, j]);
             }
         }
         return true;
@@ -211,9 +220,20 @@ public class Level_Map : MonoBehaviour
                 }
                 else if (tiles[h, w] == TILE_TYPE.FINISH_POINT)
                 {
+                    GameObject exitObj;
                     finishTile = new int[2] { h, w };
                     tiles[h, w] = TILE_TYPE.WALL;
-                    GameObject.Find("Finish Sprite").transform.position = trans;
+                    exitObj = GameObject.Find("Exit Sprite");
+                    exitObj.transform.position = trans;
+
+                    // in boss level, exit is closed
+                    if (Save_Data.SelectedLevel == Save_Data.BossLevel)
+                    {
+                        exitObj.GetComponent<SpriteRenderer>().enabled = false;
+                        exitObj = GameObject.Find("Closed Exit Sprite");
+                        exitObj.transform.position = trans;
+                        exitObj.GetComponent<SpriteRenderer>().enabled = true;
+                    }
                 }
                 else if (tiles[h, w] == TILE_TYPE.PLAYER_START_POINT)
                 {
@@ -252,20 +272,22 @@ public class Level_Map : MonoBehaviour
 
         int walkableTilesNnum = height * width - wallsNumber;
         float monsterNumAdjust = 2.75f;
-        float diviedPathAdjustmant = ((int)(walkableTilesNnum / (estimatedStep * 4.3f) * 100) / 100f);
+        float diviedPathAdjustmant = ((int)(walkableTilesNnum / (estimatedStep * 4.0f) * 100) / 100f);
         if (diviedPathAdjustmant > 1.0)
             monsterNumAdjust /= diviedPathAdjustmant;
+        int adjustedMonsterFactor = ((int)((monsterNumber * monsterNumAdjust) * 100 + 50) / 100);
         
-        //Debug.Log("diviedPathAdjustmant: " + diviedPathAdjustmant);
-        //Debug.Log("monsterNumAdjust: " + monsterNumAdjust);
+        Debug.Log("diviedPathAdjustmant: " + diviedPathAdjustmant);
+        Debug.Log("monsterNumAdjust: " + monsterNumAdjust);
+        Debug.Log("shortcutNum:" + shortcutNum);
 
-        int ep_to_set = (int) (estimatedStep * 1.2) + ((int)((monsterNumber * monsterNumAdjust) * 100) / 100);
+        int ep_to_set = (int) (estimatedStep * 1.25 + (Save_Data.SelectedLevel / 3) * 0.1) + adjustedMonsterFactor + (int) (shortcutNum * 1.75);
         int hp_to_set = monsterNumber / 15 + 2;
 
-        if (Save_Data.SelectedLevel == 8)
+        if (Save_Data.SelectedLevel == Save_Data.BossLevel)
         {
-            ep_to_set += (int) (monsterNumber * monsterNumAdjust);
-            hp_to_set += monsterNumber / 15;
+            ep_to_set += adjustedMonsterFactor;
+            hp_to_set += 3;
         }
 
         thePlayer.SetEnergyPoint(ep_to_set);
@@ -273,6 +295,7 @@ public class Level_Map : MonoBehaviour
         thePlayer.SetAbilityCooldown(0);
         thePlayer.thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.FRONT);
         thePlayer.SetPositionTo(playerStartTile[0], playerStartTile[1]);
+        Debug.Log("Player States All Set");
     }
 
     private void GameStart()
@@ -292,7 +315,7 @@ public class Level_Map : MonoBehaviour
     {
         Debug.Log("Restart");
         theObstacles.DestroyAllObstacles();
-        theMonsters.DestroyMonsters();
+        theMonsters.DestroyAllMonsters();
         theObstacles.Construct();
         if(monsterNumber > 0)
             theMonsters.SpawnMonsters(monsterNumber);
@@ -302,8 +325,13 @@ public class Level_Map : MonoBehaviour
     /* this function is called by Player_Control when it find out player is at finish */
     public void GameFinish()
     {
-        if (Save_Data.SelectedLevel == Save_Data.levelPassed + 1)
-            Save_Data.UpdatePassedLevel();
+        if (Save_Data.SelectedLevel != Save_Data.BossLevel)
+        {
+            if (Save_Data.SelectedLevel == Save_Data.levelPassed + 1)
+            {
+                Save_Data.UpdatePassedLevel();
+            }
+        }
         Debug.Log("SelectedLevel: " + Save_Data.SelectedLevel);
         Debug.Log("levelPassed: " + Save_Data.levelPassed);
     }
@@ -312,7 +340,7 @@ public class Level_Map : MonoBehaviour
     {
         //Debug.Log("clean for next level");
         theObstacles.DestroyAllObstacles();
-        theMonsters.DestroyMonsters();
+        theMonsters.DestroyAllMonsters();
         Save_Data.SelectedNextLevel();
 
         // load a level from the very beginning
@@ -333,7 +361,11 @@ public class Level_Map : MonoBehaviour
 
     public bool IsTileWalkable(int i, int j)
     {
-        return !(theObstacles.positionList.Exists(x => x == i * width + j) || tiles[i, j] == TILE_TYPE.WALL);
+        if (theMonsters.boss != null)
+            return !(theObstacles.positionList.Exists(x => x == i * width + j) || tiles[i, j] == TILE_TYPE.WALL || (theMonsters.boss.h == i && theMonsters.boss.w == j));
+        else
+            return !(theObstacles.positionList.Exists(x => x == i * width + j) || tiles[i, j] == TILE_TYPE.WALL);
+
     }
 
     /* INTRO ANIM */
@@ -343,6 +375,10 @@ public class Level_Map : MonoBehaviour
         Texture2D[] introTxs = Resources.LoadAll<Texture2D>("Intro_map" + Save_Data.SelectedLevel.ToString());
         if (introTxs.Length == 0)
             return;
+
+        // button for switch picture
+        GameObject.Find("Intro Image Switch Button").GetComponent<Image>().raycastTarget = true;
+        GameObject.Find("Intro Image Switch Button").GetComponent<Button>().interactable = true;
 
         introSp = new Sprite[introTxs.Length];
         introImage.enabled = true;
@@ -357,8 +393,26 @@ public class Level_Map : MonoBehaviour
         }
     }
 
+    public void IntroAnimSwitchPicture()
+    {
+        if (intro_image_num < introSp.Length && intro_image_num >= 0)
+        {
+            Debug.Log("show intro image #" + intro_image_num + "at time of " + Time.time);
+            introImage.sprite = introSp[intro_image_num];
+            intro_image_num++;
+            time_change_intro_image = Time.time + 2.0f ;
+        }
+        else
+        {
+            IntroAnimEnd();
+        }
+    }
+
     private void IntroAnimEnd()
     {
+        // button for switch picture
+        GameObject.Find("Intro Image Switch Button").GetComponent<Button>().interactable = false;
+        GameObject.Find("Intro Image Switch Button").GetComponent<Image>().raycastTarget = false;
         intro_image_num = -1;
         introAnim = false;
         introImage.enabled = false;
@@ -374,17 +428,7 @@ public class Level_Map : MonoBehaviour
         {
             if (time_change_intro_image <= Time.time)
             {
-                if (intro_image_num < introSp.Length && intro_image_num >= 0)
-                {
-                    Debug.Log("show intro image #" + intro_image_num + "at time of " + Time.time);
-                    introImage.sprite = introSp[intro_image_num];
-                    intro_image_num++;
-                    time_change_intro_image += 2.0f;
-                }
-                else
-                {
-                    IntroAnimEnd();
-                }
+                IntroAnimSwitchPicture();
             }
         }
     }

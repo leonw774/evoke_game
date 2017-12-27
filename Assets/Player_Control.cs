@@ -78,7 +78,7 @@ public class Player_Control : MonoBehaviour {
     // Use this for initialization
     void Start()
     {
-        Debug.Log("Player_Control.Start()");
+        //Debug.Log("Player_Control.Start()");
     }
 
     public void Initialize()
@@ -103,7 +103,7 @@ public class Player_Control : MonoBehaviour {
             {
                 moveSound.Play();
                 thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.BACK);
-                levelMap.theMonsters.MonstersMove();
+                levelMap.theMonsters.MonstersTurn();
                 levelMap.theAnimation.AnimSetup();
                 if (energyPoint == 0) theControlPanel.toggleFailMenu();
             }
@@ -118,7 +118,7 @@ public class Player_Control : MonoBehaviour {
             {
                 moveSound.Play();
                 thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.LEFT);
-                levelMap.theMonsters.MonstersMove();
+                levelMap.theMonsters.MonstersTurn();
                 levelMap.theAnimation.AnimSetup();
                 if (energyPoint == 0) theControlPanel.toggleFailMenu();
             }
@@ -133,7 +133,7 @@ public class Player_Control : MonoBehaviour {
             {
                 moveSound.Play();
                 thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.FRONT);
-                levelMap.theMonsters.MonstersMove();
+                levelMap.theMonsters.MonstersTurn();
                 levelMap.theAnimation.AnimSetup();
                 if (energyPoint == 0) theControlPanel.toggleFailMenu();
             }
@@ -148,7 +148,7 @@ public class Player_Control : MonoBehaviour {
             {
                 moveSound.Play();
                 thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.RIGHT);
-                levelMap.theMonsters.MonstersMove();
+                levelMap.theMonsters.MonstersTurn();
                 levelMap.theAnimation.AnimSetup();
                 if (energyPoint == 0) theControlPanel.toggleFailMenu();
             }
@@ -162,7 +162,7 @@ public class Player_Control : MonoBehaviour {
             if (DoAbility())
             {
                 abilitySound.Play();
-                levelMap.theMonsters.MonstersMove();
+                levelMap.theMonsters.MonstersTurn();
                 levelMap.theAnimation.AnimSetup();
                 if (energyPoint == 0) theControlPanel.toggleFailMenu();
             }
@@ -184,20 +184,21 @@ public class Player_Control : MonoBehaviour {
             w = w + dw;
             //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
             levelMap.theAnimation.PlayerAnimSetup(thePlayerDisp.objPosition, levelMap.MapCoordToWorldVec3(h, w, 0));
-            energyPointObject.text = (--energyPoint).ToString();
+            SetEnergyPoint(energyPoint - 1);
             SetAbilityCooldown(--abilityCooldown);
+            return true;
         }
         else if ((h + dh) == levelMap.finishTile[0] && (w + dw) == levelMap.finishTile[1])
         {
-            levelMap.theAnimation.PlayerAnimSetup(thePlayerDisp.objPosition, levelMap.MapCoordToWorldVec3(h, w, 0));
-            theControlPanel.toggleFinishMenu();
-            levelMap.GameFinish();
+            if (Save_Data.SelectedLevel != Save_Data.BossLevel || levelMap.theMonsters.boss == null)
+            {
+                levelMap.theAnimation.PlayerAnimSetup(thePlayerDisp.objPosition, levelMap.MapCoordToWorldVec3(h, w, 0));
+                theControlPanel.toggleFinishMenu();
+                levelMap.GameFinish();
+                return true;
+            }
         }
-        else
-        {
-            return false;
-        }
-        return true;
+        return false;       
     }
 
     // retrun true: player did do ability; return false: player didn't make it
@@ -234,8 +235,9 @@ public class Player_Control : MonoBehaviour {
         int success = levelMap.theMonsters.TryAttackPlayer(h * levelMap.width + w);
         if (success > 0)
         {
-            healthPoint -= success;
-            healthPointObject.text = healthPoint.ToString();
+            // try destroy obs because player might be hurted by obs in boss monster attack
+            levelMap.theObstacles.ObsDestroy(h * levelMap.width + w);
+            SetHealthPoint(healthPoint - success);
             return true;
         }
         return false;
@@ -255,7 +257,6 @@ public class Player_Control : MonoBehaviour {
 
     public void SetPositionTo(int newh, int neww)
     {
-        Debug.Log("Player_Control.SetPositionTo(): thePlayer.SetPositionTo()");
         if (newh >= levelMap.height || neww >= levelMap.width || newh < 0 || neww < 0)
         {
             Debug.Log("illegal position");
@@ -281,11 +282,19 @@ public class Player_Control : MonoBehaviour {
 
     public void SetEnergyPoint(int e)
     {
+        if (e <= 10)
+        {
+           energyPointObject.color = Color.red;
+        }
         energyPointObject.text = (energyPoint = e).ToString();
     }
 
     public void SetHealthPoint(int h)
     {
+        if (h == 1)
+        {
+            healthPointObject.color = Color.red;
+        }
         healthPointObject.text = (healthPoint = h).ToString();
     }
 

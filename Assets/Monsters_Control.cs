@@ -12,6 +12,8 @@ public class Monster
     public int id; // -1 to identify the boss, >=0 to label normal monsters
     public GameObject SpriteObj;
 
+    public MonsterAbility monAbility;
+
     public Vector3 animBeginPos;
     public Vector3 animEndPos;
 
@@ -50,37 +52,28 @@ public class Monster
 
 public class BossMonster : Monster
 {
-    public BossMonsterAbility bossAbility;
-
-    public BossMonster(int _h, int _w, int _id, GameObject _ms, BossMonsterAbility _ba) : base(_h, _w, _id, _ms)
+    public BossMonster(int _h, int _w, int _id, GameObject _ms, MonsterAbility _a) : base(_h, _w, _id, _ms)
     {
-        bossAbility = _ba;
+        monAbility = _a;
         FaceTo((FACING)Random.Range(0, 4));
-    }
-
-    override public void FaceTo(FACING direction)
-    {
-        faceTo = direction;
-        if (direction == FACING.RIGHT)
-            bossAbility.sr_frame1.flipX = bossAbility.sr_frame2.flipX = true;
-        else if (direction == FACING.LEFT)
-            bossAbility.sr_frame1.flipX = bossAbility.sr_frame2.flipX = false;
     }
 }
 
 public class Monsters_Control: MonoBehaviour {
 
     public List<Monster> monsList = null;  // store obstacle position in as integer(h * width + w)
-    private BossMonster boss = null;
+    public BossMonster boss = null;
 
-    public GameObject prototype;
+    /* public resource for general monsters */
     public Sprite sprite_frame1, sprite_frame2;
+    public GameObject prototype;
+
     private Level_Map levelMap;
 
     // Use this for initialization
     void Start()
     {
-        Debug.Log("Monsters.Start()");
+        //Debug.Log("Monsters.Start()");
     }
 
     public void Initialize()
@@ -98,7 +91,9 @@ public class Monsters_Control: MonoBehaviour {
             return;
 
         // boss
-        if (Save_Data.SelectedLevel == 8)
+        // write hard in code is not good!
+        // but we're running out of time
+        if (Save_Data.SelectedLevel == Save_Data.BossLevel)
             SpawnBoss(1);
 
         int minDisBtwnMons = 6;
@@ -114,7 +109,7 @@ public class Monsters_Control: MonoBehaviour {
         /* ITERATIVE SPAWN */
         while (spawnedCount < totalNum)
         {
-            if(emegercyJumpOut++ > (totalNum * 2048))
+            if(emegercyJumpOut++ > (totalNum * 4096))
             {
                 Debug.Log("Emegercy Jump-Out Happened.");
                 Debug.Log("tryCount: " + emegercyJumpOut + "\ntotalNum: " + totalNum);
@@ -192,25 +187,28 @@ public class Monsters_Control: MonoBehaviour {
         switch (bossIndex)
         {
             case 1:
-                boss = new BossMonster(levelMap.height / 2, levelMap.width / 2, -1, GameObject.Find("Boss Sprites"),
-                                       new Boss1_Ability(levelMap, 13));
+                boss = new BossMonster(levelMap.height / 2, levelMap.width / 3 * 2, -1, GameObject.Find("Boss Sprite"), new Boss1_Ability(levelMap, (int) (levelMap.monsterNumber / 4) + 3));
                 Debug.Log("Gave Boss its ability");
                 break;
             default:
                 break;
         }
-        boss.bossAbility.SetSelf(boss);
+        boss.monAbility.SetSelf(boss);
         monsList.Add(boss);
 
         // load boss sprites
         BossTex = Resources.Load<Texture2D>("Bosses/boss_frame1_test");
         Rect = new Rect(0.0f, 0.0f, (float)BossTex.width, (float)BossTex.height);
         Sp = Sprite.Create(BossTex, Rect, new Vector2(0.5f, 0.5f));
-        boss.bossAbility.sr_frame1.sprite = Sp;
+        boss.monAbility.sp_frame1 = Sp;
         BossTex = Resources.Load<Texture2D>("Bosses/boss_frame2_test");
         Rect = new Rect(0.0f, 0.0f, (float)BossTex.width, (float)BossTex.height);
         Sp = Sprite.Create(BossTex, Rect, new Vector2(0.5f, 0.5f));
-        boss.bossAbility.sr_frame2.sprite = Sp;
+        boss.monAbility.sp_frame2 = Sp;
+        BossTex = Resources.Load<Texture2D>("Bosses/boss_frame3_test");
+        Rect = new Rect(0.0f, 0.0f, (float)BossTex.width, (float)BossTex.height);
+        Sp = Sprite.Create(BossTex, Rect, new Vector2(0.5f, 0.5f));
+        boss.monAbility.sp_frame_hurt = Sp;
 
         // make Boss Sprites appear
         Vector3 trans = levelMap.MapCoordToWorldVec3(levelMap.height / 2, levelMap.width / 2, 1);
@@ -244,48 +242,61 @@ public class Monsters_Control: MonoBehaviour {
         }
 
         if (boss != null)
-            loss += boss.bossAbility.TryAttackPlayer(playerPos);
-
+        {
+            int bossloss = boss.monAbility.TryAttackPlayer();
+            if (bossloss > 0)
+            {
+                boss.monAbility.DoAbility();
+                loss += bossloss;
+            }
+        }
         return loss;
     }
 
-    public void MonstersChangeFrame()
+    public void AllChangeFrame()
     {
-        Sprite sp_to_change = null;
-        monsList.ForEach(delegate (Monster x)
+        int sp_to_change = 0;
+        foreach (Monster x in monsList)
+        {
+            if (x.id >= 0)
             {
-                if (x.id >= 0)
+                if (sp_to_change == 0)
                 {
-                    if (sp_to_change == null)
-                        sp_to_change = (x.SpriteObj.GetComponent<SpriteRenderer>().sprite == sprite_frame1) ? sprite_frame2 : sprite_frame1;
-                    x.SpriteObj.GetComponent<SpriteRenderer>().sprite = sp_to_change;
+                    sp_to_change = ((x.SpriteObj.GetComponent<SpriteRenderer>().sprite == sprite_frame1) ? 2 : 1);
                 }
-                else
-                {
-                    bool t = boss.bossAbility.sr_frame1.enabled;
-                    boss.bossAbility.sr_frame1.enabled = boss.bossAbility.sr_frame2.enabled;
-                    boss.bossAbility.sr_frame2.enabled = t;
-                }
+                x.SpriteObj.GetComponent<SpriteRenderer>().sprite = ((sp_to_change == 1) ? sprite_frame1 : sprite_frame2);
             }
-        );
+            else
+            {
+                if (x.SpriteObj.GetComponent<SpriteRenderer>().sprite == boss.monAbility.sp_frame1)
+                {
+                    sp_to_change = 2;
+                }
+                else if (x.SpriteObj.GetComponent<SpriteRenderer>().sprite == boss.monAbility.sp_frame2)
+                {
+                    sp_to_change = 1;
+                }
+                x.SpriteObj.GetComponent<SpriteRenderer>().sprite = ((sp_to_change == 1) ? boss.monAbility.sp_frame1 : boss.monAbility.sp_frame2);
+            }
+        }
     }
 
-    public void MonstersMove()
+    public void MonstersTurn()
     {
         for (int i = 0; i < monsList.Count; i++)
         {
             if (((monsList[i].id >= 0) ? 6 : 12) >= (System.Math.Abs(levelMap.thePlayer.h - monsList[i].h) + System.Math.Abs(levelMap.thePlayer.w - monsList[i].w))
-                && Random.Range(-1, 32) > 0)
+                && Random.Range(-1, 30) > 0)
             {
                 if (monsList[i].id >= 0)
                 {
                     MonsterMoveToPlayer(i);
                 }
-                else
+                else if (!boss.monAbility.killed)
                 {
-                    boss.bossAbility.Decide();
-                    Debug.Log("boss decision: " + boss.bossAbility.decision);
-                    switch (boss.bossAbility.decision)
+                    boss.monAbility.Decide();
+                    //Debug.Log("boss decision: " + boss.monAbility.decision);
+                    switch (boss.monAbility.decision)
                     {
                         case 0: // move
                             MonsterMoveToPlayer(i);
@@ -293,10 +304,10 @@ public class Monsters_Control: MonoBehaviour {
                         case 1: // attack behavier wont happen until every other monster are done moving 
                             break;
                         case 2:
-                            boss.bossAbility.DoAbility();
+                            boss.monAbility.DoAbility();
                             break;
                         case 3:
-                            boss.bossAbility.DoSpecialMove();
+                            boss.monAbility.DoSpecialMove();
                             MonsterMoveToPlayer(i);
                             break;
                         default:
@@ -306,7 +317,9 @@ public class Monsters_Control: MonoBehaviour {
                 }
             }
             else
+            {
                 MonsterMoveRandom(i);
+            }
         }
     }
 
@@ -413,32 +426,61 @@ public class Monsters_Control: MonoBehaviour {
         } // end of while(trycount < 4)
     }
 
-    private void KillMonsterByListIndex(int i)
+    public void KillMonsterByListIndex(int i)
     {
         //Debug.Log("destroy monster #" + monsList[i].id);
+
         if (monsList[i].id >= 0)
-            Destroy(monsList[i].SpriteObj, 0.15f);
+        {
+            Vector3 v = monsList[i].SpriteObj.transform.localScale;
+            v.y /= 3;
+            monsList[i].SpriteObj.transform.localScale = v;
+            v = monsList[i].SpriteObj.transform.position;
+            v.y -= 0.3f;
+            monsList[i].SpriteObj.transform.position = v;
+            Destroy(monsList[i].SpriteObj, 0.2f);
+            monsList.RemoveAt(i);
+        }
         else
         {
-            if ((boss.bossAbility.hp = boss.bossAbility.hp - 1) == 0) // boss dead
+            // boss is killed so make sprite disappear
+            if (boss.monAbility.killed)
             {
-                boss.SpriteObj.transform.Translate(new Vector3(0, 0, -10));
+                Debug.Log("boss is killed = true");
+                boss.SpriteObj.transform.Translate(new Vector3(0, 0, -11));
+                monsList.RemoveAt(i);
                 boss = null;
             }
-            else // boss not dead yet
-                return;
-        } 
-        monsList.RemoveAt(i);
+            else
+            {
+                boss.monAbility.hp = boss.monAbility.hp - 1;
+                if (boss.monAbility.hp == 0) // boss dead
+                {
+                    boss.monAbility.killed = true;
+                    GameObject.Find("Closed Exit Sprite").GetComponent<SpriteRenderer>().enabled = false;
+                    GameObject.Find("Exit Sprite").GetComponent<SpriteRenderer>().enabled = true;
+                }
+                levelMap.theAnimation.BossMonsterHurtedAnimStart();
+                boss.SpriteObj.GetComponent<SpriteRenderer>().sprite = boss.monAbility.sp_frame_hurt;
+            }
+        }
     }
 
-    public void TryKillMonsterByPos(int pos)
+    public void KillMonsterByPos(int pos)
     {
         int found = monsList.FindIndex(x => pos == x.GetPostion(levelMap.width));
         if (found >= 0)
             KillMonsterByListIndex(found);
     }
+
+    public void KillMonsterById(int id)
+    {
+        int found = monsList.FindIndex(x => id == x.id);
+        if (found >= 0)
+            KillMonsterByListIndex(found);
+    }
     
-    public void DestroyMonsters()
+    public void DestroyAllMonsters()
     {
         monsList.ForEach(delegate (Monster x)
             {

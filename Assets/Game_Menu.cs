@@ -64,13 +64,13 @@ public class Game_Menu : MonoBehaviour {
         if (isFailMenu)
         {
             FailGO.transform.Translate(new Vector3(0, 0, -1000));
-            ResumeBtn.transform.Translate(new Vector3(0, 0, -999.9f));
+            ResumeBtn.transform.Translate(new Vector3(0, 0, -999.999f));
             isFailMenu = false;
         }
         if (isFinishMenu)
         {
             FinishGO.transform.Translate(new Vector3(0, 0, -1000));
-            ResumeBtn.transform.Translate(new Vector3(0, 0, -999.9f));
+            ResumeBtn.transform.Translate(new Vector3(0, 0, -999.999f));
             isFinishMenu = false;
         }
     }
@@ -80,7 +80,10 @@ public class Game_Menu : MonoBehaviour {
         toggleGameMenu();
         if (!isFinishMenu)
         {
-            FinishGO.transform.Translate(new Vector3(0, 0, 1000));
+            if (Save_Data.SelectedLevel != Save_Data.BossLevel)
+            {
+                FinishGO.transform.Translate(new Vector3(0, 0, 1000));
+            }
             ResumeBtn.transform.Translate(new Vector3(0, 0, 1000));
             isFinishMenu = true;
         }
@@ -102,7 +105,6 @@ public class Game_Menu : MonoBehaviour {
     {
         writeSaveData(Application.persistentDataPath + "/save.dat", Save_Data.levelPassed);
         SceneManager.LoadScene("Menu Scene");
-        //Application.Quit();
     }
 
     void loadSaveData(string SaveFilePath)

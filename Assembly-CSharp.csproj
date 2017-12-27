@@ -49,12 +49,12 @@
      <Compile Include="Assets\Astar.cs" />
      <Compile Include="Assets\BMPLoader.cs" />
      <Compile Include="Assets\Boss1Ability.cs" />
-     <Compile Include="Assets\BossMonsterAbility.cs" />
      <Compile Include="Assets\Control_Animation.cs" />
      <Compile Include="Assets\Game_Menu.cs" />
      <Compile Include="Assets\Info_Menu.cs" />
      <Compile Include="Assets\Level_Map.cs" />
      <Compile Include="Assets\Level_Menu.cs" />
+     <Compile Include="Assets\MonsterAbility.cs" />
      <Compile Include="Assets\Monsters_Control.cs" />
      <Compile Include="Assets\Obstacles.cs" />
      <Compile Include="Assets\Player_Control.cs" />

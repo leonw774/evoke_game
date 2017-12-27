@@ -2,10 +2,21 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class BossMonsterAbility : MonoBehaviour {
+/*
+ * NOTE
+ * Is was planed to have general monsters implement in the same way boss monster did,
+ * and we can specificate how many monster of each kind of them would spawn in SpawnMonsters(parameters)
+ * then we won't have to check if id == -1 ? -> boss or general monster
+ * we can just have a GeneralAbilty : MonsterAbility {desicion is always to move}
+ * but we were running out of time, so
+ * here leaves a imperfect structure 
+ * */
 
-    public SpriteRenderer sr_frame1, sr_frame2, sr_frame_hurt, sr_frame_abillity;
+public class MonsterAbility : MonoBehaviour {
+
+    public Sprite sp_frame1, sp_frame2, sp_frame_hurt, sp_frame_ability;
     public Text hpOutput;
+    public bool killed;
     protected Monster self;
     protected Level_Map levelMap;
 
@@ -19,24 +30,32 @@ public class BossMonsterAbility : MonoBehaviour {
     public int healthPoint;
     public int hp
     {
-        get { return healthPoint; }
-        set { if (value < FULL_HP) hpOutput.text = (healthPoint = value).ToString(); }
+        get 
+        {
+            return healthPoint;
+        }
+        set 
+        {
+            if (value < FULL_HP) hpOutput.text = (healthPoint = value).ToString();
+        }
     }
 
     // BossMonster Object can only be added in Monsters()
     // in which they'll handle it like most of the monster
     // the function here is for its special ability
 
-    public BossMonsterAbility(Level_Map lm, int _hp)
+    public MonsterAbility(Level_Map lm, int _hp)
     {
-        sr_frame1 = GameObject.Find("Boss Sprite Frame1").GetComponent<SpriteRenderer>();
-        sr_frame2 = GameObject.Find("Boss Sprite Frame2").GetComponent<SpriteRenderer>();
+        sp_frame1 = GameObject.Find("Boss Sprite Frame1").GetComponent<SpriteRenderer>().sprite;
+        sp_frame2 = GameObject.Find("Boss Sprite Frame2").GetComponent<SpriteRenderer>().sprite;
+        sp_frame_hurt = GameObject.Find("Boss Sprite Frame3").GetComponent<SpriteRenderer>().sprite;
         hpOutput = GameObject.Find("Boss HP Output").GetComponent<Text>();
         levelMap = lm;
         FULL_HP = _hp;
         healthPoint = _hp;
         hpOutput.text = healthPoint.ToString();
         decision = -1;
+        killed = false;
         self = null;
     }
 
@@ -51,7 +70,7 @@ public class BossMonsterAbility : MonoBehaviour {
         return -1;
     }
 
-    virtual public int TryAttackPlayer(int playerPos)
+    virtual public int TryAttackPlayer()
     {
         Debug.Log("virtual public bool TryAttackPlayer(int)");
         return 0;

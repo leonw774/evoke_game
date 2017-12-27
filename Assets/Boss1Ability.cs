@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Boss1_Ability : BossMonsterAbility {
+public class Boss1_Ability : MonsterAbility {
 
     public Boss1_Ability(Level_Map lm, int _hp) : base(lm, _hp)
     {
@@ -13,37 +13,39 @@ public class Boss1_Ability : BossMonsterAbility {
         int foundPos = levelMap.theObstacles.positionList.Find(x => x == self.h * levelMap.width + self.w);
         if (foundPos > 0) levelMap.theObstacles.ObsDestroy(foundPos);
 
+        int distanceToPlayer = System.Math.Abs(levelMap.thePlayer.h - self.h) + System.Math.Abs(levelMap.thePlayer.w - self.w);
+
         // if player is next to it: attack
-        if (1 == (System.Math.Abs(levelMap.thePlayer.h - self.h) + System.Math.Abs(levelMap.thePlayer.w - self.w)))
+        if (distanceToPlayer == 1)
             return decision = 1;
 
         // if player not near and health point is low: Special Move
-        if (5 >= (System.Math.Abs(levelMap.thePlayer.h - self.h) + System.Math.Abs(levelMap.thePlayer.w - self.w))
-            && (FULL_HP - healthPoint > healthPoint) && Random.Range(-1, 1) < 0)
+        /*
+        if (distanceToPlayer < 12 && distanceToPlayer >= 6 && Random.Range(-1, FULL_HP - healthPoint + 1) > 0)
             return decision = 3;
+        */
 
         // if player is near to it and they are seperated by some obstacles: ability
         return decision = (TryDoAbility() ? 2 : 0);
     }
 
-    override public int TryAttackPlayer(int playerPos)
+    override public int TryAttackPlayer()
     {
         if (decision != 1) return 0;
 
-        // boss maybe miss because player runs away
         if (1 == (System.Math.Abs(levelMap.thePlayer.h - self.h) + System.Math.Abs(levelMap.thePlayer.w - self.w)))
         {
-            if (levelMap.playerStartTile[0] - self.h == 1)
-                self.faceTo = FACING.UP;
-            else if (levelMap.playerStartTile[0] - self.h == 0)
+            if (levelMap.thePlayer.h < self.h)
+                self.FaceTo(FACING.UP);
+            else if (levelMap.thePlayer.h == self.h)
             {
-                if (levelMap.playerStartTile[1] - self.w == 1)
-                    self.faceTo = FACING.RIGHT;
+                if (levelMap.thePlayer.w > self.w)
+                    self.FaceTo(FACING.RIGHT);
                 else
-                    self.faceTo = FACING.LEFT;
+                    self.FaceTo(FACING.LEFT);
             }
             else
-                self.faceTo = FACING.DOWN;
+                self.FaceTo(FACING.DOWN);
             // returns the hp the player to be loss
             return 1;
         }
@@ -75,7 +77,7 @@ public class Boss1_Ability : BossMonsterAbility {
             case 3: // right
                 w_tocheck++; break;
         }
-        Debug.Log("boss TryDoAbility(): boss at " + self.h + ", " + self.w + "; try at " + h_tocheck + ", " + w_tocheck);
+        //Debug.Log("boss TryDoAbility(): boss at " + self.h + ", " + self.w + "; try at " + h_tocheck + ", " + w_tocheck);
         return levelMap.theObstacles.positionList.Exists(x => x == h_tocheck * levelMap.width + w_tocheck);
     }
 
@@ -83,6 +85,7 @@ public class Boss1_Ability : BossMonsterAbility {
     {
         int h_tocheck = self.h, w_tocheck = self.w;
         int lookat = -1; // side -1, middle 0, side 1
+        Debug.Log("self.FaceTo = " + (int) self.faceTo);
         switch ((int)self.faceTo)
         {
             case 0: // up
@@ -94,14 +97,15 @@ public class Boss1_Ability : BossMonsterAbility {
             case 3: // right
                 w_tocheck++; break;
         }
-        while (lookat < 1)
+        while (lookat <= 1)
         {
             if ((int)self.faceTo % 2 == 0)
-                levelMap.theObstacles.ObsDestroy(levelMap.theObstacles.positionList.Find(x => x == h_tocheck * levelMap.width + (w_tocheck + lookat)));
+                levelMap.theObstacles.ObsUpdate(levelMap.theObstacles.positionList.Find(x => x == h_tocheck * levelMap.width + (w_tocheck + lookat)));
             else
-                levelMap.theObstacles.ObsDestroy(levelMap.theObstacles.positionList.Find(x => x == (h_tocheck + lookat) * levelMap.width + w_tocheck));
+                levelMap.theObstacles.ObsUpdate(levelMap.theObstacles.positionList.Find(x => x == (h_tocheck + lookat) * levelMap.width + w_tocheck));
             lookat++;
         }
+        Debug.Log("boss DoAbility(): face to " + self.faceTo);
     }
 
     public override void DoSpecialMove()
@@ -123,8 +127,9 @@ public class Boss1_Ability : BossMonsterAbility {
             Debug.Log("boss DoSpecialMove() failed");
             return;
         }
-        else if (pathList.Count > 2)
+        else if (pathList.Count > 3)
         {
+            // move toward!
             switch (goingTo)
             {
                 case 0: // up
@@ -139,6 +144,7 @@ public class Boss1_Ability : BossMonsterAbility {
         }
         else
         {
+            // move away!
             switch (goingTo)
             {
                 case 0: // up

@@ -9,9 +9,13 @@ public class Control_Animation : MonoBehaviour {
 
     public float times_irreponsive = 0;
     public float times_monster_change_sprite = 0;
-    public readonly float ANIM_DUR_TIME = 0.21f;
+    public float times_boss_hurted_sprite = 0;
+    public float times_player_hurted_sprite = 0;
+    public readonly float ANIM_DUR_TIME = 0.225f;
+
     private bool moveAnimation = false;
     private bool playerHurtedAnimation = false;
+    private bool bossMonsterHurtedAnimation = false;
     private bool monsters_ask_for_end = false, player_ask_for_end = false;
 
 	// Use this for initialization
@@ -47,14 +51,14 @@ public class Control_Animation : MonoBehaviour {
 
     public void PlayerAnimSetup(Vector3 begin, Vector3 end)
     {
-        Debug.Log("PlayerAnimSetup: " + begin.ToString() + " -> " + end.ToString());
+        //Debug.Log("PlayerAnimSetup: " + begin.ToString() + " -> " + end.ToString());
         thePlayerDisplay.animBeginPos = begin;
         thePlayerDisplay.animEndPos = end;
     }
 
     private bool PlayerAnim()
     {
-        levelMap.thePlayer.thePlayerDisp.objPosition += (thePlayerDisplay.animEndPos - thePlayerDisplay.animBeginPos) / (Time.deltaTime / ANIM_DUR_TIME / 0.0056f);
+        levelMap.thePlayer.thePlayerDisp.objPosition += (thePlayerDisplay.animEndPos - thePlayerDisplay.animBeginPos) / (Time.deltaTime / ANIM_DUR_TIME / 0.0058f);
         return (thePlayerDisplay.animEndPos - levelMap.thePlayer.thePlayerDisp.objPosition).magnitude < 0.01
             || (thePlayerDisplay.animEndPos - levelMap.thePlayer.thePlayerDisp.objPosition).normalized == (thePlayerDisplay.animBeginPos - thePlayerDisplay.animEndPos).normalized;
     }
@@ -66,18 +70,18 @@ public class Control_Animation : MonoBehaviour {
         thePlayerDisplay.animBeginPos = new Vector3(0.0f, 0.0f, -1.0f);
         if (levelMap.thePlayer.IsPlayerAttacked())
         {
-            PlayerAttackedAnimStart();
+            PlayerHurtedAnimStart();
         }
     }
 
-    private void PlayerAttackedAnimStart()
+    private void PlayerHurtedAnimStart()
     {
-        times_irreponsive = Time.time + ANIM_DUR_TIME;
+        times_player_hurted_sprite = Time.time + ANIM_DUR_TIME;
         playerHurtedAnimation = true;
         GameObject.Find("Player Attacked Effect").GetComponent<SpriteRenderer>().enabled = true;
     }
 
-    void PlayerAttackedAnimEnd()
+    private void PlayerHurtedAnimEnd()
     {
         playerHurtedAnimation = false;
         GameObject.Find("Player Attacked Effect").GetComponent<SpriteRenderer>().enabled = false;
@@ -101,7 +105,7 @@ public class Control_Animation : MonoBehaviour {
             {
                 if (x.animBeginPos != new Vector3(0.0f, 0.0f, -1.0f))
                     x.SpriteObj.transform.position += 
-                        (x.animEndPos - x.animBeginPos) / (Time.deltaTime / ANIM_DUR_TIME / 0.0054f);
+                        (x.animEndPos - x.animBeginPos) / (Time.deltaTime / ANIM_DUR_TIME / 0.0056f);
             }
             Monster exampleMons = levelMap.theMonsters.monsList[0];
             if (exampleMons.animEndPos != new Vector3(0.0f, 0.0f, -1.0f)
@@ -122,6 +126,20 @@ public class Control_Animation : MonoBehaviour {
                 x.animBeginPos = new Vector3(0.0f, 0.0f, -1.0f);
             }
         }
+    }
+
+    public void BossMonsterHurtedAnimStart()
+    {
+        bossMonsterHurtedAnimation = true;
+        times_boss_hurted_sprite = Time.time + ANIM_DUR_TIME;
+        levelMap.theMonsters.boss.SpriteObj.GetComponent<SpriteRenderer>().sprite = levelMap.theMonsters.boss.monAbility.sp_frame_hurt;
+    }
+
+    private void BossMonsterHurtedAnimEnd()
+    {
+        bossMonsterHurtedAnimation = false;
+        if (levelMap.theMonsters.boss.monAbility.killed)
+            levelMap.theMonsters.KillMonsterById(-1);
     }
 
     /*
@@ -168,13 +186,18 @@ public class Control_Animation : MonoBehaviour {
     {
         if (times_monster_change_sprite <= Time.time)
         {
-            levelMap.theMonsters.MonstersChangeFrame();
+            levelMap.theMonsters.AllChangeFrame();
             times_monster_change_sprite += 1.1f;
         }
 
-        if (playerHurtedAnimation && times_irreponsive <= Time.time)
+        if (playerHurtedAnimation && times_player_hurted_sprite <= Time.time)
         {
-            PlayerAttackedAnimEnd();
+            PlayerHurtedAnimEnd();
+        }
+
+        if (bossMonsterHurtedAnimation && times_boss_hurted_sprite <= Time.time)
+        {
+            BossMonsterHurtedAnimEnd();
         }
 
         /* for testing on PC */
