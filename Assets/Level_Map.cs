@@ -271,7 +271,7 @@ public class Level_Map : MonoBehaviour
         Debug.Log("estimatedStep:" + estimatedStep);
 
         int walkableTilesNnum = height * width - wallsNumber;
-        float monsterNumAdjust = 2.75f;
+        float monsterNumAdjust = 3.0f;
         float diviedPathAdjustmant = ((int)(walkableTilesNnum / (estimatedStep * 4.0f) * 100) / 100f);
         if (diviedPathAdjustmant > 1.0)
             monsterNumAdjust /= diviedPathAdjustmant;
@@ -281,7 +281,7 @@ public class Level_Map : MonoBehaviour
         Debug.Log("monsterNumAdjust: " + monsterNumAdjust);
         Debug.Log("shortcutNum:" + shortcutNum);
 
-        int ep_to_set = (int) (estimatedStep * 1.24 + (Save_Data.SelectedLevel / 2) * 0.1) + adjustedMonsterFactor + (int) (shortcutNum * 1.75);
+        int ep_to_set = (int) (estimatedStep * 1.25 + (Save_Data.SelectedLevel / 2) * 0.05) + adjustedMonsterFactor + (int) (shortcutNum * 1.75);
         int hp_to_set = monsterNumber / 15 + 2;
 
         if (Save_Data.SelectedLevel == Save_Data.BossLevel)
