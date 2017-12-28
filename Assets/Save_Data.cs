@@ -5,11 +5,11 @@
      * thing that will read from/write to the save file when Menu_Script is loaded
      * */
 
-    public static int levelPassed = -1; // when player fifnish the level, this variable++
+    public static int PassedLevel = -1; // when player fifnish the level, this variable++
 
 	public static void UpdatePassedLevel()
 	{
-		Save_Data.levelPassed++;
+		Save_Data.PassedLevel++;
 	}
 
 

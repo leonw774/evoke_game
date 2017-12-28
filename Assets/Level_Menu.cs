@@ -26,7 +26,7 @@ public class Level_Menu : MonoBehaviour {
 		SaveFilePath = Application.persistentDataPath + "/save.dat";
 
 		// if it is the the first to the main menu
-        if (Save_Data.levelPassed == -1)
+        if (Save_Data.PassedLevel == -1)
         {
             saveFileDebugOutput.text = "true\n";
             if (File.Exists(SaveFilePath))
@@ -37,8 +37,7 @@ public class Level_Menu : MonoBehaviour {
             else
             {
                 saveFileDebugOutput.text += "false\n";
-                string cbt = GameObject.Find("Continue Button Text").GetComponent<Text>().text;
-                cbt = "Begin";
+                GameObject.Find("Continue Button Text").GetComponent<Text>().text = "Begin";
                 // leave it unloaded
             }
         }
@@ -49,17 +48,17 @@ public class Level_Menu : MonoBehaviour {
             if (File.Exists(SaveFilePath))
             {
                 saveFileDebugOutput.text += "true\n";
-                writeSaveData(Save_Data.levelPassed);
+                writeSaveData(Save_Data.PassedLevel);
             }
             else // and there is not a save file yet!
             {
                 saveFileDebugOutput.text += "false\n";
-                writeSaveData(Save_Data.levelPassed);
+                writeSaveData(Save_Data.PassedLevel);
             }
         }
 		
-        saveFileDebugOutput.text += Save_Data.levelPassed;
-	    //Save_Data.levelPassed = 2;
+        saveFileDebugOutput.text += Save_Data.PassedLevel;
+	    //Save_Data.PassedLevel = 2;
 
         SetupLevelMenuButton();
     }
@@ -78,7 +77,7 @@ public class Level_Menu : MonoBehaviour {
             {
                 continue;
             }
-            if (bnum <= (Save_Data.levelPassed + 1))
+            if (bnum <= (Save_Data.PassedLevel + 1))
             {
                 lvlBtns[i].interactable = true;
             }
@@ -88,7 +87,7 @@ public class Level_Menu : MonoBehaviour {
     void loadSaveData()
     {
         SaveR = new StreamReader(SaveFilePath);
-        Save_Data.levelPassed = int.Parse(SaveR.ReadLine());
+        Save_Data.PassedLevel = int.Parse(SaveR.ReadLine());
         SaveR.Close();
     }
 
@@ -100,6 +99,13 @@ public class Level_Menu : MonoBehaviour {
             SaveW.WriteLine(level.ToString() + "\n");
             SaveW.Close();
         }
+    }
+
+    public void LoadContinueLevel()
+    {
+        Save_Data.SelectLevel(Save_Data.PassedLevel + ((Save_Data.PassedLevel == Save_Data.BossLevel) ? 0 : 1));
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
+        SceneManager.LoadScene("Game Scene");
     }
 
     public void LoadLevel(int level)

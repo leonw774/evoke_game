@@ -54,6 +54,7 @@
      <Compile Include="Assets\Info_Menu.cs" />
      <Compile Include="Assets\Level_Map.cs" />
      <Compile Include="Assets\Level_Menu.cs" />
+     <Compile Include="Assets\Map_View.cs" />
      <Compile Include="Assets\MonsterAbility.cs" />
      <Compile Include="Assets\Monsters_Control.cs" />
      <Compile Include="Assets\Obstacles.cs" />

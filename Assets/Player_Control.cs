@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TileTypeDefine;
 using System.Configuration;
 using System;
+using UnityEditor;
 
 public enum CHARACTER_FACING : int {FRONT = 0, LEFT, BACK, RIGHT};
 
@@ -238,6 +239,7 @@ public class Player_Control : MonoBehaviour {
             // try destroy obs because player might be hurted by obs in boss monster attack
             levelMap.theObstacles.ObsDestroy(h * levelMap.width + w);
             SetHealthPoint(healthPoint - success);
+            GameObject.Find("Player Hurt Sound").GetComponent<AudioSource>().Play();
             return true;
         }
         return false;
@@ -282,19 +284,13 @@ public class Player_Control : MonoBehaviour {
 
     public void SetEnergyPoint(int e)
     {
-        if (e <= 10)
-        {
-           energyPointObject.color = Color.red;
-        }
+        energyPointObject.color = (e <= 10) ? Color.red : new Color(0.1098f, 0.882353f, 0.882353f);
         energyPointObject.text = (energyPoint = e).ToString();
     }
 
     public void SetHealthPoint(int h)
     {
-        if (h == 1)
-        {
-            healthPointObject.color = Color.red;
-        }
+        healthPointObject.color = (h == 10) ? Color.red : new Color(0.1098f, 0.882353f, 0.1098f);
         healthPointObject.text = (healthPoint = h).ToString();
     }
 

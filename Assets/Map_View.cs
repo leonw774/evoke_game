@@ -3,44 +3,39 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Info_Menu : MonoBehaviour {
+public class Map_View : MonoBehaviour {
 
     GameObject MenuBtn;
-    GameObject MapBtn;
+    GameObject InfoBtn;
+    Text MapBtnTxt;
     public bool isMenuActive = false;
 
 	// Use this for initialization
 	void Start () {
         MenuBtn = GameObject.Find("Menu Button");
-        MapBtn = GameObject.Find("Map Button");
-        if (Save_Data.SelectedLevel == 0) // level zero is tutoriel level
-        {
-            toggleInfoMenu();
-        }
+        InfoBtn = GameObject.Find("Info Button");
+        MapBtnTxt = GameObject.Find("Map Button Text").GetComponent<Text>();
 	}
 
-    public void toggleInfoMenu()
+    public void toggleMapMenu()
     {
         if (isMenuActive)
         {
             gameObject.transform.Translate(new Vector3(0.0f, 0.0f, -1.0f));
             MenuBtn.transform.Translate(new Vector3(0, 0, -1000));
-            MapBtn.transform.Translate(new Vector3(0, 0, -1000));
+            InfoBtn.transform.Translate(new Vector3(0, 0, -1000));
+            MapBtnTxt.text = "Show Map";
             MenuBtn.GetComponent<Button>().enabled = true;
         }
         else
         {
             gameObject.transform.Translate(new Vector3(0.0f, 0.0f, 1.0f));
             MenuBtn.transform.Translate(new Vector3(0, 0, 1000));
-            MapBtn.transform.Translate(new Vector3(0, 0, 1000));
+            InfoBtn.transform.Translate(new Vector3(0, 0, 1000));
+            MapBtnTxt.text = "Hide Map";
             MenuBtn.GetComponent<Button>().enabled = false;
         }
 
         isMenuActive = !isMenuActive;
     }
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 }

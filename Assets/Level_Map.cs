@@ -127,9 +127,9 @@ public class Level_Map : MonoBehaviour
             Debug.Log("Image loaded: " + height + ", " + width);
 
             // make mini map
-            Rect minimapRect = new Rect(0.0f, 0.0f, (float)width, (float)height);
-            Sprite minimapSp = Sprite.Create(bmp, minimapRect, new Vector2(0.5f, 0.5f));
-            GameObject.Find("Mini Map").GetComponent<SpriteRenderer>().sprite = minimapSp;
+            Rect mapRect = new Rect(0.0f, 0.0f, (float)width, (float)height);
+            Sprite mapSp = Sprite.Create(bmp, mapRect, new Vector2(0.5f, 0.5f));
+            GameObject.Find("Large Map").GetComponent<SpriteRenderer>().sprite = mapSp;
 
             //Resources.UnloadAsset(bmp);
         }
@@ -153,7 +153,7 @@ public class Level_Map : MonoBehaviour
             {
                 Color32 thisPixel = mapPixels[i * width + j];
                 //Debug.Log(i + "," + j + ":" + thisPixel.ToString());
-                if (thisPixel.Equals(new Color32(255, 255, 255, 255)))
+                if (thisPixel.r > 247 && thisPixel.g > 247 && thisPixel.b > 247)
                     tiles[height - 1 - i, j] = TILE_TYPE.WALKABLE;
                 else if (thisPixel.Equals(new Color32(255, 0, 0, 255)))
                     tiles[height - 1 - i, j] = TILE_TYPE.FINISH_POINT;
@@ -281,7 +281,7 @@ public class Level_Map : MonoBehaviour
         Debug.Log("monsterNumAdjust: " + monsterNumAdjust);
         Debug.Log("shortcutNum:" + shortcutNum);
 
-        int ep_to_set = (int) (estimatedStep * 1.25 + (Save_Data.SelectedLevel / 3) * 0.1) + adjustedMonsterFactor + (int) (shortcutNum * 1.75);
+        int ep_to_set = (int) (estimatedStep * 1.24 + (Save_Data.SelectedLevel / 2) * 0.1) + adjustedMonsterFactor + (int) (shortcutNum * 1.75);
         int hp_to_set = monsterNumber / 15 + 2;
 
         if (Save_Data.SelectedLevel == Save_Data.BossLevel)
@@ -327,13 +327,13 @@ public class Level_Map : MonoBehaviour
     {
         if (Save_Data.SelectedLevel != Save_Data.BossLevel)
         {
-            if (Save_Data.SelectedLevel == Save_Data.levelPassed + 1)
+            if (Save_Data.SelectedLevel == Save_Data.PassedLevel + 1)
             {
                 Save_Data.UpdatePassedLevel();
             }
         }
         Debug.Log("SelectedLevel: " + Save_Data.SelectedLevel);
-        Debug.Log("levelPassed: " + Save_Data.levelPassed);
+        Debug.Log("PassedLevel: " + Save_Data.PassedLevel);
     }
 
     public void GameNextLevel()
