@@ -132,12 +132,13 @@ public class Control_Animation : MonoBehaviour {
     {
         bossMonsterHurtedAnimation = true;
         times_boss_hurted_sprite = Time.time + ANIM_DUR_TIME;
-        levelMap.theMonsters.boss.SpriteObj.GetComponent<SpriteRenderer>().sprite = levelMap.theMonsters.boss.monAbility.sp_frame_hurt;
+        GameObject.Find("Boss Attacked Effect").GetComponent<SpriteRenderer>().enabled = true;
     }
 
     private void BossMonsterHurtedAnimEnd()
     {
         bossMonsterHurtedAnimation = false;
+        GameObject.Find("Boss Attacked Effect").GetComponent<SpriteRenderer>().enabled = false;
         if (levelMap.theMonsters.boss.monAbility.killed)
             levelMap.theMonsters.KillMonsterById(-1);
     }

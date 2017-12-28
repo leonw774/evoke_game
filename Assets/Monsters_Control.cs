@@ -2,11 +2,11 @@
 using UnityEngine;
 using TileTypeDefine;
 
-public enum FACING : int {UP = 0, LEFT, DOWN, RIGHT};
+public enum FACETO {UP = 0, LEFT, DOWN, RIGHT};
 
 public class Monster
 {
-    public FACING faceTo;
+    public FACETO faceTo;
     public int h;
     public int w;
     public int id; // -1 to identify the boss, >=0 to label normal monsters
@@ -24,7 +24,7 @@ public class Monster
         id = _id;
         SpriteObj = _ms;
         if (id >= 0)
-            FaceTo((FACING)Random.Range(0, 4));
+            FaceTo((FACETO)Random.Range(0, 4));
         animBeginPos = new Vector3(0.0f, 0.0f, -1.0f);
         animEndPos = new Vector3(0.0f, 0.0f, -1.0f);
     }
@@ -40,12 +40,12 @@ public class Monster
         w = neww;
     }
 
-    virtual public void FaceTo(FACING direction)
+    virtual public void FaceTo(FACETO direction)
     {
         faceTo = direction;
-        if (direction == FACING.RIGHT)
+        if (direction == FACETO.RIGHT)
             SpriteObj.GetComponent<SpriteRenderer>().flipX = true;
-        else if (direction == FACING.LEFT)
+        else if (direction == FACETO.LEFT)
             SpriteObj.GetComponent<SpriteRenderer>().flipX = false;
     }
 }
@@ -55,7 +55,32 @@ public class BossMonster : Monster
     public BossMonster(int _h, int _w, int _id, GameObject _ms, MonsterAbility _a) : base(_h, _w, _id, _ms)
     {
         monAbility = _a;
-        FaceTo((FACING)Random.Range(0, 4));
+        FaceTo((FACETO)Random.Range(0, 4));
+    }
+
+    override public void FaceTo(FACETO ft)
+    {
+        faceTo = ft;
+        if (monAbility.facingSprite != null)
+            monAbility.facingSprite.enabled = false;
+        switch (ft)
+        {
+            case FACETO.UP:
+                monAbility.facingSprite = GameObject.Find("Back Boss Sprite").GetComponent<SpriteRenderer>();
+                break;
+            case FACETO.LEFT:
+                monAbility.facingSprite = GameObject.Find("Left Boss Sprite").GetComponent<SpriteRenderer>();
+                break;
+            case FACETO.DOWN:
+                monAbility.facingSprite = GameObject.Find("Front Boss Sprite").GetComponent<SpriteRenderer>();
+                break;
+            case FACETO.RIGHT:
+                monAbility.facingSprite = GameObject.Find("Right Boss Sprite").GetComponent<SpriteRenderer>();
+                break;
+            default:
+                return;
+        }
+        monAbility.facingSprite.enabled = true;
     }
 }
 
@@ -175,9 +200,9 @@ public class Monsters_Control: MonoBehaviour {
 
     public void SpawnBoss(int bossIndex)
     {
-        Texture2D BossTex;
-        Rect Rect;
-        Sprite Sp;
+        //Texture2D BossTex;
+        //Rect Rect;
+        //Sprite Sp;
 
         // clear space for boss
         int pos = (levelMap.height / 2) * levelMap.width + levelMap.width / 2;
@@ -197,22 +222,20 @@ public class Monsters_Control: MonoBehaviour {
         monsList.Add(boss);
 
         // load boss sprites
-        BossTex = Resources.Load<Texture2D>("Bosses/boss_frame1_test");
+        // only do these when we have more than one boss which is not the case now
+        /*
+        BossTex = Resources.Load<Texture2D>("Bosses/boss_back_" + bossIndex.ToString());
         Rect = new Rect(0.0f, 0.0f, (float)BossTex.width, (float)BossTex.height);
         Sp = Sprite.Create(BossTex, Rect, new Vector2(0.5f, 0.5f));
-        boss.monAbility.sp_frame1 = Sp;
-        BossTex = Resources.Load<Texture2D>("Bosses/boss_frame2_test");
-        Rect = new Rect(0.0f, 0.0f, (float)BossTex.width, (float)BossTex.height);
-        Sp = Sprite.Create(BossTex, Rect, new Vector2(0.5f, 0.5f));
-        boss.monAbility.sp_frame2 = Sp;
-        BossTex = Resources.Load<Texture2D>("Bosses/boss_frame3_test");
-        Rect = new Rect(0.0f, 0.0f, (float)BossTex.width, (float)BossTex.height);
-        Sp = Sprite.Create(BossTex, Rect, new Vector2(0.5f, 0.5f));
-        boss.monAbility.sp_frame_hurt = Sp;
+        GameObject.Find("Back Boss Sprite") = Sp;
+        .........
+        */
 
         // make Boss Sprites appear
         Vector3 trans = levelMap.MapCoordToWorldVec3(levelMap.height / 2, levelMap.width / 2, 1);
         boss.SpriteObj.transform.transform.position = trans;
+
+        Debug.Log("Boss Spawned");
     }
 
     private void Spawn(int h, int w, int index)
@@ -265,18 +288,6 @@ public class Monsters_Control: MonoBehaviour {
                     sp_to_change = ((x.SpriteObj.GetComponent<SpriteRenderer>().sprite == sprite_frame1) ? 2 : 1);
                 }
                 x.SpriteObj.GetComponent<SpriteRenderer>().sprite = ((sp_to_change == 1) ? sprite_frame1 : sprite_frame2);
-            }
-            else
-            {
-                if (x.SpriteObj.GetComponent<SpriteRenderer>().sprite == boss.monAbility.sp_frame1)
-                {
-                    sp_to_change = 2;
-                }
-                else if (x.SpriteObj.GetComponent<SpriteRenderer>().sprite == boss.monAbility.sp_frame2)
-                {
-                    sp_to_change = 1;
-                }
-                x.SpriteObj.GetComponent<SpriteRenderer>().sprite = ((sp_to_change == 1) ? boss.monAbility.sp_frame1 : boss.monAbility.sp_frame2);
             }
         }
     }
@@ -371,7 +382,7 @@ public class Monsters_Control: MonoBehaviour {
                 {
                     //Debug.Log("Monster " + i + "moved from " + thisMon.h + "," + thisMon.w + " to " + newh + "," + neww);
                     thisMon.MoveTo(newh, neww);
-                    thisMon.FaceTo((FACING) goingTo);
+                    thisMon.FaceTo((FACETO) goingTo);
                     levelMap.theAnimation.MonsterAnimSetup(i, thisMon.SpriteObj.transform.position, levelMap.MapCoordToWorldVec3(newh, neww, 1));
                 }
             }
@@ -417,7 +428,7 @@ public class Monsters_Control: MonoBehaviour {
                 {
                     //Debug.Log("Monster " + i + "moved from " + monsterList[i].h + "," + monsterList[i].w + " to " + newh + "," + neww);
                     thisMon.MoveTo(newh, neww);
-                    thisMon.FaceTo((FACING) goingTo);
+                    thisMon.FaceTo((FACETO) goingTo);
                     levelMap.theAnimation.MonsterAnimSetup(i, thisMon.SpriteObj.transform.position, levelMap.MapCoordToWorldVec3(newh, neww, 1));
                     break;
                 }
@@ -463,7 +474,6 @@ public class Monsters_Control: MonoBehaviour {
                     GameObject.Find("Exit Sprite").GetComponent<SpriteRenderer>().enabled = true;
                 }
                 levelMap.theAnimation.BossMonsterHurtedAnimStart();
-                boss.SpriteObj.GetComponent<SpriteRenderer>().sprite = boss.monAbility.sp_frame_hurt;
             }
         }
     }

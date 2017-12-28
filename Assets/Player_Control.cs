@@ -5,7 +5,7 @@ using System.Configuration;
 using System;
 using UnityEditor;
 
-public enum CHARACTER_FACING : int {FRONT = 0, LEFT, BACK, RIGHT};
+public enum CHARACTER_FACING : int {BACK = 0, LEFT, FRONT, RIGHT};
 
 public class Player_Display
 {

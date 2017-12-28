@@ -14,7 +14,8 @@ using UnityEngine.UI;
 
 public class MonsterAbility : MonoBehaviour {
 
-    public Sprite sp_frame1, sp_frame2, sp_frame_hurt, sp_frame_ability;
+    public Sprite sp_frame1, sp_frame2;
+    public SpriteRenderer facingSprite;
     public Text hpOutput;
     public bool killed;
     protected Monster self;
@@ -46,14 +47,11 @@ public class MonsterAbility : MonoBehaviour {
 
     public MonsterAbility(Level_Map lm, int _hp)
     {
-        sp_frame1 = GameObject.Find("Boss Sprite Frame1").GetComponent<SpriteRenderer>().sprite;
-        sp_frame2 = GameObject.Find("Boss Sprite Frame2").GetComponent<SpriteRenderer>().sprite;
-        sp_frame_hurt = GameObject.Find("Boss Sprite Frame3").GetComponent<SpriteRenderer>().sprite;
-        hpOutput = GameObject.Find("Boss HP Output").GetComponent<Text>();
+        facingSprite = null;
+        hpOutput = null;
         levelMap = lm;
         FULL_HP = _hp;
         healthPoint = _hp;
-        hpOutput.text = healthPoint.ToString();
         decision = -1;
         killed = false;
         self = null;
