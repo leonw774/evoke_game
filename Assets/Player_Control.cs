@@ -1,99 +1,171 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+using TileTypeDefine;
+using System.Configuration;
 using System;
 
+public enum CHARACTER_FACING : int {BACK = 0, LEFT, FRONT, RIGHT};
+
+public class Player_Display
+{
+    private GameObject playerPositionObject;
+    private SpriteRenderer playerFacingSprite;
+    public Vector3 animBeginPos;
+    public Vector3 animEndPos;
+    public Vector3 objPosition
+    {
+        set
+        {
+            playerPositionObject.transform.position = value;
+        }
+        get
+        {
+            return playerPositionObject.transform.position;
+        }
+    }
+
+    public Player_Display()
+    {
+        playerPositionObject = GameObject.Find("Player Sprite");
+        playerFacingSprite = null;
+        animBeginPos = new Vector3(0, 0, -1);
+        animEndPos = new Vector3(0, 0, -1);
+    }
+
+    public void ChangeFacingSpriteTo(CHARACTER_FACING ft)
+    {
+        if (playerFacingSprite != null)
+            playerFacingSprite.enabled = false;
+        switch (ft)
+        {
+            case CHARACTER_FACING.FRONT:
+                playerFacingSprite = GameObject.Find("Front Player Sprite").GetComponent<SpriteRenderer>();
+                break;
+            case CHARACTER_FACING.LEFT:
+                playerFacingSprite = GameObject.Find("Left Player Sprite").GetComponent<SpriteRenderer>();
+                break;
+            case CHARACTER_FACING.BACK:
+                playerFacingSprite = GameObject.Find("Back Player Sprite").GetComponent<SpriteRenderer>();
+                break;
+            case CHARACTER_FACING.RIGHT:
+                playerFacingSprite = GameObject.Find("Right Player Sprite").GetComponent<SpriteRenderer>();
+                break;
+            default:
+                return;
+        }
+        playerFacingSprite.enabled = true;
+    }
+}
+
 public class Player_Control : MonoBehaviour {
-    public enum FACING : int {FRONT = 0, LEFT, BACK, RIGHT};
     public int h;
     public int w;
 
     public int energyPoint;
     public int healthPoint;
-
     private int abilityCooldown;
 
-    private GameObject playerPositionObject;
-    private SpriteRenderer playerFacingSprite = null;
     private Text energyPointObject;
     private Text healthPointObject;
     private Text abilityCooldownObject;
-    private Game_Menu theControlPanel;
+    private AudioSource abilitySound, moveSound;
+
+    public Control_Animation theAnimation;
+    public Player_Display thePlayerDisp;
+    public Game_Menu theControlPanel;
     private Level_Map levelMap;
 
     // Use this for initialization
     void Start()
     {
-        Debug.Log("Player_Control.Start()");
+        //Debug.Log("Player_Control.Start()");
     }
 
     public void Initialize()
     {
-        playerPositionObject = GameObject.Find("Player Sprite");
+        theAnimation = GameObject.Find("Control Panel").GetComponent<Control_Animation>();
+        thePlayerDisp = new Player_Display();
         theControlPanel = GameObject.Find("Game Menu Canvas").GetComponent<Game_Menu>();
         levelMap = GameObject.Find("Game Panel").GetComponent<Level_Map>();
+
         energyPointObject = GameObject.Find("EP Output").GetComponent<Text>();
         healthPointObject = GameObject.Find("HP Output").GetComponent<Text>();
         abilityCooldownObject = GameObject.Find("CD Output").GetComponent<Text>();
+        moveSound = GameObject.Find("Move Sound").GetComponent<AudioSource>();
+        abilitySound = GameObject.Find("Ability Sound").GetComponent<AudioSource>();
     }
 
     public void playerMoveUp()
     {
-        //Debug.Log("playerMoveUp");
-        if (Move(-1, 0)) // it is monster's turn only if player did change position
+        if (theAnimation.times_irreponsive <= Time.time)
         {
-            SetFaceTo(FACING.BACK);
-            levelMap.theMonsters.MonstersMove();
-            AnimSetup();
-            if (energyPoint == 0) theControlPanel.toggleFailMenu();
+            if (Move(-1, 0)) // it is monster's turn only if player did change position
+            {
+                moveSound.Play();
+                thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.BACK);
+                levelMap.theMonsters.MonstersTurn();
+                levelMap.theAnimation.AnimSetup();
+                if (energyPoint == 0) theControlPanel.toggleFailMenu();
+            }
         }
     }
 
     public void playerMoveLeft()
     {
-        //Debug.Log("playerMoveLeft");
-        if (Move(0, -1))
+        if (theAnimation.times_irreponsive <= Time.time)
         {
-            SetFaceTo(FACING.LEFT);
-            levelMap.theMonsters.MonstersMove();
-            AnimSetup();
-            if (energyPoint == 0) theControlPanel.toggleFailMenu();
+            if (Move(0, -1))
+            {
+                moveSound.Play();
+                thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.LEFT);
+                levelMap.theMonsters.MonstersTurn();
+                levelMap.theAnimation.AnimSetup();
+                if (energyPoint == 0) theControlPanel.toggleFailMenu();
+            }
         }
     }
 
     public void playerMoveDown()
     {
-        //Debug.Log("playerMoveDown");
-        if (Move(1, 0))
+        if (theAnimation.times_irreponsive <= Time.time)
         {
-            SetFaceTo(FACING.FRONT);
-            levelMap.theMonsters.MonstersMove();
-            AnimSetup();
-            if (energyPoint == 0) theControlPanel.toggleFailMenu();
+            if (Move(1, 0))
+            {
+                moveSound.Play();
+                thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.FRONT);
+                levelMap.theMonsters.MonstersTurn();
+                levelMap.theAnimation.AnimSetup();
+                if (energyPoint == 0) theControlPanel.toggleFailMenu();
+            }
         }
     }
 
     public void playerMoveRight()
     {
-        //Debug.Log("playerMoveRight");
-        if (Move(0, 1))
+        if (theAnimation.times_irreponsive <= Time.time)
         {
-            SetFaceTo(FACING.RIGHT);
-            levelMap.theMonsters.MonstersMove();
-            AnimSetup();
-            if (energyPoint == 0) theControlPanel.toggleFailMenu();
+            if (Move(0, 1))
+            {
+                moveSound.Play();
+                thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.RIGHT);
+                levelMap.theMonsters.MonstersTurn();
+                levelMap.theAnimation.AnimSetup();
+                if (energyPoint == 0) theControlPanel.toggleFailMenu();
+            }
         }
     }
 
     public void playerDoAbility()
     {
-        //Debug.Log("playerDoAbility");
-        if (DoAbility())
+        if (theAnimation.times_irreponsive <= Time.time)
         {
-            levelMap.theMonsters.MonstersMove();
-            AnimSetup();
-            if (energyPoint == 0) theControlPanel.toggleFailMenu();
+            if (DoAbility())
+            {
+                abilitySound.Play();
+                levelMap.theMonsters.MonstersTurn();
+                levelMap.theAnimation.AnimSetup();
+                if (energyPoint == 0) theControlPanel.toggleFailMenu();
+            }
         }
     }
 
@@ -106,27 +178,27 @@ public class Player_Control : MonoBehaviour {
         //Debug.Log("plar wanna go to " + (h + dh) + ", " + (w + dw));
         if (theControlPanel.isMenuActive)
             return false;
-        else if (levelMap.tiles[(h + dh), (w + dw)] != (int)Level_Map.TILE_TYPE.WALL
-            && !levelMap.theObstacles.positionList.Exists(x => x == (h + dh) * levelMap.width + (w + dw)))
+        else if (levelMap.IsTileWalkable(h + dh, w + dw))
         {
             h = h + dh;
             w = w + dw;
             //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
-            PlayerAnimSetup(playerPositionObject.transform.position, new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0));
-            energyPointObject.text = (--energyPoint).ToString();
+            levelMap.theAnimation.PlayerAnimSetup(thePlayerDisp.objPosition, levelMap.MapCoordToWorldVec3(h, w, 0));
+            SetEnergyPoint(energyPoint - 1);
             SetAbilityCooldown(--abilityCooldown);
+            return true;
         }
         else if ((h + dh) == levelMap.finishTile[0] && (w + dw) == levelMap.finishTile[1])
         {
-            PlayerAnimSetup(playerPositionObject.transform.position, new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0));
-            theControlPanel.toggleFinishMenu();
-            levelMap.GameFinish();
+            if (Save_Data.SelectedLevel != Save_Data.BossLevel || levelMap.theMonsters.boss == null)
+            {
+                levelMap.theAnimation.PlayerAnimSetup(thePlayerDisp.objPosition, levelMap.MapCoordToWorldVec3(h, w, 0));
+                theControlPanel.toggleFinishMenu();
+                levelMap.GameFinish();
+                return true;
+            }
         }
-        else
-        {
-            return false;
-        }
-        return true;
+        return false;       
     }
 
     // retrun true: player did do ability; return false: player didn't make it
@@ -152,24 +224,32 @@ public class Player_Control : MonoBehaviour {
         return true;
     }
 
-    private void CheckPlayerAttacked()
+    /* Checks for Animation */
+
+    public bool IsPlayerAttacked()
     {
-        bool success = levelMap.theMonsters.TryAttackPlayer(h * levelMap.width + w);
-        if (success)
+        // if player finish the map, monster can not fail it afterward.
+        if (theControlPanel.isFinishMenu)
+            return false;
+        
+        int success = levelMap.theMonsters.TryAttackPlayer(h * levelMap.width + w);
+        if (success > 0)
         {
-            healthPoint--;
-            healthPointObject.text = healthPoint.ToString();
-            AttackedAnimStart();
+            // try destroy obs because player might be hurted by obs in boss monster attack
+            levelMap.theObstacles.ObsDestroy(h * levelMap.width + w);
+            SetHealthPoint(healthPoint - success);
+            return true;
         }
+        return false;
     }
 
-    private void CheckPlayerBlocked()
+    public void CheckPlayerBlocked()
     {
-        bool blocked = (levelMap.tiles[(h + 1), w] == (int)Level_Map.TILE_TYPE.WALL || levelMap.theObstacles.positionList.Exists(x => x == (h + 1) * levelMap.width + w))
-            && (levelMap.tiles[(h - 1), w] == (int)Level_Map.TILE_TYPE.WALL || levelMap.theObstacles.positionList.Exists(x => x == (h - 1) * levelMap.width + w))
-            && (levelMap.tiles[h, (w + 1)] == (int)Level_Map.TILE_TYPE.WALL || levelMap.theObstacles.positionList.Exists(x => x == h * levelMap.width + (w + 1)))
-                && (levelMap.tiles[h, (w - 1)] == (int)Level_Map.TILE_TYPE.WALL || levelMap.theObstacles.positionList.Exists(x => x == h * levelMap.width + (w - 1)));
-        if (blocked)
+        bool not_blocked = (levelMap.IsTileWalkable(h + 1, w) ||
+                        levelMap.IsTileWalkable(h - 1, w) ||
+                        levelMap.IsTileWalkable(h, w + 1) ||
+                        levelMap.IsTileWalkable(h, w - 1));
+        if (!not_blocked)
             theControlPanel.toggleFailMenu();
     }
 
@@ -177,14 +257,13 @@ public class Player_Control : MonoBehaviour {
 
     public void SetPositionTo(int newh, int neww)
     {
-        Debug.Log("Player_Control.SetPositionTo(): thePlayer.SetPositionTo()");
         if (newh >= levelMap.height || neww >= levelMap.width || newh < 0 || neww < 0)
         {
             Debug.Log("illegal position");
             return;
         }
         //Debug.Log("thePlayer.SetPositionTo() is called in Game_Panel");
-        if (levelMap.tiles[newh, neww] != (int)Level_Map.TILE_TYPE.WALL)
+        if (levelMap.tiles[newh, neww] != TILE_TYPE.WALL)
         {
             if (levelMap.theObstacles.positionList.Exists(x => x == (newh * levelMap.width + neww)))
             {
@@ -193,7 +272,7 @@ public class Player_Control : MonoBehaviour {
             h = newh;
             w = neww;
             //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
-            playerPositionObject.transform.position = new Vector3((w - levelMap.width / 2.0f + 0.5f), (levelMap.height / 2.0f - h - 0.5f), 0);
+            thePlayerDisp.objPosition = levelMap.MapCoordToWorldVec3(h, w, 0);
         }
         else
         {
@@ -203,11 +282,13 @@ public class Player_Control : MonoBehaviour {
 
     public void SetEnergyPoint(int e)
     {
+        energyPointObject.color = (e <= 10) ? new Color(1.0f, 0.2f, 0.2f) : new Color(0.1098f, 0.882353f, 0.882353f);
         energyPointObject.text = (energyPoint = e).ToString();
     }
 
     public void SetHealthPoint(int h)
     {
+        healthPointObject.color = (h == 1) ? new Color(1.0f, 0.2f, 0.2f) : new Color(0.1098f, 0.882353f, 0.1098f);
         healthPointObject.text = (healthPoint = h).ToString();
     }
 
@@ -223,170 +304,6 @@ public class Player_Control : MonoBehaviour {
             GameObject.Find("Ability Button").GetComponent<Button>().interactable = true;
             abilityCooldownObject.text = " ";
             abilityCooldown = 0;
-        }
-    }
-
-    public void SetFaceTo(FACING ft)
-    {
-        if (playerFacingSprite != null)
-            playerFacingSprite.enabled = false;
-        switch (ft)
-        {
-            case FACING.FRONT:
-                playerFacingSprite = GameObject.Find("Front Player Sprite").GetComponent<SpriteRenderer>();
-                break;
-            case FACING.LEFT:
-                playerFacingSprite = GameObject.Find("Left Player Sprite").GetComponent<SpriteRenderer>();
-                break;
-            case FACING.BACK:
-                playerFacingSprite = GameObject.Find("Back Player Sprite").GetComponent<SpriteRenderer>();
-                break;
-            case FACING.RIGHT:
-                playerFacingSprite = GameObject.Find("Right Player Sprite").GetComponent<SpriteRenderer>();
-                break;
-            default:
-                return;
-        }
-        playerFacingSprite.enabled = true;
-    }
-
-    /* ANIMATION */
-
-    /*
-     * in player.move() -> setup begin & end pos (become not 0,0,0)
-     * in monsters.move() -> sset up begin & end pos (become not 0,0,0)
-     * 
-     * animsetup()
-     * 
-     * Update begin to call Anim()
-     * 
-     * Anim() do PlayerAnim & monsterAnim
-     * Anim() find it should stop
-     * Anim() call PlayerAnimEnd() & MonsterAnimEnd()
-     * 
-     * PlayerAnimEnd() set begin & end back to 0,0,0
-     * PlayerAnimEnd() check if player is attcked
-     * MonsterAnimEnd() set begin & end back to 0,0,0
-     * */
-    
-    void PlayerAnimSetup(Vector3 begin, Vector3 end)
-    {
-        animBeginPos = begin;
-        animEndPos = end;
-    }
-
-    void PlayerAnim()
-    {
-        playerPositionObject.transform.position = playerPositionObject.transform.position + (animEndPos - animBeginPos) / (Time.deltaTime / 0.0014f);
-    }
-
-    void PlayerAnimEnd()
-    {
-        playerPositionObject.transform.position = animEndPos;
-        animEndPos = new Vector3(0.0f, 0.0f, 0.0f);
-        animBeginPos = new Vector3(0.0f, 0.0f, 0.0f);
-        CheckPlayerAttacked();
-    }
-
-    void AttackedAnimStart()
-    {
-        times_irreponsive = Time.time + 0.2f;
-        playerAttackedAnimation = true;
-        GameObject.Find("Player Attacked Effect").GetComponent<SpriteRenderer>().enabled = true;
-    }
-
-    void AttackedAnimEnd()
-    {
-        playerAttackedAnimation = false;
-        GameObject.Find("Player Attacked Effect").GetComponent<SpriteRenderer>().enabled = false;
-        if (healthPoint == 0)
-            theControlPanel.toggleFailMenu();
-    }
-
-    void AnimSetup()
-    {
-        times_irreponsive = Time.time + animDurTime;
-        moveAnimation = true;
-    }
-
-    void Anim()
-    {
-        // do animation in the irreponsive time
-        if (times_irreponsive <= Time.time || player_ask_for_end_anim || monsters_ask_for_end_anim)
-        {
-            moveAnimation = false;
-            monsters_ask_for_end_anim = false;
-            player_ask_for_end_anim = false;
-
-            // tidy up player pos
-            if (animBeginPos != new Vector3(0.0f, 0.0f, 0.0f))
-                PlayerAnimEnd();
-            else
-                CheckPlayerBlocked();
-            // tidy up monster pos
-            levelMap.theMonsters.MonstersAnimEnd();
-        }
-        else
-        {
-            if (animBeginPos != new Vector3(0.0f, 0.0f, 0.0f))
-            {
-                PlayerAnim();
-                player_ask_for_end_anim = (animEndPos - playerPositionObject.transform.position).magnitude < 0.01
-                                    || (animEndPos - playerPositionObject.transform.position).normalized == (animBeginPos - animEndPos).normalized;
-            }
-            monsters_ask_for_end_anim = levelMap.theMonsters.MonstersAnim();
-        }
-    }
-
-    float times_irreponsive = 0;
-    float times_monster_change_sprite = 0;
-    float animDurTime = 0.2f;
-    Vector3 animBeginPos;
-    Vector3 animEndPos;
-    bool moveAnimation = false;
-    bool playerAttackedAnimation = false;
-    bool monsters_ask_for_end_anim = false, player_ask_for_end_anim = false;
-    // Update is called once per frame
-    void Update()
-    {
-        if (times_monster_change_sprite <= Time.time)
-        {
-            levelMap.theMonsters.MonstersChangeFrame();
-            times_monster_change_sprite += 1.1f;
-        }
-
-        if (playerAttackedAnimation && times_irreponsive <= Time.time)
-        {
-            AttackedAnimEnd();
-        }
-
-        if (times_irreponsive <= Time.time)
-        {
-            if (Input.GetKey(KeyCode.UpArrow))
-            {
-                playerMoveUp();
-            }
-            if (Input.GetKey(KeyCode.DownArrow))
-            {
-                playerMoveDown();
-            }
-            if (Input.GetKey(KeyCode.LeftArrow))
-            {
-                playerMoveLeft();
-            }
-            if (Input.GetKey(KeyCode.RightArrow))
-            {
-                playerMoveRight();
-            }
-            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
-            {
-                playerDoAbility();
-            }
-        }
-
-        if (moveAnimation)
-        {
-            Anim();
         }
     }
 }

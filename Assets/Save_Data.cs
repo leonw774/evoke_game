@@ -1,28 +1,46 @@
 ﻿public static class Save_Data {
+    
     /*
      * GAME FILE SAVE
      * thing that will read from/write to the save file when Menu_Script is loaded
      * */
-    public static int levelPassed = -1; // when player fifnish the level, this variable++
-	public static void UpdateLevel()
+
+    public static int PassedLevel = -1; // when player fifnish the level, this variable++
+
+	public static void UpdatePassedLevel()
 	{
-		Save_Data.levelPassed++;
+		Save_Data.PassedLevel++;
 	}
 
-    /*
-    public static int playerEP;
-    public static int playerHP;
-    */
 
     /*
      * GAME STATUS SAVE
      * record the status in any time of the game
      * */
-    //public static int curScene = 0; // 0: Main Menu, 1: Game Menu, 2: Finish Menu, 3: Anim
+
     public static int SelectedLevel = -1;
+
     public static int SelectedTheme = -1;
+
+    public readonly static int BossLevel = 10;
+
+    public static void SelectLevel(int newlevel)
+    {
+        SelectedLevel = newlevel;
+        SetThemeSelectedLevel();
+    }
+
     public static void SelectedNextLevel()
     {
         SelectedLevel++;
+        SetThemeSelectedLevel();
+    }
+
+    public static void SetThemeSelectedLevel()
+    {
+        if (SelectedLevel < 12)
+            SelectedTheme = 1;
+        else
+            SelectedTheme = 2;
     }
 }

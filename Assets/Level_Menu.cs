@@ -26,7 +26,7 @@ public class Level_Menu : MonoBehaviour {
 		SaveFilePath = Application.persistentDataPath + "/save.dat";
 
 		// if it is the the first to the main menu
-        if (Save_Data.levelPassed == -1)
+        if (Save_Data.PassedLevel == -1)
         {
             saveFileDebugOutput.text = "true\n";
             if (File.Exists(SaveFilePath))
@@ -37,29 +37,30 @@ public class Level_Menu : MonoBehaviour {
             else
             {
                 saveFileDebugOutput.text += "false\n";
-                string cbt = GameObject.Find("Continue Button Text").GetComponent<Text>().text;
-                cbt = "Begin";
+                GameObject.Find("Continue Button Text").GetComponent<Text>().text = "Begin";
                 // leave it unloaded
             }
         }
         // if the game has been played over some level
         else
         {
+            CameraMain2Menu();
+
             saveFileDebugOutput.text = "false\n";
             if (File.Exists(SaveFilePath))
             {
                 saveFileDebugOutput.text += "true\n";
-                writeSaveData(Save_Data.levelPassed);
+                writeSaveData(Save_Data.PassedLevel);
             }
             else // and there is not a save file yet!
             {
                 saveFileDebugOutput.text += "false\n";
-                writeSaveData(Save_Data.levelPassed);
+                writeSaveData(Save_Data.PassedLevel);
             }
         }
 		
-        saveFileDebugOutput.text += Save_Data.levelPassed;
-	    //Save_Data.levelPassed = 2;
+        saveFileDebugOutput.text += Save_Data.PassedLevel;
+	    //Save_Data.PassedLevel = 2;
 
         SetupLevelMenuButton();
     }
@@ -78,7 +79,7 @@ public class Level_Menu : MonoBehaviour {
             {
                 continue;
             }
-            if (bnum <= (Save_Data.levelPassed + 1))
+            if (bnum <= (Save_Data.PassedLevel + 1))
             {
                 lvlBtns[i].interactable = true;
             }
@@ -88,7 +89,7 @@ public class Level_Menu : MonoBehaviour {
     void loadSaveData()
     {
         SaveR = new StreamReader(SaveFilePath);
-        Save_Data.levelPassed = int.Parse(SaveR.ReadLine());
+        Save_Data.PassedLevel = int.Parse(SaveR.ReadLine());
         SaveR.Close();
     }
 
@@ -102,12 +103,30 @@ public class Level_Menu : MonoBehaviour {
         }
     }
 
-    public void LoadLevel(int level)
+    /* JUMP TO OTHER SCENE */
+
+    public void LoadIntroSlide(int num)
     {
-        Save_Data.SelectedLevel = level;
+        Save_Data.SelectLevel(num);
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
+        SceneManager.LoadScene("Slide Scene");
+    }
+
+    public void LoadContinueLevel()
+    {
+        Save_Data.SelectLevel(Save_Data.PassedLevel + ((Save_Data.PassedLevel == Save_Data.BossLevel) ? 0 : 1));
         SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
         SceneManager.LoadScene("Game Scene");
     }
+
+    public void LoadLevel(int level)
+    {
+        Save_Data.SelectLevel(level);
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
+        SceneManager.LoadScene("Game Scene");
+    }
+
+    /* ANIMATION */ 
 
     public void AnimationStart()
     {
@@ -137,15 +156,15 @@ public class Level_Menu : MonoBehaviour {
         Color toFadeOutColor = titleImg.color;
         if (toFadeInColor.a < 0.2f)
         {
-            toFadeInColor.a = Mathf.Lerp(toFadeInColor.a, 1.0f, 2.4f * Time.deltaTime);
-            toFadeOutColor.a = Mathf.Lerp(toFadeOutColor.a, 0.0f, 2.4f * Time.deltaTime);
+            toFadeInColor.a = Mathf.Lerp(toFadeInColor.a, 1.0f, 3.0f * Time.deltaTime);
+            toFadeOutColor.a = Mathf.Lerp(toFadeOutColor.a, 0.0f, 3.0f * Time.deltaTime);
             titleImgIcon.color = toFadeInColor;
             titleImg.color = toFadeOutColor;
         }
-        else if (toFadeInColor.a < 0.96f)
+        else if (toFadeInColor.a < 0.98f)
         {
-            toFadeInColor.a = Mathf.Lerp(toFadeInColor.a, 1.0f, 3.2f * Time.deltaTime);
-            toFadeOutColor.a = Mathf.Lerp(toFadeOutColor.a, 0.0f, 3.2f * Time.deltaTime);
+            toFadeInColor.a = Mathf.Lerp(toFadeInColor.a, 1.0f, 4.0f * Time.deltaTime);
+            toFadeOutColor.a = Mathf.Lerp(toFadeOutColor.a, 0.0f, 4.0f * Time.deltaTime);
             titleImgIcon.color = toFadeInColor;
             titleImg.color = toFadeOutColor;
         }
@@ -158,6 +177,8 @@ public class Level_Menu : MonoBehaviour {
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape))
+            Application.Quit();
         if (isTitleAnimPlaying)
             TitleAnimation();
     }

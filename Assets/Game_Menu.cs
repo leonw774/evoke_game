@@ -14,7 +14,11 @@ public class Game_Menu : MonoBehaviour {
     GameObject FailGO;
     GameObject MenuBtn;
     GameObject InfoBtn;
+    GameObject MapBtn;
     GameObject ResumeBtn;
+    AudioSource FinishSound;
+    AudioSource FailSound;
+
     public bool isMenuActive = false;
     public bool isFinishMenu = false, isFailMenu = false;
 
@@ -26,13 +30,22 @@ public class Game_Menu : MonoBehaviour {
         FailGO = GameObject.Find("Fail Objects");
         MenuBtn = GameObject.Find("Menu Button");
         InfoBtn = GameObject.Find("Info Button");
+        MapBtn = GameObject.Find("Map Button");
         ResumeBtn = GameObject.Find("Resume Button");
+        FailSound = GameObject.Find("Fail Sound").GetComponent<AudioSource>();
+        FinishSound = GameObject.Find("Finish Sound").GetComponent<AudioSource>();
     }
 	
 	// Update is called once per frame
-	void Update () {
+	void Update ()
+    {
         if (Input.GetKeyDown(KeyCode.Escape))
-            Application.Quit();
+        {
+            if (isMenuActive)
+                toggleGameMenu();
+            else
+                gameExitButton();
+        }
     }
 
     public void toggleGameMenu()
@@ -42,6 +55,7 @@ public class Game_Menu : MonoBehaviour {
             menuCanvas.transform.Translate(new Vector3(0.0f, 0.0f, -1.0f));
             MenuBtn.transform.Translate(new Vector3(0, 0, -1000));
             InfoBtn.transform.Translate(new Vector3(0, 0, -1000));
+            MapBtn.transform.Translate(new Vector3(0, 0, -1000));
             MenuBtn.GetComponent<Button>().enabled = true;
             InfoBtn.GetComponent<Button>().enabled = true;
         }
@@ -50,6 +64,7 @@ public class Game_Menu : MonoBehaviour {
             menuCanvas.transform.Translate(new Vector3(0.0f, 0.0f, 1.0f));
             MenuBtn.transform.Translate(new Vector3(0, 0, 1000));
             InfoBtn.transform.Translate(new Vector3(0, 0, 1000));
+            MapBtn.transform.Translate(new Vector3(0, 0, 1000));
             MenuBtn.GetComponent<Button>().enabled = false;
             InfoBtn.GetComponent<Button>().enabled = false;
         }
@@ -57,32 +72,39 @@ public class Game_Menu : MonoBehaviour {
 
         if (isFailMenu)
         {
+            FailSound.Stop();
             FailGO.transform.Translate(new Vector3(0, 0, -1000));
-            ResumeBtn.transform.Translate(new Vector3(0, 0, -1000));
+            ResumeBtn.transform.Translate(new Vector3(0, 0, -999.999f));
             isFailMenu = false;
         }
         if (isFinishMenu)
         {
+            FinishSound.Stop();
             FinishGO.transform.Translate(new Vector3(0, 0, -1000));
-            ResumeBtn.transform.Translate(new Vector3(0, 0, -1000));
+            ResumeBtn.transform.Translate(new Vector3(0, 0, -999.999f));
             isFinishMenu = false;
         }
     }
 
     public void toggleFinishMenu()
     {
+        FinishSound.Play();
         toggleGameMenu();
         if (!isFinishMenu)
         {
-            FinishGO.transform.Translate(new Vector3(0, 0, 1000));
+            if (Save_Data.SelectedLevel != Save_Data.BossLevel)
+            {
+                FinishGO.transform.Translate(new Vector3(0, 0, 1000));
+            }
             ResumeBtn.transform.Translate(new Vector3(0, 0, 1000));
             isFinishMenu = true;
         }
-        writeSaveData(Application.persistentDataPath + "/save.dat", Save_Data.levelPassed);
+        writeSaveData(Application.persistentDataPath + "/save.dat", Save_Data.PassedLevel);
     }
 
     public void toggleFailMenu()
     {
+        FailSound.Play();
         toggleGameMenu();
         if (!isFailMenu)
         {
@@ -94,15 +116,14 @@ public class Game_Menu : MonoBehaviour {
 
     public void gameExitButton()
     {
-        writeSaveData(Application.persistentDataPath + "/save.dat", Save_Data.levelPassed);
+        writeSaveData(Application.persistentDataPath + "/save.dat", Save_Data.PassedLevel);
         SceneManager.LoadScene("Menu Scene");
-        //Application.Quit();
     }
 
     void loadSaveData(string SaveFilePath)
     {
         SaveR = new StreamReader(SaveFilePath);
-        Save_Data.levelPassed = int.Parse(SaveR.ReadLine());
+        Save_Data.PassedLevel = int.Parse(SaveR.ReadLine());
         SaveR.Close();
     }
 
