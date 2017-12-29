@@ -52,6 +52,7 @@
      <Compile Include="Assets\Control_Animation.cs" />
      <Compile Include="Assets\Game_Menu.cs" />
      <Compile Include="Assets\Info_Menu.cs" />
+     <Compile Include="Assets\Intro_Slides.cs" />
      <Compile Include="Assets\Level_Map.cs" />
      <Compile Include="Assets\Level_Menu.cs" />
      <Compile Include="Assets\Map_View.cs" />

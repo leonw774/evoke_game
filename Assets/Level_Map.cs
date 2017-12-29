@@ -16,7 +16,6 @@ public class Level_Map : MonoBehaviour
     public int[] finishTile = new int[2];
     public int width = 0, height = 0;
     public int estimatedStep = 0;
-    public int shortcutNum = 0;
     public int wallsNumber = 0;
     public int monsterNumber = 0;
 
@@ -27,10 +26,6 @@ public class Level_Map : MonoBehaviour
 
     public string mapFileName = null;
     private Color32[] mapPixels = null;
-
-    private bool introAnim = false;
-    private SpriteRenderer introImage = null;
-    private Sprite[] introSp = null;
 
     // Use this for initialization
     void Start()
@@ -43,7 +38,8 @@ public class Level_Map : MonoBehaviour
         thePlayer.Initialize();
         theAnimation = GameObject.Find("Control Panel").GetComponent<Control_Animation>();
         theAnimation.Initialize();
-        introImage = GameObject.Find("Intro Image").GetComponent<SpriteRenderer>();
+
+        GameObject.Find("Error Msg").transform.position = new Vector3(0.0f, -2.0f, -10.0f);
 
         if (Save_Data.SelectedLevel != -1)
         {
@@ -53,7 +49,7 @@ public class Level_Map : MonoBehaviour
             if (ParseMapImg())
                 GameStart();
             else
-                Debug.Log("Level Read Map Failed.");
+                GameObject.Find("Error Msg").transform.position = new Vector3(0.0f, -2.0f, 0.0f);
         }
         else
             Debug.Log("Selected Level Value Error!");
@@ -66,8 +62,6 @@ public class Level_Map : MonoBehaviour
         Debug.Log("mapFileMap: " + mapFileName);
         // set up prototype sprites of themes
         LoadThemeSprites();
-        // try show intro images
-        IntroAnimStart();
         // at the same time, make maps
         LoadMapImg();
     }
@@ -139,8 +133,6 @@ public class Level_Map : MonoBehaviour
 
     private bool ParseMapImg()
     {
-        shortcutNum = 0;
-        
         if (mapPixels == null) return false;
         // parse img
         // white for WALKABLE: 0
@@ -159,11 +151,6 @@ public class Level_Map : MonoBehaviour
                     tiles[height - 1 - i, j] = TILE_TYPE.FINISH_POINT;
                 else if (thisPixel.Equals(new Color32(0, 0, 255, 255)))
                     tiles[height - 1 - i, j] = TILE_TYPE.PLAYER_START_POINT;
-                else if (thisPixel.Equals(new Color32(250, 250, 250, 255)))
-                {
-                    tiles[height - 1 - i, j] = TILE_TYPE.WALKABLE;
-                    shortcutNum++;
-                }
                 else if (thisPixel.Equals(new Color32(0, 0, 0, 255)))
                     tiles[height - 1 - i, j] = TILE_TYPE.WALL;
                 else
@@ -207,7 +194,7 @@ public class Level_Map : MonoBehaviour
         {
             for (int w = 0; w < width; w++)
             {
-                Vector3 trans = new Vector3((w - width / 2.0f + 0.5f), (height / 2.0f - h - 0.5f), 0);
+                Vector3 trans = MapCoordToWorldVec3(h, w, 0);
                 if (tiles[h, w] == TILE_TYPE.WALL)
                 {
                     GameObject wallCreated;
@@ -271,17 +258,17 @@ public class Level_Map : MonoBehaviour
         Debug.Log("estimatedStep:" + estimatedStep);
 
         int walkableTilesNnum = height * width - wallsNumber;
-        float monsterNumAdjust = 3.0f;
-        float diviedPathAdjustmant = ((int)(walkableTilesNnum / (estimatedStep * 4.0f) * 100) / 100f);
-        if (diviedPathAdjustmant > 1.0f)
-            monsterNumAdjust /= diviedPathAdjustmant;
-        int adjustedMonsterFactor = ((int)((monsterNumber * monsterNumAdjust) * 100 + 50) / 100);
-        
-        Debug.Log("diviedPathAdjustmant: " + diviedPathAdjustmant);
-        Debug.Log("monsterNumAdjust: " + monsterNumAdjust);
-        Debug.Log("shortcutNum:" + shortcutNum);
+        float monsterNumAdjust = 3.2f;
+        float diviedPathAdjustment = ((int)(walkableTilesNnum / (estimatedStep * 4.0f) * 100) / 100f);
+        float map_obs_ratio = theObstacles.positionList.Count / walkableTilesNnum;
+        if (diviedPathAdjustment > 1.0f)
+            monsterNumAdjust /= diviedPathAdjustment;
+        int adjustedMonsterFactor = (int) (monsterNumber * monsterNumAdjust * (map_obs_ratio + 0.67f));
 
-        int ep_to_set = (int) (estimatedStep * 1.0 + (Save_Data.SelectedLevel / 2) * 0.1) + adjustedMonsterFactor + (int) (shortcutNum * 1.75);
+        //Debug.Log("diviedPathAdjustmant: " + diviedPathAdjustment);
+        //Debug.Log("monsterNumAdjust: " + monsterNumAdjust);
+
+        int ep_to_set = (int) (estimatedStep * (1.2 + Save_Data.SelectedLevel / 2 * 0.05)) + adjustedMonsterFactor;
         int hp_to_set = monsterNumber / 15 + 2;
 
         if (Save_Data.SelectedLevel == Save_Data.BossLevel)
@@ -349,7 +336,7 @@ public class Level_Map : MonoBehaviour
         if (ParseMapImg())
             GameStart();
         else
-            Debug.Log("Level Read Map Failed.");
+            GameObject.Find("Error Msg").transform.position = new Vector3(0.0f, -2.0f, 0.0f);
     }
 
     /* SOME USEFUL FUNTION */
@@ -366,70 +353,5 @@ public class Level_Map : MonoBehaviour
         else
             return !(theObstacles.positionList.Exists(x => x == i * width + j) || tiles[i, j] == TILE_TYPE.WALL);
 
-    }
-
-    /* INTRO ANIM */
-
-    private void IntroAnimStart()
-    {
-        Texture2D[] introTxs = Resources.LoadAll<Texture2D>("Intro_map" + Save_Data.SelectedLevel.ToString());
-        if (introTxs.Length == 0)
-            return;
-
-        // button for switch picture
-        GameObject.Find("Intro Image Switch Button").GetComponent<Image>().raycastTarget = true;
-        GameObject.Find("Intro Image Switch Button").GetComponent<Button>().interactable = true;
-
-        introSp = new Sprite[introTxs.Length];
-        introImage.enabled = true;
-        introAnim = true;
-        intro_image_num = 0;
-        time_change_intro_image = Time.time;
-        
-        for (int i = 0; i < introTxs.Length; i++)
-        {
-            Rect introTxRect = new Rect(0.0f, 0.0f, introTxs[i].width, introTxs[i].height);
-            introSp[i] = Sprite.Create(introTxs[i], introTxRect, new Vector2(0.5f, 0.5f));
-        }
-    }
-
-    public void IntroAnimSwitchPicture()
-    {
-        if (intro_image_num < introSp.Length && intro_image_num >= 0)
-        {
-            Debug.Log("show intro image #" + intro_image_num + "at time of " + Time.time);
-            introImage.sprite = introSp[intro_image_num];
-            intro_image_num++;
-            time_change_intro_image = Time.time + 2.0f ;
-        }
-        else
-        {
-            IntroAnimEnd();
-        }
-    }
-
-    private void IntroAnimEnd()
-    {
-        // button for switch picture
-        GameObject.Find("Intro Image Switch Button").GetComponent<Button>().interactable = false;
-        GameObject.Find("Intro Image Switch Button").GetComponent<Image>().raycastTarget = false;
-        intro_image_num = -1;
-        introAnim = false;
-        introImage.enabled = false;
-        introSp = null;
-        time_change_intro_image = 0.0f;
-    }
-
-    float time_change_intro_image = 0.0f;
-    int intro_image_num = -1;
-    void Update()
-    {
-        if (introAnim)
-        {
-            if (time_change_intro_image <= Time.time)
-            {
-                IntroAnimSwitchPicture();
-            }
-        }
     }
 }

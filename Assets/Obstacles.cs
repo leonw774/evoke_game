@@ -30,7 +30,7 @@ public class Obstacles : MonoBehaviour {
             if (positionList.Count > 0) DestroyAllObstacles();
             Generate();
             Adjust();
-        } while (positionList.Count < (int) (walkableTilesNum * 0.3) || positionList.Count > (int)(walkableTilesNum * 0.7));
+        } while (positionList.Count < (int) (walkableTilesNum * 0.33) || positionList.Count > (int)(walkableTilesNum * 0.66));
 
         Debug.Log("There are " + positionList.Count + " obs in map");
     }
@@ -148,14 +148,10 @@ public class Obstacles : MonoBehaviour {
         {
             find_something_to_adjust = DistributeAdjust();
             CorridorAdjust();
+            Debug.Log("Obstacles Adjusted");
             count++;
-        } while (find_something_to_adjust && count < 4);
-        //DistributeAdjust();
-        Debug.Log("Obstacles Adjusted");
-        /*
-        DistributeAdjust();
-        CorridorAdjust();
-        */
+        } while (find_something_to_adjust && count < 2);
+
         // in opening, too much obstacles should not neighbor or be on same block of the player and finish
         int playerPosition = levelMap.playerStartTile[0] * levelMap.width + levelMap.playerStartTile[1];
         //Debug.Log("playerPosition:" + playerPosition);

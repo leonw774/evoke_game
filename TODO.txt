@@ -2,13 +2,13 @@
 Sound Effect: 
 monster dead *
 player walk **
-player hurt *
+player hurt **
 player low hp/ep *
 ability **
 button click **
-retry & resume *
-finish *
-fail *
+retry & resume **
+finish **
+fail **
 
 
 MAP SIZES: Small(10x15) Middle(20x30) Large(24x36) Super-Large(32x48)

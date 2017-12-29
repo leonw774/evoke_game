@@ -44,6 +44,8 @@ public class Level_Menu : MonoBehaviour {
         // if the game has been played over some level
         else
         {
+            CameraMain2Menu();
+
             saveFileDebugOutput.text = "false\n";
             if (File.Exists(SaveFilePath))
             {
@@ -101,6 +103,15 @@ public class Level_Menu : MonoBehaviour {
         }
     }
 
+    /* JUMP TO OTHER SCENE */
+
+    public void LoadIntroSlide(int num)
+    {
+        Save_Data.SelectLevel(num);
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
+        SceneManager.LoadScene("Slide Scene");
+    }
+
     public void LoadContinueLevel()
     {
         Save_Data.SelectLevel(Save_Data.PassedLevel + ((Save_Data.PassedLevel == Save_Data.BossLevel) ? 0 : 1));
@@ -114,6 +125,8 @@ public class Level_Menu : MonoBehaviour {
         SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
         SceneManager.LoadScene("Game Scene");
     }
+
+    /* ANIMATION */ 
 
     public void AnimationStart()
     {

@@ -282,13 +282,13 @@ public class Player_Control : MonoBehaviour {
 
     public void SetEnergyPoint(int e)
     {
-        energyPointObject.color = (e <= 10) ? Color.red : new Color(0.1098f, 0.882353f, 0.882353f);
+        energyPointObject.color = (e <= 10) ? new Color(1.0f, 0.2f, 0.2f) : new Color(0.1098f, 0.882353f, 0.882353f);
         energyPointObject.text = (energyPoint = e).ToString();
     }
 
     public void SetHealthPoint(int h)
     {
-        healthPointObject.color = (h == 1) ? Color.red : new Color(0.1098f, 0.882353f, 0.1098f);
+        healthPointObject.color = (h == 1) ? new Color(1.0f, 0.2f, 0.2f) : new Color(0.1098f, 0.882353f, 0.1098f);
         healthPointObject.text = (healthPoint = h).ToString();
     }
 
