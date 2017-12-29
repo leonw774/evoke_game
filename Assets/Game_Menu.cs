@@ -72,14 +72,14 @@ public class Game_Menu : MonoBehaviour {
 
         if (isFailMenu)
         {
-            FailSound.Pause();
+            FailSound.Stop();
             FailGO.transform.Translate(new Vector3(0, 0, -1000));
             ResumeBtn.transform.Translate(new Vector3(0, 0, -999.999f));
             isFailMenu = false;
         }
         if (isFinishMenu)
         {
-            FinishSound.Pause();
+            FinishSound.Stop();
             FinishGO.transform.Translate(new Vector3(0, 0, -1000));
             ResumeBtn.transform.Translate(new Vector3(0, 0, -999.999f));
             isFinishMenu = false;

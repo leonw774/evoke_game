@@ -58,7 +58,7 @@ public class Control_Animation : MonoBehaviour {
 
     private bool PlayerAnim()
     {
-        levelMap.thePlayer.thePlayerDisp.objPosition += (thePlayerDisplay.animEndPos - thePlayerDisplay.animBeginPos) / (Time.deltaTime / ANIM_DUR_TIME / 0.0058f);
+        levelMap.thePlayer.thePlayerDisp.objPosition += (thePlayerDisplay.animEndPos - thePlayerDisplay.animBeginPos) / (Time.deltaTime / ANIM_DUR_TIME) * 0.0001f;
         return (thePlayerDisplay.animEndPos - levelMap.thePlayer.thePlayerDisp.objPosition).magnitude < 0.01
             || (thePlayerDisplay.animEndPos - levelMap.thePlayer.thePlayerDisp.objPosition).normalized == (thePlayerDisplay.animBeginPos - thePlayerDisplay.animEndPos).normalized;
     }
@@ -105,7 +105,7 @@ public class Control_Animation : MonoBehaviour {
             {
                 if (x.animBeginPos != new Vector3(0.0f, 0.0f, -1.0f))
                     x.SpriteObj.transform.position += 
-                        (x.animEndPos - x.animBeginPos) / (Time.deltaTime / ANIM_DUR_TIME / 0.0056f);
+                        (x.animEndPos - x.animBeginPos) / (Time.deltaTime / ANIM_DUR_TIME) * 0.0001f;
             }
             Monster exampleMons = levelMap.theMonsters.monsList[0];
             if (exampleMons.animEndPos != new Vector3(0.0f, 0.0f, -1.0f)
