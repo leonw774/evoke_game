@@ -443,7 +443,7 @@ public class Monsters_Control: MonoBehaviour {
 
         if (monsList[i].id >= 0)
         {
-            GameObject.Find("Monster Hurt Sound").GetComponent<AudioSource>().Play();
+            GameObject.Find("Monster Hurt Sound").GetComponent<AudioSource>().PlayDelayed(0.13f);
             Vector3 v = monsList[i].SpriteObj.transform.localScale;
             v.y /= 3;
             monsList[i].SpriteObj.transform.localScale = v;
@@ -469,7 +469,7 @@ public class Monsters_Control: MonoBehaviour {
                 if (boss.monAbility.hp == 0) // boss dead
                 {
                     boss.monAbility.killed = true;
-                    GameObject.Find("Monster Hurt Sound").GetComponent<AudioSource>().Play();
+                    GameObject.Find("Monster Hurt Sound").GetComponent<AudioSource>().PlayDelayed(0.13f);
                     GameObject.Find("Closed Exit Sprite").GetComponent<SpriteRenderer>().enabled = false;
                     GameObject.Find("Exit Sprite").GetComponent<SpriteRenderer>().enabled = true;
                 }

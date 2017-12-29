@@ -1,17 +1,14 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Monsters_Control.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Player_Control.cs">
     <Files>
-      <File FileName="Assets\Level_Menu.cs" Line="1" Column="1" />
-      <File FileName="Assets\Game_Menu.cs" Line="1" Column="1" />
-      <File FileName="Assets\Level_Map.cs" Line="131" Column="81" />
-      <File FileName="Assets\Obstacles.cs" Line="19" Column="40" />
-      <File FileName="Assets\Player_Control.cs" Line="8" Column="58" />
-      <File FileName="Assets\Monsters_Control.cs" Line="9" Column="18" />
-      <File FileName="Assets\MonsterAbility.cs" Line="54" Column="27" />
-      <File FileName="Assets\Boss1Ability.cs" Line="168" Column="32" />
-      <File FileName="Assets\Control_Animation.cs" Line="141" Column="95" />
-      <File FileName="Assets\Save_Data.cs" Line="25" Column="46" />
+      <File FileName="Assets\Control_Animation.cs" Line="1" Column="1" />
+      <File FileName="Assets\Level_Map.cs" Line="284" Column="142" />
+      <File FileName="Assets\Obstacles.cs" Line="1" Column="1" />
+      <File FileName="Assets\Player_Control.cs" Line="5" Column="14" />
+      <File FileName="Assets\Monsters_Control.cs" Line="1" Column="1" />
+      <File FileName="Assets\MonsterAbility.cs" Line="1" Column="1" />
+      <File FileName="Assets\Boss1Ability.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
