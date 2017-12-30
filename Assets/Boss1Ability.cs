@@ -108,6 +108,7 @@ public class Boss1_Ability : MonsterAbility {
                 levelMap.theObstacles.ObsUpdate(levelMap.theObstacles.positionList.Find(x => x == (h_tocheck + lookat) * levelMap.width + w_tocheck));
             lookat++;
         }
+
         Debug.Log("boss DoAbility(): face to " + self.faceTo);
     }
 

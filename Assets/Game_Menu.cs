@@ -6,7 +6,6 @@ using System.IO;
 
 public class Game_Menu : MonoBehaviour {
 
-    public StreamReader SaveR = null;
     public StreamWriter SaveW = null;
 
     GameObject menuCanvas;
@@ -99,7 +98,7 @@ public class Game_Menu : MonoBehaviour {
             ResumeBtn.transform.Translate(new Vector3(0, 0, 1000));
             isFinishMenu = true;
         }
-        writeSaveData(Application.persistentDataPath + "/save.dat", Save_Data.PassedLevel);
+        writeSaveData(Save_Data.PassedLevel);
     }
 
     public void toggleFailMenu()
@@ -116,19 +115,13 @@ public class Game_Menu : MonoBehaviour {
 
     public void gameExitButton()
     {
-        writeSaveData(Application.persistentDataPath + "/save.dat", Save_Data.PassedLevel);
+        writeSaveData(Save_Data.PassedLevel);
         SceneManager.LoadScene("Menu Scene");
     }
 
-    void loadSaveData(string SaveFilePath)
+    void writeSaveData(int level)
     {
-        SaveR = new StreamReader(SaveFilePath);
-        Save_Data.PassedLevel = int.Parse(SaveR.ReadLine());
-        SaveR.Close();
-    }
-
-    void writeSaveData(string SaveFilePath, int level)
-    {
+        string SaveFilePath = Application.persistentDataPath + "/save.txt";
         if (File.Exists(SaveFilePath))
         {
             SaveW = new StreamWriter(SaveFilePath, false);

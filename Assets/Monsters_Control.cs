@@ -188,7 +188,7 @@ public class Monsters_Control: MonoBehaviour {
                     Spawn(h, w, spawnedCount);
                     spawnedCount++;
                 }
-                else if (spawn_on_obs && walkable_neighbor_count < 3 && walkable_neighbor_count > 1 && Random.Range(-1, 8) > 0)
+                else if (spawn_on_obs && walkable_neighbor_count < 3 && walkable_neighbor_count > 1 && Random.Range(0, 8) > 0)
                 {
                     levelMap.theObstacles.ObsDestroy(pos);
                     Spawn(h, w, spawnedCount++);
@@ -212,7 +212,7 @@ public class Monsters_Control: MonoBehaviour {
         switch (bossIndex)
         {
             case 1:
-                boss = new BossMonster(levelMap.height / 2, levelMap.width / 3 * 2, -1, GameObject.Find("Boss Sprite"), new Boss1_Ability(levelMap, (int) (levelMap.monsterNumber / 4) + 3));
+                boss = new BossMonster(levelMap.height / 2, levelMap.width / 3 * 2, -1, GameObject.Find("Boss Sprites"), new Boss1_Ability(levelMap, (int) (levelMap.monsterNumber / 4) + 4));
                 Debug.Log("Gave Boss its ability");
                 break;
             default:
@@ -232,8 +232,8 @@ public class Monsters_Control: MonoBehaviour {
         */
 
         // make Boss Sprites appear
-        Vector3 trans = levelMap.MapCoordToWorldVec3(levelMap.height / 2, levelMap.width / 2, 1);
-        boss.SpriteObj.transform.transform.position = trans;
+        Vector3 trans = levelMap.MapCoordToWorldVec3(boss.h, boss.w, 1);
+        boss.SpriteObj.transform.position = trans;
 
         Debug.Log("Boss Spawned");
     }
@@ -312,10 +312,12 @@ public class Monsters_Control: MonoBehaviour {
                         case 0: // move
                             MonsterMoveToPlayer(i);
                             break;
-                        case 1: // attack behavier wont happen until every other monster are done moving 
+                        case 1: // attack behavier wont happen until every other monster are done moving
+                            levelMap.theAnimation.BossMonsterAbilityAnimStart();
                             break;
                         case 2:
                             boss.monAbility.DoAbility();
+                            levelMap.theAnimation.BossMonsterAbilityAnimStart();
                             break;
                         case 3:
                             boss.monAbility.DoSpecialMove();
@@ -443,14 +445,14 @@ public class Monsters_Control: MonoBehaviour {
 
         if (monsList[i].id >= 0)
         {
-            GameObject.Find("Monster Hurt Sound").GetComponent<AudioSource>().PlayDelayed(0.13f);
+            GameObject.Find("Monster Hurt Sound").GetComponent<AudioSource>().PlayDelayed(0.11f);
             Vector3 v = monsList[i].SpriteObj.transform.localScale;
-            v.y /= 3;
+            v.y /= 2f;
             monsList[i].SpriteObj.transform.localScale = v;
             v = monsList[i].SpriteObj.transform.position;
             v.y -= 0.3f;
             monsList[i].SpriteObj.transform.position = v;
-            Destroy(monsList[i].SpriteObj, 0.2f);
+            Destroy(monsList[i].SpriteObj, 0.23f);
             monsList.RemoveAt(i);
         }
         else
@@ -469,7 +471,7 @@ public class Monsters_Control: MonoBehaviour {
                 if (boss.monAbility.hp == 0) // boss dead
                 {
                     boss.monAbility.killed = true;
-                    GameObject.Find("Monster Hurt Sound").GetComponent<AudioSource>().PlayDelayed(0.13f);
+                    GameObject.Find("Monster Hurt Sound").GetComponent<AudioSource>().PlayDelayed(0.11f);
                     GameObject.Find("Closed Exit Sprite").GetComponent<SpriteRenderer>().enabled = false;
                     GameObject.Find("Exit Sprite").GetComponent<SpriteRenderer>().enabled = true;
                 }

@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: e021fa7cb3ea6504fa94d1801c785bc6
+timeCreated: 1514628385
+licenseType: Free
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Frente H1
+  fontNames:
+  - Frente H1
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

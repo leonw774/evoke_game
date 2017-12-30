@@ -10,13 +10,16 @@ public class Control_Animation : MonoBehaviour {
     public float times_irreponsive = 0;
     public float times_monster_change_sprite = 0;
     public float times_boss_hurted_sprite = 0;
+    public float times_boss_ability_sprite = 0;
     public float times_player_hurted_sprite = 0;
     public readonly float ANIM_DUR_TIME = 0.225f;
+    private bool monsters_ask_for_end = false, player_ask_for_end = false;
 
     private bool moveAnimation = false;
     private bool playerHurtedAnimation = false;
     private bool bossMonsterHurtedAnimation = false;
-    private bool monsters_ask_for_end = false, player_ask_for_end = false;
+    private bool bossMonsterAbilityAnimation = false;
+    private SpriteRenderer bossSpecialSprite = null;
 
 	// Use this for initialization
 	void Start ()
@@ -79,12 +82,14 @@ public class Control_Animation : MonoBehaviour {
         times_player_hurted_sprite = Time.time + ANIM_DUR_TIME;
         playerHurtedAnimation = true;
         GameObject.Find("Player Attacked Effect").GetComponent<SpriteRenderer>().enabled = true;
+
     }
 
     private void PlayerHurtedAnimEnd()
     {
         playerHurtedAnimation = false;
         GameObject.Find("Player Attacked Effect").GetComponent<SpriteRenderer>().enabled = false;
+
         if (levelMap.thePlayer.healthPoint <= 0)
             levelMap.thePlayer.theControlPanel.toggleFailMenu();
     }
@@ -127,19 +132,85 @@ public class Control_Animation : MonoBehaviour {
         }
     }
 
+    public void BossMonsterAbilityAnimStart()
+    {
+        bossMonsterAbilityAnimation = true;
+        times_boss_ability_sprite = Time.time + ANIM_DUR_TIME;
+        if (bossSpecialSprite == null)
+        {
+            switch (levelMap.theMonsters.boss.faceTo)
+            {
+                case FACETO.UP:
+                    bossSpecialSprite = GameObject.Find("Back Boss Sprite Ability").GetComponent<SpriteRenderer>();
+                    break;
+                case FACETO.LEFT:
+                    bossSpecialSprite = GameObject.Find("Left Boss Sprite Ability").GetComponent<SpriteRenderer>();
+                    break;
+                case FACETO.DOWN:
+                    bossSpecialSprite = GameObject.Find("Front Boss Sprite Ability").GetComponent<SpriteRenderer>();
+                    break;
+                case FACETO.RIGHT:
+                    bossSpecialSprite = GameObject.Find("Right Boss Sprite Ability").GetComponent<SpriteRenderer>();
+                    break;
+                default:
+                    return;
+            }
+            bossSpecialSprite.enabled = true;
+        }
+    }
+
+    private void BossMonsterAbilityAnimEnd()
+    {
+        if (bossSpecialSprite != null)
+        {
+            bossMonsterAbilityAnimation = false;
+            bossSpecialSprite.enabled = false;
+            bossSpecialSprite = null;
+        }
+    }
+
     public void BossMonsterHurtedAnimStart()
     {
         bossMonsterHurtedAnimation = true;
         times_boss_hurted_sprite = Time.time + ANIM_DUR_TIME;
-        GameObject.Find("Boss Attacked Effect").GetComponent<SpriteRenderer>().enabled = true;
+        if (bossSpecialSprite == null)
+        {
+            switch (levelMap.theMonsters.boss.faceTo)
+            {
+                case FACETO.UP:
+                    bossSpecialSprite = GameObject.Find("Back Boss Sprite Hurted").GetComponent<SpriteRenderer>();
+                    break;
+                case FACETO.LEFT:
+                    bossSpecialSprite = GameObject.Find("Left Boss Sprite Hurted").GetComponent<SpriteRenderer>();
+                    break;
+                case FACETO.DOWN:
+                    bossSpecialSprite = GameObject.Find("Front Boss Sprite Hurted").GetComponent<SpriteRenderer>();
+                    break;
+                case FACETO.RIGHT:
+                    bossSpecialSprite = GameObject.Find("Right Boss Sprite Hurted").GetComponent<SpriteRenderer>();
+                    break;
+                default:
+                    return;
+            }
+            bossSpecialSprite.enabled = true;
+        }
+        GameObject.Find("Boss Hurted Effect").GetComponent<SpriteRenderer>().enabled = true;
     }
 
     private void BossMonsterHurtedAnimEnd()
     {
-        bossMonsterHurtedAnimation = false;
-        GameObject.Find("Boss Attacked Effect").GetComponent<SpriteRenderer>().enabled = false;
-        if (levelMap.theMonsters.boss.monAbility.killed)
-            levelMap.theMonsters.KillMonsterById(-1);
+        if (bossSpecialSprite != null)
+        {
+            bossMonsterHurtedAnimation = false;
+            bossSpecialSprite.enabled = false;
+            bossSpecialSprite = null;
+        }
+        GameObject.Find("Boss Hurted Effect").GetComponent<SpriteRenderer>().enabled = false;
+        if (levelMap.theMonsters.boss != null)
+        {
+            if (levelMap.theMonsters.boss.monAbility.killed)
+                levelMap.theMonsters.KillMonsterById(-1);
+        }
     }
 
     /*
@@ -194,10 +265,14 @@ public class Control_Animation : MonoBehaviour {
         {
             PlayerHurtedAnimEnd();
         }
-
-        if (bossMonsterHurtedAnimation && times_boss_hurted_sprite <= Time.time)
+        else if (bossMonsterHurtedAnimation && times_boss_hurted_sprite <= Time.time)
         {
             BossMonsterHurtedAnimEnd();
+        }
+
+        if (bossMonsterAbilityAnimation && times_boss_ability_sprite <= Time.time)
+        {
+            BossMonsterAbilityAnimEnd();
         }
 
         /* for testing on PC */

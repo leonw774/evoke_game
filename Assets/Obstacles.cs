@@ -148,9 +148,9 @@ public class Obstacles : MonoBehaviour {
         {
             find_something_to_adjust = DistributeAdjust();
             CorridorAdjust();
-            Debug.Log("Obstacles Adjusted");
             count++;
-        } while (find_something_to_adjust && count < 2);
+        } while(find_something_to_adjust && count < 2);
+        Debug.Log("Obstacles Adjusted");
 
         // in opening, too much obstacles should not neighbor or be on same block of the player and finish
         int playerPosition = levelMap.playerStartTile[0] * levelMap.width + levelMap.playerStartTile[1];
@@ -192,7 +192,7 @@ public class Obstacles : MonoBehaviour {
                     if (this_is_obs == neighbor_is_obs)
                     {
                         sameNeighborCount++;
-                        if( di == 0 || dj == 0)
+                        if(di == 0 || dj == 0)
                             chi_of_this--;
                     }
                     // upadte neighbor tiles ij
@@ -201,7 +201,7 @@ public class Obstacles : MonoBehaviour {
                         di++;
                         dj = -1;
                     }
-                    else if (di == 0 & dj == -1) dj = 1;
+                    else if (di == 0 && dj == -1) dj = 1;
                     else dj++;
                 }
                 if (sameNeighborCount >= (this_is_obs ? (7 - ((chi_of_this < 1) ? 1 : 0)) : 5))
@@ -223,6 +223,11 @@ public class Obstacles : MonoBehaviour {
     {
         // after previous adjustion, there could be some "corridor shape" obstacles
         // we want to "close" those corridor
+        bool is_up_all_obs = true,
+             is_down_all_obs = true,
+             is_left_all_obs = true,
+             is_right_all_obs = true,
+             is_middle_all_walkable = true;
         for (int i = 1; i < levelMap.height - 1; ++i)
         {
             for (int j = 1; j < levelMap.width - 1; ++j)
@@ -230,9 +235,7 @@ public class Obstacles : MonoBehaviour {
                 if (levelMap.tiles[i, j] == TILE_TYPE.WALKABLE)
                 {
                     int pos = i * levelMap.width + j, mw = levelMap.width, d = -1;
-                    bool is_up_all_obs = true, is_down_all_obs = true,
-                        is_left_all_obs = true, is_right_all_obs = true,
-                        is_middle_all_walkable = true;
+                    is_up_all_obs = is_down_all_obs = is_left_all_obs = is_right_all_obs = is_middle_all_walkable = true;
                     // check vertical corridor
                     while (d <= 1)
                     {
@@ -262,7 +265,6 @@ public class Obstacles : MonoBehaviour {
                     {
                         ObsUpdate(i, j); // add an obs in the walk way
                         ObsUpdate(i, j + ((Random.Range(0, 2) == 0) ? 1 : -1)); // then randomly delete a obs
-                        return;
                     }
                 }
             } // end of for: j

@@ -23,7 +23,7 @@ public class Level_Menu : MonoBehaviour {
         titleImgIcon = GameObject.Find("Main Title Icon").GetComponent<SpriteRenderer>();
         Text saveFileDebugOutput = GameObject.Find("Save File Debug Output").GetComponent<Text>();
 
-		SaveFilePath = Application.persistentDataPath + "/save.dat";
+		SaveFilePath = Application.persistentDataPath + "/save.txt";
 
 		// if it is the the first to the main menu
         if (Save_Data.PassedLevel == -1)
@@ -47,16 +47,8 @@ public class Level_Menu : MonoBehaviour {
             CameraMain2Menu();
 
             saveFileDebugOutput.text = "false\n";
-            if (File.Exists(SaveFilePath))
-            {
-                saveFileDebugOutput.text += "true\n";
-                writeSaveData(Save_Data.PassedLevel);
-            }
-            else // and there is not a save file yet!
-            {
-                saveFileDebugOutput.text += "false\n";
-                writeSaveData(Save_Data.PassedLevel);
-            }
+            //saveFileDebugOutput.text += File.Exists(SaveFilePath).ToString() + "\n";
+            writeSaveData(Save_Data.PassedLevel);
         }
 		
         saveFileDebugOutput.text += Save_Data.PassedLevel;
@@ -95,18 +87,17 @@ public class Level_Menu : MonoBehaviour {
 
     void writeSaveData(int level)
     {
+        SaveW = new StreamWriter(SaveFilePath, false);
         if (File.Exists(SaveFilePath))
-        {
-            SaveW = new StreamWriter(SaveFilePath, false);
             SaveW.WriteLine(level.ToString() + "\n");
-            SaveW.Close();
-        }
+        SaveW.Close();
     }
 
     /* JUMP TO OTHER SCENE */
 
     public void LoadIntroSlide(int num)
     {
+        GameObject.Find("Loading Menu").GetComponent<SpriteRenderer>().enabled = true;
         Save_Data.SelectLevel(num);
         SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
         SceneManager.LoadScene("Slide Scene");
@@ -114,6 +105,7 @@ public class Level_Menu : MonoBehaviour {
 
     public void LoadContinueLevel()
     {
+        GameObject.Find("Loading Title").GetComponent<SpriteRenderer>().enabled = true;
         Save_Data.SelectLevel(Save_Data.PassedLevel + ((Save_Data.PassedLevel == Save_Data.BossLevel) ? 0 : 1));
         SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
         SceneManager.LoadScene("Game Scene");
@@ -121,6 +113,7 @@ public class Level_Menu : MonoBehaviour {
 
     public void LoadLevel(int level)
     {
+        GameObject.Find("Loading Menu").GetComponent<SpriteRenderer>().enabled = true;
         Save_Data.SelectLevel(level);
         SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
         SceneManager.LoadScene("Game Scene");
