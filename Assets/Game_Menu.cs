@@ -91,10 +91,11 @@ public class Game_Menu : MonoBehaviour {
         toggleGameMenu();
         if (!isFinishMenu)
         {
-            if (Save_Data.SelectedLevel != Save_Data.BossLevel)
+            if (Save_Data.SelectedLevel == Save_Data.BossLevel)
             {
-                FinishGO.transform.Translate(new Vector3(0, 0, 1000));
+                GameObject.Find("Next Level Button").transform.Translate(new Vector3(0, 0, -1000));
             }
+            FinishGO.transform.Translate(new Vector3(0, 0, 1000));
             ResumeBtn.transform.Translate(new Vector3(0, 0, 1000));
             isFinishMenu = true;
         }

@@ -269,7 +269,9 @@ public class Level_Map : MonoBehaviour
         //Debug.Log("monsterNumAdjust: " + monsterNumAdjust);
 
         int ep_to_set = (int) (estimatedStep * (1.38 - Save_Data.SelectedLevel / 3 * 0.03)) + adjustedMonsterFactor;
-        int hp_to_set = monsterNumber / 13 + 2;
+        int hp_to_set = 2;
+        if (monsterNumber > 8)
+            hp_to_set += (monsterNumber - 8) / 7;
 
         if (Save_Data.SelectedLevel == Save_Data.BossLevel)
         {

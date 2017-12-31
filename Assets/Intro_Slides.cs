@@ -49,7 +49,7 @@ public class Intro_Slides : MonoBehaviour {
     {
         if (intro_image_num < introSp.Length && intro_image_num >= 0)
         {
-            Debug.Log("show intro image #" + intro_image_num + "at time of " + Time.time);
+            Debug.Log("show intro image #" + intro_image_num + " at time of " + Time.time);
             introImage.sprite = introSp[intro_image_num];
             intro_image_num++;
             time_change_intro_image = Time.time + 2.0f ;
