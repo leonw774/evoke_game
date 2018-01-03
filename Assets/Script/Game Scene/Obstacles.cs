@@ -30,7 +30,7 @@ public class Obstacles : MonoBehaviour {
             if (positionList.Count > 0) DestroyAllObstacles();
             Generate();
             Adjust();
-        } while (positionList.Count < (int) (walkableTilesNum * 0.33) || positionList.Count > (int)(walkableTilesNum * 0.66));
+        } while (positionList.Count < (int) (walkableTilesNum * 0.4) || positionList.Count > (int)(walkableTilesNum * 0.66));
 
         Debug.Log("There are " + positionList.Count + " obs in map");
     }

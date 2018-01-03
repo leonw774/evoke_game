@@ -46,21 +46,21 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\Astar.cs" />
-     <Compile Include="Assets\BMPLoader.cs" />
-     <Compile Include="Assets\Boss1Ability.cs" />
-     <Compile Include="Assets\Control_Animation.cs" />
-     <Compile Include="Assets\Game_Menu.cs" />
-     <Compile Include="Assets\Info_Menu.cs" />
-     <Compile Include="Assets\Intro_Slides.cs" />
-     <Compile Include="Assets\Level_Map.cs" />
-     <Compile Include="Assets\Level_Menu.cs" />
-     <Compile Include="Assets\Map_View.cs" />
-     <Compile Include="Assets\MonsterAbility.cs" />
-     <Compile Include="Assets\Monsters_Control.cs" />
-     <Compile Include="Assets\Obstacles.cs" />
-     <Compile Include="Assets\Player_Control.cs" />
-     <Compile Include="Assets\Save_Data.cs" />
+     <Compile Include="Assets\Script\Game Scene\Astar.cs" />
+     <Compile Include="Assets\Script\Game Scene\BMPLoader.cs" />
+     <Compile Include="Assets\Script\Game Scene\Boss1Ability.cs" />
+     <Compile Include="Assets\Script\Game Scene\Control_Animation.cs" />
+     <Compile Include="Assets\Script\Game Scene\Game_Menu.cs" />
+     <Compile Include="Assets\Script\Game Scene\Info_Menu.cs" />
+     <Compile Include="Assets\Script\Game Scene\Level_Map.cs" />
+     <Compile Include="Assets\Script\Game Scene\Map_View.cs" />
+     <Compile Include="Assets\Script\Game Scene\MonsterAbility.cs" />
+     <Compile Include="Assets\Script\Game Scene\Monsters_Control.cs" />
+     <Compile Include="Assets\Script\Game Scene\Obstacles.cs" />
+     <Compile Include="Assets\Script\Game Scene\Player_Control.cs" />
+     <Compile Include="Assets\Script\Intro_Slides.cs" />
+     <Compile Include="Assets\Script\Menu Scene\Level_Menu.cs" />
+     <Compile Include="Assets\Script\Save_Data.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>

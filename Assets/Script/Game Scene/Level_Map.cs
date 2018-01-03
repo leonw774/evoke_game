@@ -263,15 +263,13 @@ public class Level_Map : MonoBehaviour
         float map_obs_ratio = theObstacles.positionList.Count / walkableTilesNnum;
         if (diviedPathAdjustment > 1.0f)
             monsterNumAdjust /= diviedPathAdjustment;
-        int adjustedMonsterFactor = (int) (monsterNumber * monsterNumAdjust * (map_obs_ratio + 0.77f));
+        int adjustedMonsterFactor = (int) (monsterNumber * monsterNumAdjust * (0.6f + map_obs_ratio));
 
         //Debug.Log("diviedPathAdjustmant: " + diviedPathAdjustment);
         //Debug.Log("monsterNumAdjust: " + monsterNumAdjust);
 
-        int ep_to_set = (int) (estimatedStep * (1.38 - Save_Data.SelectedLevel / 3 * 0.03)) + adjustedMonsterFactor;
-        int hp_to_set = 2;
-        if (monsterNumber > 8)
-            hp_to_set += (monsterNumber - 8) / 7;
+        int ep_to_set = (int) (estimatedStep * (1.30 - (Save_Data.SelectedLevel - 1) / 3 * 0.05)) + adjustedMonsterFactor;
+        int hp_to_set = monsterNumber / 15 + 2;
 
         if (Save_Data.SelectedLevel == Save_Data.BossLevel)
         {

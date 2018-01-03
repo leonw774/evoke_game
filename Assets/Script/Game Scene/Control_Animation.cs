@@ -276,23 +276,23 @@ public class Control_Animation : MonoBehaviour {
         }
 
         /* for testing on PC */
-        if (Input.GetKey(KeyCode.UpArrow))
+        if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
         {
             levelMap.thePlayer.playerMoveUp();
         }
-        if (Input.GetKey(KeyCode.DownArrow))
-        {
-            levelMap.thePlayer.playerMoveDown();
-        }
-        if (Input.GetKey(KeyCode.LeftArrow))
+        else if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
         {
             levelMap.thePlayer.playerMoveLeft();
         }
-        if (Input.GetKey(KeyCode.RightArrow))
+        else if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
+        {
+            levelMap.thePlayer.playerMoveDown();
+        }
+        else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
         {
             levelMap.thePlayer.playerMoveRight();
         }
-        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+        else if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
         {
             levelMap.thePlayer.playerDoAbility();
         }
