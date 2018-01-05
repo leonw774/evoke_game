@@ -6,6 +6,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System;
 using System.Security.Policy;
+using NUnit.Framework.Constraints;
 
 public class Level_Menu : MonoBehaviour {
 
@@ -63,7 +64,7 @@ public class Level_Menu : MonoBehaviour {
 
     void SetupLevelMenuButton()
     {
-        Button[] lvlBtns = FindObjectsOfType<Button>();
+        GameObject[] lvlBtns = GameObject.FindGameObjectsWithTag("Level Button");
         int bnum;
         for(int i = 0; i < lvlBtns.Length; ++i)
         {
@@ -77,7 +78,11 @@ public class Level_Menu : MonoBehaviour {
             }
             if (bnum <= (Save_Data.PassedLevel + 1))
             {
-                lvlBtns[i].interactable = true;
+                lvlBtns[i].GetComponent<Button>().interactable = true;
+            }
+            else if (lvlBtns[i].name.Substring(0, 5) == "Level")
+            {
+                lvlBtns[i].GetComponent<Image>().sprite = null;
             }
         }
     }
