@@ -1,4 +1,16 @@
 ﻿
+Sound Effect: 
+monster dead *
+player walk **
+player hurt **
+player low hp/ep *
+ability **
+button click **
+retry & resume **
+finish **
+fail **
+
+
 MAP SIZES: Small(10x15) Middle(20x30) Large(24x36) Super-Large(32x48)
 
 體力值: EP 
@@ -11,6 +23,11 @@ MAP SIZES: Small(10x15) Middle(20x30) Large(24x36) Super-Large(32x48)
  
 怪物(Montser): 
     當怪物在完成一回合後與玩家站鄰格，必會攻擊玩家，使玩家血量減一。 
+
+大怪物(Boss Monster):
+    有特殊能力的怪物。
+    如: 破壞它身邊的障礙物、攻擊範圍較長、會跳過障礙物等。
+    一關只能有一個，大怪物永遠生成在地圖正中間。
  
 -------- 
 起始時，HP為2、EP為第一關之最短路程預測值(Estimated Shortest Length (ESL))經多次測試後得到之平均值的1.25倍。 
