@@ -2,6 +2,5 @@ Build/
 Build_Android/
 .vs/
 *.psd
-.vs/
 *.sln
-.userprefs
+*.userprefs
