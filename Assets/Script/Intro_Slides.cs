@@ -71,7 +71,7 @@ public class Intro_Slides : MonoBehaviour {
         introSp = null;
         time_change_intro_image = 0.0f;
 
-        SceneManager.LoadScene("Game Scene");
+        SceneManager.LoadScene("Menu Scene");
 
     }
 
