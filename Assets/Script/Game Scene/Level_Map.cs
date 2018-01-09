@@ -32,19 +32,27 @@ public class Level_Map : MonoBehaviour
     {
         theObstacles = gameObject.AddComponent<Obstacles>();
         theObstacles.Initialize();
+
         theMonsters = gameObject.AddComponent<Monsters_Control>();
         theMonsters.Initialize();
+
         thePlayer = GameObject.Find("Player Control Canvas").GetComponent<Player_Control>();
         thePlayer.Initialize();
+
         theAnimation = GameObject.Find("Control Panel").GetComponent<Control_Animation>();
         theAnimation.Initialize();
 
         GameObject.Find("Error Msg").transform.position = new Vector3(0.0f, -2.0f, -10.0f);
 
+        // start a level from the very beginning
+        GameInitial();
+    }
+
+    public void GameInitial()
+    {
         if (Save_Data.SelectedLevel != -1)
         {
-            // load a level from the very beginning
-            GameInitial(Save_Data.SelectedLevel);
+            GameLoad(Save_Data.SelectedLevel);
             // if parse img succese
             if (ParseMapImg())
                 GameStart();
@@ -55,7 +63,7 @@ public class Level_Map : MonoBehaviour
             Debug.Log("Selected Level Value Error!");
     }
 
-    public void GameInitial(int thisMapLevel)
+    public void GameLoad(int thisMapLevel)
     {
         // initialize all the Resources which this level need
         mapFileName = "map" + thisMapLevel.ToString();
@@ -124,11 +132,9 @@ public class Level_Map : MonoBehaviour
             Rect mapRect = new Rect(0.0f, 0.0f, (float)width, (float)height);
             Sprite mapSp = Sprite.Create(bmp, mapRect, new Vector2(0.5f, 0.5f));
             GameObject.Find("Large Map").GetComponent<SpriteRenderer>().sprite = mapSp;
-
-            //Resources.UnloadAsset(bmp);
+            return;
         }
-        else
-            Debug.Log("No file path!");
+        Debug.Log("No file path!");
     }
 
     private bool ParseMapImg()
@@ -167,7 +173,8 @@ public class Level_Map : MonoBehaviour
     public void MapFirstConstruction()
     {
         // delete previous walls
-        DeleteWalls(); // where wallNumber is set to 0
+        // wallNumber will set to 0
+        DeleteWalls(); 
         // make wall objects on map
         CreateWalls();
         //Debug.Log("playerStartTile: " + playerStartTile[0] + "," + playerStartTile[1]);
@@ -189,6 +196,8 @@ public class Level_Map : MonoBehaviour
 
     private void CreateWalls()
     {
+        GameObject wallCreated = null;
+        GameObject exitObj = null;
         if (tiles.Length <= 1) return;
         for (int h = 0; h < height; h++)
         {
@@ -197,7 +206,7 @@ public class Level_Map : MonoBehaviour
                 Vector3 trans = MapCoordToWorldVec3(h, w, 0);
                 if (tiles[h, w] == TILE_TYPE.WALL)
                 {
-                    GameObject wallCreated;
+                    wallCreated = null;
                     wallCreated = Instantiate(GameObject.Find("Prototype Wall Sprite"));
                     wallCreated.name = "Wall Sprite";
                     wallCreated.tag = "Wall";
@@ -207,7 +216,6 @@ public class Level_Map : MonoBehaviour
                 }
                 else if (tiles[h, w] == TILE_TYPE.FINISH_POINT)
                 {
-                    GameObject exitObj;
                     finishTile = new int[2] { h, w };
                     tiles[h, w] = TILE_TYPE.WALL;
                     exitObj = GameObject.Find("Exit Sprite");
@@ -254,26 +262,28 @@ public class Level_Map : MonoBehaviour
         // use A-star to find least steps to finish
         Astar astar = new Astar(tiles, height, width, theObstacles.positionList, playerStartTile, finishTile);
         estimatedStep = astar.FindPathLength(false, true, false);
-        //astar.PrintPath();
-        Debug.Log("estimatedStep:" + estimatedStep);
 
-        int walkableTilesNnum = height * width - wallsNumber;
-        float monsterNumAdjust = 3.2f;
-        float diviedPathAdjustment = ((int)(walkableTilesNnum / (estimatedStep * 4.2f) * 100) / 100f);
-        float map_obs_ratio = theObstacles.positionList.Count / walkableTilesNnum;
-        if (diviedPathAdjustment > 1.0f)
-            monsterNumAdjust /= diviedPathAdjustment;
-        int adjustedMonsterFactor = (int) (monsterNumber * monsterNumAdjust * (0.6f + map_obs_ratio));
+        //astar.PrintPath();
+        //Debug.Log("estimatedStep:" + estimatedStep);
+
+        int walkableTilesNnum = tiles.Length - wallsNumber;
+        int adjustedMonsterStep = 0;
+        float monsterNumToStep = 3f;
+        float multiPathFactor = ((int)(walkableTilesNnum / (estimatedStep * 4.0f) * 100) / 100f);
+
+        if (multiPathFactor > 1.0f)
+            monsterNumToStep /= multiPathFactor;
+        adjustedMonsterStep = (int) (monsterNumber * monsterNumToStep);
 
         //Debug.Log("diviedPathAdjustmant: " + diviedPathAdjustment);
         //Debug.Log("monsterNumAdjust: " + monsterNumAdjust);
 
-        int ep_to_set = (int) (estimatedStep * (1.30 - (Save_Data.SelectedLevel - 1) / 3 * 0.033)) + adjustedMonsterFactor;
+        int ep_to_set = (int) (estimatedStep * (1.25 - (Save_Data.SelectedLevel / 3) * 0.025)) + adjustedMonsterStep;
         int hp_to_set = monsterNumber / 15 + 2;
 
         if (Save_Data.SelectedLevel == Save_Data.BossLevel)
         {
-            ep_to_set += adjustedMonsterFactor;
+            ep_to_set += adjustedMonsterStep;
             hp_to_set += 3;
         }
 
@@ -282,7 +292,7 @@ public class Level_Map : MonoBehaviour
         thePlayer.SetAbilityCooldown(0);
         thePlayer.thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.FRONT);
         thePlayer.SetPositionTo(playerStartTile[0], playerStartTile[1]);
-        Debug.Log("Player States All Set");
+        //Debug.Log("Player States All Set");
     }
 
     private void GameStart()
@@ -310,14 +320,11 @@ public class Level_Map : MonoBehaviour
     }
 
     /* this function is called by Player_Control when it find out player is at finish */
-    public void GameFinish()
+    public void UpdateSaveLevel()
     {
-        if (Save_Data.SelectedLevel != Save_Data.BossLevel)
+        if (Save_Data.SelectedLevel != Save_Data.BossLevel && Save_Data.SelectedLevel == Save_Data.PassedLevel + 1)
         {
-            if (Save_Data.SelectedLevel == Save_Data.PassedLevel + 1)
-            {
-                Save_Data.UpdatePassedLevel();
-            }
+            Save_Data.UpdatePassedLevel();
         }
         Debug.Log("SelectedLevel: " + Save_Data.SelectedLevel);
         Debug.Log("PassedLevel: " + Save_Data.PassedLevel);
@@ -330,13 +337,8 @@ public class Level_Map : MonoBehaviour
         theMonsters.DestroyAllMonsters();
         Save_Data.SelectedNextLevel();
 
-        // load a level from the very beginning
-        GameInitial(Save_Data.SelectedLevel);
-        // if parse img succese
-        if (ParseMapImg())
-            GameStart();
-        else
-            GameObject.Find("Error Msg").transform.position = new Vector3(0.0f, -2.0f, 0.0f);
+        // start a level from the very beginning
+        GameInitial();
     }
 
     /* SOME USEFUL FUNTION */
@@ -350,8 +352,6 @@ public class Level_Map : MonoBehaviour
     {
         if (theMonsters.boss != null)
             return !(theObstacles.positionList.Exists(x => x == i * width + j) || tiles[i, j] == TILE_TYPE.WALL || (theMonsters.boss.h == i && theMonsters.boss.w == j));
-        else
-            return !(theObstacles.positionList.Exists(x => x == i * width + j) || tiles[i, j] == TILE_TYPE.WALL);
-
+        return !(theObstacles.positionList.Exists(x => x == i * width + j) || tiles[i, j] == TILE_TYPE.WALL);
     }
 }

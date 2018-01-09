@@ -193,8 +193,8 @@ public class Player_Control : MonoBehaviour {
             if (Save_Data.SelectedLevel != Save_Data.BossLevel || levelMap.theMonsters.boss == null)
             {
                 levelMap.theAnimation.PlayerAnimSetup(thePlayerDisp.objPosition, levelMap.MapCoordToWorldVec3(h, w, 0));
+                levelMap.UpdateSaveLevel();
                 theControlPanel.toggleFinishMenu();
-                levelMap.GameFinish();
                 return true;
             }
         }

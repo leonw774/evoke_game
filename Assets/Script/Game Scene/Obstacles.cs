@@ -30,7 +30,7 @@ public class Obstacles : MonoBehaviour {
             if (positionList.Count > 0) DestroyAllObstacles();
             Generate();
             Adjust();
-        } while (positionList.Count < (int) (walkableTilesNum * 0.4) || positionList.Count > (int)(walkableTilesNum * 0.66));
+        } while (positionList.Count < (int) (walkableTilesNum * 0.35) || positionList.Count > (int)(walkableTilesNum * 0.65));
 
         Debug.Log("There are " + positionList.Count + " obs in map");
     }
@@ -100,7 +100,7 @@ public class Obstacles : MonoBehaviour {
                     // STATE: PUT OBS
                     ObsUpdate(i, j);
                     obslength++;
-                    if (Random.Range(-5, 6) < 0 || obslength > Random.Range(7, 10)) // possibility to change state
+                    if (Random.Range(-5, 6) < 0 || obslength > Random.Range(6, 9)) // possibility to change state
                     {
                         putObs = !putObs;
                         obslength = 0;
@@ -124,7 +124,7 @@ public class Obstacles : MonoBehaviour {
                 {
                     ObsUpdate(i, j);
                     obslength++;
-                    if (Random.Range(-5, 6) < 0 || obslength > Random.Range(7, 10))
+                    if (Random.Range(-5, 6) < 0 || obslength > Random.Range(6, 9))
                     {
                         putObs = !putObs;
                         obslength = 0;
@@ -140,7 +140,7 @@ public class Obstacles : MonoBehaviour {
 
     public void Adjust()
     {
-        int count = 0;
+        int count = -1;
         bool find_something_to_adjust = true;
         while(find_something_to_adjust && count < 3)
         {
@@ -243,7 +243,7 @@ public class Obstacles : MonoBehaviour {
                         is_middle_all_walkable = is_middle_all_walkable && !(positionList.Exists(x => x == pos + d) || levelMap.tiles[i, j + d] == TILE_TYPE.WALL);
                         d++;
                     }
-                    if (is_middle_all_walkable && is_up_all_obs && is_down_all_obs && Random.Range(0, 10) > 0)
+                    if (is_middle_all_walkable && is_up_all_obs && is_down_all_obs && Random.Range(0, 23) > 0)
                     {
                         ObsUpdate(i, j); // add an obs in the walk way
                         ObsUpdate(i + ((Random.Range(0, 2) == 0) ? 1 : -1), j);// then randomly delete a obs
@@ -259,7 +259,7 @@ public class Obstacles : MonoBehaviour {
                         is_middle_all_walkable = is_middle_all_walkable && !(positionList.Exists(x => x == pos + d * mw) || levelMap.tiles[i + d, j] == TILE_TYPE.WALL);
                         d++;
                     }
-                    if (is_middle_all_walkable && is_left_all_obs && is_right_all_obs && Random.Range(0, 10) > 0)
+                    if (is_middle_all_walkable && is_left_all_obs && is_right_all_obs && Random.Range(0, 23) > 0)
                     {
                         ObsUpdate(i, j); // add an obs in the walk way
                         ObsUpdate(i, j + ((Random.Range(0, 2) == 0) ? 1 : -1)); // then randomly delete a obs
