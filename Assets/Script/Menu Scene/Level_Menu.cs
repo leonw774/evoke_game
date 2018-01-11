@@ -103,6 +103,7 @@ public class Level_Menu : MonoBehaviour {
 
     private void FirstTimeInGameIntro()
     {
+        GameObject.Find("Loading Title").GetComponent<SpriteRenderer>().enabled = true;
         Save_Data.SelectLevel(0);
         SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
         SceneManager.LoadScene("Slide Scene");

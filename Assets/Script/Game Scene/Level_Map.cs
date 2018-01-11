@@ -267,23 +267,22 @@ public class Level_Map : MonoBehaviour
         //Debug.Log("estimatedStep:" + estimatedStep);
 
         int walkableTilesNnum = tiles.Length - wallsNumber;
-        int adjustedMonsterStep = 0;
-        float monsterNumToStep = 3f;
-        float multiPathFactor = ((int)(walkableTilesNnum / (estimatedStep * 4.0f) * 100) / 100f);
+        float adjustedmonsterNum = 0;
+        float monsterNumToStep = 3.6f;
+        float multiPathFactor = ((int)(walkableTilesNnum / (estimatedStep * 4.0f) * 10) / 10f);
 
-        if (multiPathFactor > 1.0f)
-            monsterNumToStep /= multiPathFactor;
-        adjustedMonsterStep = (int) (monsterNumber * monsterNumToStep);
+        if (multiPathFactor > 1.2f)
+            adjustedmonsterNum = monsterNumber / multiPathFactor;
 
         //Debug.Log("diviedPathAdjustmant: " + diviedPathAdjustment);
         //Debug.Log("monsterNumAdjust: " + monsterNumAdjust);
 
-        int ep_to_set = (int) (estimatedStep * (1.25 - (Save_Data.SelectedLevel / 3) * 0.025)) + adjustedMonsterStep;
-        int hp_to_set = monsterNumber / 15 + 2;
+        int ep_to_set = (int) (estimatedStep * (1.35 - ((int)(Save_Data.SelectedLevel / 3) * 0.05))) + (int) (monsterNumToStep * adjustedmonsterNum) + 1;
+        int hp_to_set = (int) adjustedmonsterNum / 15 + 2;
 
         if (Save_Data.SelectedLevel == Save_Data.BossLevel)
         {
-            ep_to_set += adjustedMonsterStep;
+            ep_to_set += (int) (monsterNumToStep * adjustedmonsterNum + 0.5);
             hp_to_set += 3;
         }
 

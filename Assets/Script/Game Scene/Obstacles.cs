@@ -140,7 +140,7 @@ public class Obstacles : MonoBehaviour {
 
     public void Adjust()
     {
-        int count = -1;
+        int count = 0;
         bool find_something_to_adjust = true;
         while(find_something_to_adjust && count < 3)
         {
