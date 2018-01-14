@@ -121,44 +121,50 @@ public class Monsters_Control: MonoBehaviour {
         if (Save_Data.SelectedLevel == Save_Data.BossLevel)
             SpawnBoss(1);
 
-        int minDisBtwnMons = 6;
-        int posRandMin = (levelMap.tiles.Length - levelMap.wallsNumber) / totalNum - minDisBtwnMons;
-        int posRandMax = (levelMap.tiles.Length - levelMap.wallsNumber) / totalNum + (minDisBtwnMons * 2);
+        const int MIN_DIS_BTW_MONS = 6;
+        int walkbaleTileNum = (levelMap.tiles.Length - levelMap.wallsNumber);
+        int posRandMin = walkbaleTileNum / totalNum - MIN_DIS_BTW_MONS;
+        int posRandMax = walkbaleTileNum / totalNum + MIN_DIS_BTW_MONS * 2;
         int spawnedCount = 0;
         int emegercyJumpOut = 0;
         int h = -1, w = -1;
         int mapWidth = levelMap.width;
+        int pos = 0;
         int prePos = levelMap.playerStartTile[0] * mapWidth + levelMap.playerStartTile[1];
+        bool tooClose = false;
         //Debug.Log("posRandMin:" + posRandMin + "\nposRandMax: " + posRandMax);
 
         /* ITERATIVE SPAWN */
         while (spawnedCount < totalNum)
         {
-            if(emegercyJumpOut++ > (totalNum * 4096))
+            if(emegercyJumpOut++ > (totalNum * 2048))
             {
-                Debug.Log("Emegercy Jump-Out Happened.");
-                Debug.Log("tryCount: " + emegercyJumpOut + "\ntotalNum: " + totalNum);
+                Debug.Log("Emegercy Jump-Out Happened.\ntryCount: " + emegercyJumpOut + "\ntotalNum: " + totalNum);
                 break;
             }
             // make random pos
-            int pos = prePos + Random.Range(posRandMin, posRandMax);
+            pos = prePos + Random.Range(posRandMin, posRandMax);
             // check map range
-            if (pos > (levelMap.height - 1) * mapWidth) pos -= (levelMap.height - 2) * mapWidth;
+            if (pos > (levelMap.height - 1) * mapWidth)
+                pos -= (levelMap.height - 2) * mapWidth;
             h = pos / mapWidth;
             w = pos % mapWidth;
-            bool tooClose = false;
+            tooClose = false;
             // check if too close to player or finsh
             if (4 > (System.Math.Abs(levelMap.playerStartTile[0] - h) + System.Math.Abs(levelMap.playerStartTile[1] - w))
              || 3 > (System.Math.Abs(levelMap.finishTile[0] - h) + System.Math.Abs(levelMap.finishTile[1] - w)))
                 tooClose = true;
             // check if too close to other monster
-            for (int i = 0; i < monsList.Count && !tooClose; ++i)
+            foreach(Monster m in monsList)
             {
-                if (minDisBtwnMons > ( System.Math.Abs(monsList[i].h - h) + System.Math.Abs(monsList[i].w - w)))
+                if (MIN_DIS_BTW_MONS > (System.Math.Abs(m.h - h) + System.Math.Abs(m.w - w)))
+                {
                     tooClose = true;
+                    break;
+                }
             }
-            if (tooClose) prePos = pos;
-            else if (levelMap.tiles[h, w] != TILE_TYPE.WALL)
+            prePos = pos;
+            if (!tooClose && levelMap.tiles[h, w] != TILE_TYPE.WALL)
             {
                 bool spawn_on_obs = levelMap.theObstacles.positionList.Exists(x => x == (h * mapWidth + w));
                 // not too close and this is not wall/obstacle
@@ -188,11 +194,12 @@ public class Monsters_Control: MonoBehaviour {
                     Spawn(h, w, spawnedCount);
                     spawnedCount++;
                 }
-                else if (spawn_on_obs && walkable_neighbor_count < 3 && walkable_neighbor_count > 1 && Random.Range(0, 8) > 0)
+                else if (spawn_on_obs && walkable_neighbor_count <= 3 && walkable_neighbor_count > 1 && Random.Range(0, 10) > 0)
                 {
                     levelMap.theObstacles.ObsDestroy(pos);
                     Spawn(h, w, spawnedCount++);
                 }
+                // else: spawn failed;
             }
         }
         Debug.Log("Monster Ganeration: " + monsList.Count + "mons are spawned.");
@@ -400,10 +407,13 @@ public class Monsters_Control: MonoBehaviour {
         if (thisMon.h == levelMap.thePlayer.h && thisMon.w == levelMap.thePlayer.w)
             return;
 
-        while (tryCount <= 8)
+        int goingTo = -1;
+        int newh = thisMon.h, neww = thisMon.w;
+        while (tryCount++ <= 6)
         {
-            int goingTo = Random.Range(0, 4);
-            int newh = thisMon.h, neww = thisMon.w;
+            newh = thisMon.h;
+            neww = thisMon.w;
+            goingTo = Random.Range(0, 4);
             if (Random.Range(-1, 8) < 0) break; // monter wont move
             switch (goingTo)
             {
@@ -435,7 +445,6 @@ public class Monsters_Control: MonoBehaviour {
                     break;
                 }
             }
-            tryCount++;
         } // end of while(trycount < 4)
     }
 

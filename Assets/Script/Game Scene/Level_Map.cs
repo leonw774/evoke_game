@@ -60,14 +60,15 @@ public class Level_Map : MonoBehaviour
                 GameObject.Find("Error Msg").transform.position = new Vector3(0.0f, -2.0f, 0.0f);
         }
         else
-            Debug.Log("Selected Level Value Error!");
+            GameObject.Find("Error Msg").transform.position = new Vector3(0.0f, -2.0f, 0.0f);
+        //Debug.Log("Selected Level Value Error!");
     }
 
     public void GameLoad(int thisMapLevel)
     {
         // initialize all the Resources which this level need
         mapFileName = "map" + thisMapLevel.ToString();
-        Debug.Log("mapFileMap: " + mapFileName);
+        //Debug.Log("mapFileMap: " + mapFileName);
         // set up prototype sprites of themes
         LoadThemeSprites();
         // at the same time, make maps
@@ -126,7 +127,7 @@ public class Level_Map : MonoBehaviour
             tiles = new TILE_TYPE[bmp.height, bmp.width];
             height = bmp.height;
             width = bmp.width;
-            Debug.Log("Image loaded: " + height + ", " + width);
+            //Debug.Log("Image loaded: " + height + ", " + width);
 
             // make mini map
             Rect mapRect = new Rect(0.0f, 0.0f, (float)width, (float)height);
@@ -249,14 +250,14 @@ public class Level_Map : MonoBehaviour
             case 1:
                 monsterNumber = 4; break;
             case 2:
-                monsterNumber = 8; break;
+                monsterNumber = 6; break;
             case 3:
-                monsterNumber = 13; break;
+                monsterNumber = 12; break;
             default:
                 monsterNumber = (tiles.Length - wallsNumber - 8) / 32 + ((Save_Data.SelectedLevel > 4) ? 4 : Save_Data.SelectedLevel);
                 break;
         }
-        Debug.Log("the map ask for " + monsterNumber + " monsters");
+        Debug.Log("map ask for " + monsterNumber + " mons");
     }
 
     private void SetPlayerInfo()
@@ -269,23 +270,27 @@ public class Level_Map : MonoBehaviour
         //Debug.Log("estimatedStep:" + estimatedStep);
 
         int walkableTilesNnum = tiles.Length - wallsNumber;
-        float adjustedmonsterNum = monsterNumber; ;
+        float adjustedmonsterNum = monsterNumber;
         float monsterNumToStep = 3.6f;
-        float multiPathFactor = ((int)(walkableTilesNnum / (estimatedStep * 4.0f) * 10) / 10f);
+        float multiPathFactor = ((int)(walkableTilesNnum / (estimatedStep * 3.6f) * 100) / 100f);
 
         if (multiPathFactor > 1.1f)
+        {
+            walkableTilesNnum = walkableTilesNnum + (int) (theObstacles.positionList.Count / (multiPathFactor * 1.3));
+            multiPathFactor = ((int)(walkableTilesNnum / (estimatedStep * 3.6f) * 100) / 100f);
             adjustedmonsterNum /= multiPathFactor;
+        }
 
-        //Debug.Log("diviedPathAdjustmant: " + diviedPathAdjustment);
-        //Debug.Log("monsterNumAdjust: " + monsterNumAdjust);
+        Debug.Log("multiPathFactor: " + multiPathFactor);
+        //Debug.Log("adjustedmonsterNum: " + adjustedmonsterNum);
 
-        int ep_to_set = (int) (estimatedStep * (1.28 - ((int)(Save_Data.SelectedLevel / 3) * 0.05))) + (int) (monsterNumToStep * adjustedmonsterNum) + 1;
+        int ep_to_set = (int) (estimatedStep * (1.33 - ((int)(Save_Data.SelectedLevel / 3) * 0.04))) + (int) (monsterNumToStep * adjustedmonsterNum) + 1;
         int hp_to_set = (int) adjustedmonsterNum / 15 + 2;
 
         if (Save_Data.SelectedLevel == Save_Data.BossLevel)
         {
             ep_to_set += (int) (monsterNumToStep * adjustedmonsterNum + 0.5);
-            hp_to_set += 3;
+            hp_to_set += 2;
         }
 
         thePlayer.SetEnergyPoint(ep_to_set);

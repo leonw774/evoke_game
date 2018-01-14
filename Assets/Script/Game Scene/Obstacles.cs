@@ -142,13 +142,13 @@ public class Obstacles : MonoBehaviour {
     {
         int count = 0;
         bool find_something_to_adjust = true;
-        while(find_something_to_adjust && count < 3)
+        while(find_something_to_adjust && count < 2)
         {
             find_something_to_adjust = DistributeAdjust();
             CorridorAdjust();
             count++;
         }
-        Debug.Log("Obstacles Adjusted");
+        //Debug.Log("Obstacles Adjusted");
 
         // in opening, too much obstacles should not neighbor or be on same block of the player and finish
         int playerPosition = levelMap.playerStartTile[0] * levelMap.width + levelMap.playerStartTile[1];
@@ -167,25 +167,31 @@ public class Obstacles : MonoBehaviour {
 
     private bool DistributeAdjust()
     {
-        bool some_adjustment_are_done = false;
+        int thisTilePos = -1;
+        int chi_of_this = 4;
+        int di = -1, dj = -1, sameNeighborCount = 0;
+        bool some_adjustment_are_done = false, this_is_obs = false, neighbor_is_obs = false;
         // adjust too crowded and too loosen obstacles
         for (int i = 1; i < levelMap.height - 1; ++i)
         {
             for (int j = 1; j < levelMap.width - 1; ++j)
             {
-                int thisTilePos = i * levelMap.width + j;
+                thisTilePos = i * levelMap.width + j;
                 if (levelMap.tiles[i, j] != TILE_TYPE.WALKABLE)
                     continue;
                 // else
-                bool this_is_obs = (positionList.Exists(x => x == thisTilePos));
-                int chi_of_this = 4;
-                int di = -1, dj = -1, sameNeighborCount = 0;
+                this_is_obs = (positionList.Exists(x => x == thisTilePos));
+                chi_of_this = 4;
+                di = -1;
+                dj = -1;
+                sameNeighborCount = 0;
+                int neighborTilePos = 0;
                 while (di <= 1)
                 {
                     if (di == 0 & dj == 0) continue;
-                    int neighborTilePos = (i + di) * levelMap.width + (j + dj);
+                    neighborTilePos = (i + di) * levelMap.width + (j + dj);
                     // no matter the neighbor block is really a obstacle or a wall, it all count as obstacle
-                    bool neighbor_is_obs = (positionList.Exists(x => x == neighborTilePos)) || (levelMap.tiles[i + di, j + dj] != TILE_TYPE.WALKABLE);
+                    neighbor_is_obs = (positionList.Exists(x => x == neighborTilePos)) || (levelMap.tiles[i + di, j + dj] != TILE_TYPE.WALKABLE);
                     // check if neighbor is same with this block
                     if (this_is_obs == neighbor_is_obs)
                     {
