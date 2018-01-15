@@ -284,7 +284,7 @@ public class Level_Map : MonoBehaviour
         Debug.Log("multiPathFactor: " + multiPathFactor);
         //Debug.Log("adjustedmonsterNum: " + adjustedmonsterNum);
 
-        int ep_to_set = (int) (estimatedStep * (1.33 - ((int)(Save_Data.SelectedLevel / 3) * 0.04))) + (int) (monsterNumToStep * adjustedmonsterNum) + 1;
+        int ep_to_set = (int) (estimatedStep * (1.35 - ((Save_Data.SelectedLevel / 3) * 0.04))) + (int) (monsterNumToStep * adjustedmonsterNum) + 1;
         int hp_to_set = (int) adjustedmonsterNum / 15 + 2;
 
         if (Save_Data.SelectedLevel == Save_Data.BossLevel)
