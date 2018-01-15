@@ -27,11 +27,11 @@ public class Obstacles : MonoBehaviour {
         int walkableTilesNum = levelMap.tiles.Length - levelMap.wallsNumber;
         do
         {
-            if (positionList.Count > 0) DestroyAllObstacles();
+            DestroyAllObstacles();
             Generate();
             Adjust();
         } while (positionList.Count < (int) (walkableTilesNum * 0.35) || positionList.Count > (int)(walkableTilesNum * 0.65));
-
+        CreateAllObstacles();
         Debug.Log("There are " + positionList.Count + " obs in map");
     }
 
@@ -60,14 +60,19 @@ public class Obstacles : MonoBehaviour {
     {
         // Debug.Log("obs creation happened");
         int pos = h * levelMap.width + w;
-        Vector3 trans = levelMap.MapCoordToWorldVec3(h, w, 0);
-        GameObject created = Instantiate(prototype);
         positionList.Add(pos);
         positionList.Sort();
+        Vector3 trans = levelMap.MapCoordToWorldVec3(h, w, 0);
+        GameObject created = Instantiate(prototype);
         created.name = "Obstacle Sprite" + pos.ToString();
         created.tag = "Obstacle";
         created.transform.parent = GameObject.Find("Game Panel").transform;
         created.transform.position = trans;
+    }
+
+    public void ObsCreate(int pos)
+    {
+        ObsCreate(pos / levelMap.width, pos % levelMap.width);
     }
 
     public void ObsDestroy(int pos)
@@ -85,6 +90,33 @@ public class Obstacles : MonoBehaviour {
         positionList.Remove(pos);
     }
 
+    // Warning: this function is to update the list only
+    // not the actul sprite
+    // use it with discretion
+    private void ListUpdate(int pos)
+    {
+        int h = pos / levelMap.width, w = pos % levelMap.height;
+        if (positionList.IndexOf(pos) >= 0)
+            positionList.Remove(pos);
+        else if (levelMap.tiles[h, w] == 0)
+        {
+            positionList.Add(pos);
+            positionList.Sort();
+        }
+    }
+
+    private void ListUpdate(int h, int w)
+    {
+        int pos = h * levelMap.width + w;
+        if (positionList.IndexOf(pos) >= 0)
+            positionList.Remove(pos);
+        else if (levelMap.tiles[h, w] == 0)
+        {
+            positionList.Add(pos);
+            positionList.Sort();
+        }
+    }
+
     public void Generate()
     {
         int obslength = 0;
@@ -98,7 +130,7 @@ public class Obstacles : MonoBehaviour {
                 if (putObs && levelMap.tiles[i, j] == TILE_TYPE.WALKABLE)
                 {
                     // STATE: PUT OBS
-                    ObsUpdate(i, j);
+                    ListUpdate(i, j);
                     obslength++;
                     if (Random.Range(-5, 6) < 0 || obslength > Random.Range(6, 9)) // possibility to change state
                     {
@@ -122,7 +154,7 @@ public class Obstacles : MonoBehaviour {
             {
                 if (putObs && levelMap.tiles[i, j] == TILE_TYPE.WALKABLE)
                 {
-                    ObsUpdate(i, j);
+                    ListUpdate(i, j);
                     obslength++;
                     if (Random.Range(-5, 6) < 0 || obslength > Random.Range(6, 9))
                     {
@@ -152,17 +184,11 @@ public class Obstacles : MonoBehaviour {
 
         // in opening, too much obstacles should not neighbor or be on same block of the player and finish
         int playerPosition = levelMap.playerStartTile[0] * levelMap.width + levelMap.playerStartTile[1];
-        //Debug.Log("playerPosition:" + playerPosition);
-        if (positionList.Exists(x => x == playerPosition)) // same block
-            ObsUpdate(playerPosition);
-        if (positionList.Exists(x => x == playerPosition + 1)) // right
-            ObsUpdate(playerPosition + 1);
-        if (positionList.Exists(x => x == playerPosition - 1)) // left
-            ObsUpdate(playerPosition - 1);
-        if (positionList.Exists(x => x == playerPosition + levelMap.width)) // up
-            ObsUpdate(playerPosition + levelMap.width);
-        if (positionList.Exists(x => x == playerPosition - levelMap.width)) // down
-            ObsUpdate(playerPosition - levelMap.width);
+        positionList.Remove(playerPosition);
+        positionList.Remove(playerPosition + 1);
+        positionList.Remove(playerPosition - 1);
+        positionList.Remove(playerPosition + levelMap.width);
+        positionList.Remove(playerPosition - levelMap.width);
     }
 
     private bool DistributeAdjust()
@@ -211,11 +237,11 @@ public class Obstacles : MonoBehaviour {
                 if (sameNeighborCount >= (this_is_obs ? 7 : 5) - ((chi_of_this < 1) ? 1 : 0))
                 {
                     some_adjustment_are_done = true;
-                    ObsUpdate(i, j);
+                    ListUpdate(i, j);
                     if (sameNeighborCount == 8)
                     {
-                        ObsUpdate(i + Random.Range(-1, 2), j);
-                        ObsUpdate(i, j + Random.Range(-1, 2));
+                        ListUpdate(i + Random.Range(-1, 2), j);
+                        ListUpdate(i, j + Random.Range(-1, 2));
                     }
                 }
             } // end of for: j
@@ -251,8 +277,8 @@ public class Obstacles : MonoBehaviour {
                     }
                     if (is_middle_all_walkable && is_up_all_obs && is_down_all_obs && Random.Range(0, 23) > 0)
                     {
-                        ObsUpdate(i, j); // add an obs in the walk way
-                        ObsUpdate(i + ((Random.Range(0, 2) == 0) ? 1 : -1), j);// then randomly delete a obs
+                        ListUpdate(i, j); // add an obs in the walk way
+                        ListUpdate(i + ((Random.Range(0, 2) == 0) ? 1 : -1), j);// then randomly delete a obs
                         return;
                     }
                     // check horizontal corridor
@@ -267,8 +293,8 @@ public class Obstacles : MonoBehaviour {
                     }
                     if (is_middle_all_walkable && is_left_all_obs && is_right_all_obs && Random.Range(0, 23) > 0)
                     {
-                        ObsUpdate(i, j); // add an obs in the walk way
-                        ObsUpdate(i, j + ((Random.Range(0, 2) == 0) ? 1 : -1)); // then randomly delete a obs
+                        ListUpdate(i, j); // add an obs in the walk way
+                        ListUpdate(i, j + ((Random.Range(0, 2) == 0) ? 1 : -1)); // then randomly delete a obs
                     }
                 }
             } // end of for: j
@@ -278,14 +304,33 @@ public class Obstacles : MonoBehaviour {
     public void DestroyAllObstacles()
     {
         GameObject[] obs = GameObject.FindGameObjectsWithTag("Obstacle");
-        int k = 0;
-        for (; k < obs.Length; k++)
+        int n = 0;
+        for (; n < obs.Length; n++)
         {
-            Destroy(obs[k]);
-            obs[k] = null;
+            Destroy(obs[n]);
+            obs[n] = null;
         }
-        positionList .Clear();
+        positionList.Clear();
         //Debug.Log("Destroyed " + k + " obs");
+    }
+
+    private void CreateAllObstacles()
+    {
+        int h, w;
+        positionList.ForEach
+        (
+            delegate (int pos)
+            {
+                h = pos / levelMap.width;
+                w = pos % levelMap.width;
+                Vector3 trans = levelMap.MapCoordToWorldVec3(h, w, 0);
+                GameObject created = Instantiate(prototype);
+                created.name = "Obstacle Sprite" + pos.ToString();
+                created.tag = "Obstacle";
+                created.transform.parent = GameObject.Find("Game Panel").transform;
+                created.transform.position = trans;
+            }
+        );
     }
 	
 	// Update is called once per frame

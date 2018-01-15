@@ -152,9 +152,10 @@ public class Astar {
 
             // examine to neighbors 
             int nbNum = 0;
-            while(nbNum < 4)
+            Tile nbTile;
+            while (nbNum < 4)
             {
-                Tile nbTile = curTile.getNeighbor(nbNum);
+                nbTile = curTile.getNeighbor(nbNum);
                 nbNum++;
                 //Debug.Log("looking at " + nbTile.h + ", " + nbTile.w);
                 // if already examined
