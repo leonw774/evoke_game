@@ -91,7 +91,7 @@
     <Compile Include="Assets\Script\Game Scene\Obstacles.cs" />
     <Compile Include="Assets\Script\Game Scene\Player_Control.cs" />
     <Compile Include="Assets\Script\Intro_Slides.cs" />
-    <Compile Include="Assets\Script\Menu Scene\Level_Menu.cs" />
+    <Compile Include="Assets\Script\Menu_Scene.cs" />
     <Compile Include="Assets\Script\Save_Data.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

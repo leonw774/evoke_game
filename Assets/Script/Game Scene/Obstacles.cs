@@ -44,7 +44,7 @@ public class Obstacles : MonoBehaviour {
     {
         int pos = h * levelMap.width + w;
         // check if there is already a obstacle on this block
-        if (positionList.IndexOf(pos) != -1)
+        if (positionList.Exists(x => x == pos))
         {
             ObsDestroy(pos);
         }
@@ -96,7 +96,7 @@ public class Obstacles : MonoBehaviour {
     private void ListUpdate(int pos)
     {
         int h = pos / levelMap.width, w = pos % levelMap.height;
-        if (positionList.IndexOf(pos) >= 0)
+        if (positionList.Exists(x => x == pos))
             positionList.Remove(pos);
         else if (levelMap.tiles[h, w] == 0)
         {
@@ -108,7 +108,7 @@ public class Obstacles : MonoBehaviour {
     private void ListUpdate(int h, int w)
     {
         int pos = h * levelMap.width + w;
-        if (positionList.IndexOf(pos) >= 0)
+        if (positionList.Exists(x => x == pos))
             positionList.Remove(pos);
         else if (levelMap.tiles[h, w] == 0)
         {
@@ -174,7 +174,7 @@ public class Obstacles : MonoBehaviour {
     {
         int count = 0;
         bool find_something_to_adjust = true;
-        while(find_something_to_adjust && count < 2)
+        while(find_something_to_adjust && count < 3)
         {
             find_something_to_adjust = DistributeAdjust();
             CorridorAdjust();

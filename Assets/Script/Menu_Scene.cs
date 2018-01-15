@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using System.IO;
 using System;
 
-public class Level_Menu : MonoBehaviour {
+public class Menu_Scene : MonoBehaviour {
 
 	public string SaveFilePath = null;
     public StreamReader SaveR = null;

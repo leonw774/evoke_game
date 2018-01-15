@@ -123,30 +123,29 @@ public class Monsters_Control: MonoBehaviour {
 
         const int MIN_DIS_BTW_MONS = 6;
         int walkbaleTileNum = (levelMap.tiles.Length - levelMap.wallsNumber);
-        int posRandMin = walkbaleTileNum / totalNum - MIN_DIS_BTW_MONS;
-        int posRandMax = walkbaleTileNum / totalNum + MIN_DIS_BTW_MONS * 2;
         int spawnedCount = 0;
         int emegercyJumpOut = 0;
         int h = -1, w = -1;
         int mapWidth = levelMap.width;
-        int pos = 0;
+        int pos = -1;
         int prePos = levelMap.playerStartTile[0] * mapWidth + levelMap.playerStartTile[1];
         bool tooClose = false;
-        //Debug.Log("posRandMin:" + posRandMin + "\nposRandMax: " + posRandMax);
 
         /* ITERATIVE SPAWN */
         while (spawnedCount < totalNum)
         {
-            if(emegercyJumpOut++ > (totalNum * 2048))
+            if(emegercyJumpOut++ > (totalNum * 1024))
             {
                 Debug.Log("Emegercy Jump-Out Happened.\ntryCount: " + emegercyJumpOut + "\ntotalNum: " + totalNum);
                 break;
             }
             // make random pos
-            pos = prePos + Random.Range(posRandMin, posRandMax);
+            pos = prePos + Random.Range(-MIN_DIS_BTW_MONS, MIN_DIS_BTW_MONS) + Random.Range(-MIN_DIS_BTW_MONS, MIN_DIS_BTW_MONS) * levelMap.width;
             // check map range
             if (pos > (levelMap.height - 1) * mapWidth)
                 pos -= (levelMap.height - 2) * mapWidth;
+            else if (pos < 0)
+                pos += (levelMap.height - 1) * mapWidth;
             h = pos / mapWidth;
             w = pos % mapWidth;
             tooClose = false;
@@ -169,7 +168,7 @@ public class Monsters_Control: MonoBehaviour {
                 bool spawn_on_obs = levelMap.theObstacles.positionList.Exists(x => x == (h * mapWidth + w));
                 // not too close and this is not wall/obstacle
                 // check if is stuck
-                int walkable_neighbor_count = 0;
+                int chi_of_this_tile = 0;
                 int h_tocheck = 0, w_tocheck = 0;
                 for (int direction = 0; direction < 4; direction++)
                 {
@@ -187,21 +186,25 @@ public class Monsters_Control: MonoBehaviour {
                             w_tocheck++; break;
                     }
                     if (levelMap.IsTileWalkable(h_tocheck, w_tocheck))
-                        walkable_neighbor_count++;
+                        chi_of_this_tile++;
                 }
-                if (!spawn_on_obs && walkable_neighbor_count > 1)
+                if (chi_of_this_tile >= 1)
                 {
-                    Spawn(h, w, spawnedCount);
-                    spawnedCount++;
-                }
-                else if (spawn_on_obs && walkable_neighbor_count <= 3 && walkable_neighbor_count > 1 && Random.Range(0, 10) > 0)
-                {
-                    levelMap.theObstacles.ObsDestroy(pos);
-                    Spawn(h, w, spawnedCount++);
+                    if (!spawn_on_obs)
+                    {
+                        Spawn(h, w, spawnedCount);
+                        spawnedCount++;
+                    }
+                    else if (chi_of_this_tile <= 3 && Random.Range(0, 10) > 0)
+                    {
+                        levelMap.theObstacles.ObsDestroy(pos);
+                        Spawn(h, w, spawnedCount++);
+                    }
                 }
                 // else: spawn failed;
             }
         }
+        Debug.Log("emegercyJumpOut: " + emegercyJumpOut);
         Debug.Log("Monster Ganeration: " + monsList.Count + "mons are spawned.");
     }
 
@@ -301,9 +304,11 @@ public class Monsters_Control: MonoBehaviour {
 
     public void MonstersTurn()
     {
+        int distanceToPlayer = 0;
         for (int i = 0; i < monsList.Count; i++)
         {
-            if (((monsList[i].id >= 0) ? 6 : 12) >= (System.Math.Abs(levelMap.thePlayer.h - monsList[i].h) + System.Math.Abs(levelMap.thePlayer.w - monsList[i].w))
+            distanceToPlayer = System.Math.Abs(levelMap.thePlayer.h - monsList[i].h) + System.Math.Abs(levelMap.thePlayer.w - monsList[i].w);
+            if (distanceToPlayer <= ((monsList[i].id >= 0) ? 6 : 12)
                 && Random.Range(-1, 30) > 0)
             {
                 if (monsList[i].id >= 0)
@@ -317,7 +322,10 @@ public class Monsters_Control: MonoBehaviour {
                     switch (boss.monAbility.decision)
                     {
                         case 0: // move
-                            MonsterMoveToPlayer(i);
+                            if (distanceToPlayer > 2)
+                                MonsterMoveToPlayer(i);
+                            else
+                                MonsterMoveRandom(i);
                             break;
                         case 1: // attack behavier wont happen until every other monster are done moving
                             levelMap.theAnimation.BossMonsterAbilityAnimStart();
@@ -338,6 +346,7 @@ public class Monsters_Control: MonoBehaviour {
             }
             else
             {
+                if (monsList[i].id < 0 || distanceToPlayer >= 32)
                 MonsterMoveRandom(i);
             }
         }
