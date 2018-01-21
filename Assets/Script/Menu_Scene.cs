@@ -3,11 +3,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.IO;
-using System.Text.RegularExpressions;
 using System;
-using System.Security.Policy;
 
-public class Level_Menu : MonoBehaviour {
+public class Menu_Scene : MonoBehaviour {
 
 	public string SaveFilePath = null;
     public StreamReader SaveR = null;
@@ -63,7 +61,7 @@ public class Level_Menu : MonoBehaviour {
 
     void SetupLevelMenuButton()
     {
-        Button[] lvlBtns = FindObjectsOfType<Button>();
+        GameObject[] lvlBtns = GameObject.FindGameObjectsWithTag("Level Button");
         int bnum;
         for(int i = 0; i < lvlBtns.Length; ++i)
         {
@@ -77,7 +75,11 @@ public class Level_Menu : MonoBehaviour {
             }
             if (bnum <= (Save_Data.PassedLevel + 1))
             {
-                lvlBtns[i].interactable = true;
+                lvlBtns[i].GetComponent<Button>().interactable = true;
+            }
+            else if (lvlBtns[i].name.Substring(0, 5) == "Level")
+            {
+                lvlBtns[i].GetComponent<Image>().sprite = null;
             }
         }
     }
@@ -101,6 +103,7 @@ public class Level_Menu : MonoBehaviour {
 
     private void FirstTimeInGameIntro()
     {
+        GameObject.Find("Loading Title").GetComponent<SpriteRenderer>().enabled = true;
         Save_Data.SelectLevel(0);
         SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
         SceneManager.LoadScene("Slide Scene");

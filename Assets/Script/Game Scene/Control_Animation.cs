@@ -257,8 +257,11 @@ public class Control_Animation : MonoBehaviour {
     {
         if (times_monster_change_sprite <= Time.time)
         {
+            if (times_monster_change_sprite == 0)
+                times_monster_change_sprite = Time.time + 0.5f;
+            else
+                times_monster_change_sprite += 1.1f;
             levelMap.theMonsters.AllChangeFrame();
-            times_monster_change_sprite += 1.1f;
         }
 
         if (playerHurtedAnimation && times_player_hurted_sprite <= Time.time)

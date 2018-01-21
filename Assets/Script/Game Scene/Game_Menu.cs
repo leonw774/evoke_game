@@ -87,10 +87,11 @@ public class Game_Menu : MonoBehaviour {
 
     public void toggleFinishMenu()
     {
-        FinishSound.Play();
         toggleGameMenu();
         if (!isFinishMenu)
         {
+            FinishSound.Play();
+            writeSaveData(Save_Data.PassedLevel);
             if (Save_Data.SelectedLevel == Save_Data.BossLevel)
             {
                 GameObject.Find("Next Level Button").transform.Translate(new Vector3(0, 0, -1000));
@@ -99,15 +100,14 @@ public class Game_Menu : MonoBehaviour {
             ResumeBtn.transform.Translate(new Vector3(0, 0, 1000));
             isFinishMenu = true;
         }
-        writeSaveData(Save_Data.PassedLevel);
     }
 
     public void toggleFailMenu()
     {
-        FailSound.Play();
         toggleGameMenu();
         if (!isFailMenu)
         {
+            FailSound.Play();
             FailGO.transform.Translate(new Vector3(0, 0, 1000));
             ResumeBtn.transform.Translate(new Vector3(0, 0, 1000));
             isFailMenu = true;

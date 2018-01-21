@@ -134,9 +134,10 @@ public class Astar {
 
     public int FindPathLength(bool ignoreObs, bool canBreakThroughObs, bool recordPath) // retrun -1 means failure
     {
-        while(OpenList.Count > 0)
+        Tile curTile;
+        Tile nbTile;
+        while (OpenList.Count > 0)
         {
-            Tile curTile;
             curTile = OpenList[0];
             // the end
             if (curTile.IsEqualTile(GoalTile))
@@ -152,9 +153,9 @@ public class Astar {
 
             // examine to neighbors 
             int nbNum = 0;
-            while(nbNum < 4)
+            while (nbNum < 4)
             {
-                Tile nbTile = curTile.getNeighbor(nbNum);
+                nbTile = curTile.getNeighbor(nbNum);
                 nbNum++;
                 //Debug.Log("looking at " + nbTile.h + ", " + nbTile.w);
                 // if already examined
@@ -194,6 +195,7 @@ public class Astar {
                     continue;
 
                 // now, this is a better way to get to this block
+                // updat the came-from-map with this cost
                 if (recordPath) CameFromMap[nbTile.h, nbTile.w] = (nbNum - 1); // nbNum - 1 because it is now the next neighbor
                 CostMap[nbTile.h, nbTile.w] = nbCostScore;
                 EstimatedTotalCostMap[nbTile.h, nbTile.w] = nbCostScore + EstimateCost(nbTile);
