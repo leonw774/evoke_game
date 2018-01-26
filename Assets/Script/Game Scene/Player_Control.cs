@@ -9,7 +9,7 @@ public enum CHARACTER_FACING : int {BACK = 0, LEFT, FRONT, RIGHT};
 public class Player_Display
 {
     private GameObject playerPositionObject;
-    private SpriteRenderer playerFacingSprite;
+    public SpriteRenderer playerFacingSprite;
     public Vector3 animBeginPos;
     public Vector3 animEndPos;
     public Vector3 objPosition
@@ -26,7 +26,7 @@ public class Player_Display
 
     public Player_Display()
     {
-        playerPositionObject = GameObject.Find("Player Sprite");
+        playerPositionObject = GameObject.Find("Panel Offset");
         playerFacingSprite = null;
         animBeginPos = new Vector3(0, 0, -1);
         animEndPos = new Vector3(0, 0, -1);
@@ -97,14 +97,14 @@ public class Player_Control : MonoBehaviour {
 
     public void playerMoveUp()
     {
-        if (theAnimation.times_irreponsive <= Time.time)
+        if (theAnimation.times_irreponsive <= Time.time && !theAnimation.isViewAllMapMode)
         {
             if (Move(-1, 0)) // it is monster's turn only if player did change position
             {
                 moveSound.Play();
                 thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.BACK);
                 levelMap.theMonsters.MonstersTurn();
-                levelMap.theAnimation.AnimSetup();
+                levelMap.theAnimation.AnimStart();
                 if (energyPoint == 0) theControlPanel.toggleFailMenu();
             }
         }
@@ -112,14 +112,14 @@ public class Player_Control : MonoBehaviour {
 
     public void playerMoveLeft()
     {
-        if (theAnimation.times_irreponsive <= Time.time)
+        if (theAnimation.times_irreponsive <= Time.time && !theAnimation.isViewAllMapMode)
         {
             if (Move(0, -1))
             {
                 moveSound.Play();
                 thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.LEFT);
                 levelMap.theMonsters.MonstersTurn();
-                levelMap.theAnimation.AnimSetup();
+                levelMap.theAnimation.AnimStart();
                 if (energyPoint == 0) theControlPanel.toggleFailMenu();
             }
         }
@@ -127,14 +127,14 @@ public class Player_Control : MonoBehaviour {
 
     public void playerMoveDown()
     {
-        if (theAnimation.times_irreponsive <= Time.time)
+        if (theAnimation.times_irreponsive <= Time.time && !theAnimation.isViewAllMapMode)
         {
             if (Move(1, 0))
             {
                 moveSound.Play();
                 thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.FRONT);
                 levelMap.theMonsters.MonstersTurn();
-                levelMap.theAnimation.AnimSetup();
+                levelMap.theAnimation.AnimStart();
                 if (energyPoint == 0) theControlPanel.toggleFailMenu();
             }
         }
@@ -142,14 +142,14 @@ public class Player_Control : MonoBehaviour {
 
     public void playerMoveRight()
     {
-        if (theAnimation.times_irreponsive <= Time.time)
+        if (theAnimation.times_irreponsive <= Time.time && !theAnimation.isViewAllMapMode)
         {
             if (Move(0, 1))
             {
                 moveSound.Play();
                 thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.RIGHT);
                 levelMap.theMonsters.MonstersTurn();
-                levelMap.theAnimation.AnimSetup();
+                levelMap.theAnimation.AnimStart();
                 if (energyPoint == 0) theControlPanel.toggleFailMenu();
             }
         }
@@ -157,13 +157,13 @@ public class Player_Control : MonoBehaviour {
 
     public void playerDoAbility()
     {
-        if (theAnimation.times_irreponsive <= Time.time)
+        if (theAnimation.times_irreponsive <= Time.time && !theAnimation.isViewAllMapMode)
         {
             if (DoAbility())
             {
                 abilitySound.Play();
                 levelMap.theMonsters.MonstersTurn();
-                levelMap.theAnimation.AnimSetup();
+                levelMap.theAnimation.AnimStart();
                 if (energyPoint == 0) theControlPanel.toggleFailMenu();
             }
         }
@@ -204,24 +204,9 @@ public class Player_Control : MonoBehaviour {
     // retrun true: player did do ability; return false: player didn't make it
     private bool DoAbility()
     {
-        int dh = -1, dw = -1;
         if (theControlPanel.isMenuActive || abilityCooldown > 0)
             return false;
         levelMap.theAnimation.ObsUpdateAnimStart();
-        /*
-        while (dh <= 1)
-        {
-            levelMap.theObstacle.ObsUpdate(h + dh, w + dw);
-            // upadte neighbor tiles ij
-            if (dw == 1)
-            {
-                dh++;
-                dw = -1;
-            }
-            else if (dh == 0 & dw == -1) dw = 1;
-            else dw++;
-        }
-        */
         SetAbilityCooldown(1);
         energyPointObject.text = (--energyPoint).ToString();
         return true;

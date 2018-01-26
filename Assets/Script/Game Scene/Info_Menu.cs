@@ -7,12 +7,14 @@ public class Info_Menu : MonoBehaviour {
 
     GameObject MenuBtn;
     GameObject MapBtn;
+    Image InfoCloseImg;
     public bool isMenuActive = false;
 
 	// Use this for initialization
 	void Start () {
         MenuBtn = GameObject.Find("Menu Button");
         MapBtn = GameObject.Find("Map Button");
+        InfoCloseImg = GameObject.Find("Info Close Button").GetComponent<Image>();
         if (Save_Data.SelectedLevel == 0) // level zero is tutoriel level
         {
             toggleInfoMenu();
@@ -27,6 +29,7 @@ public class Info_Menu : MonoBehaviour {
             MenuBtn.transform.Translate(new Vector3(0, 0, -1000));
             MapBtn.transform.Translate(new Vector3(0, 0, -1000));
             MenuBtn.GetComponent<Button>().enabled = true;
+            InfoCloseImg.enabled = false;
         }
         else
         {
@@ -34,6 +37,7 @@ public class Info_Menu : MonoBehaviour {
             MenuBtn.transform.Translate(new Vector3(0, 0, 1000));
             MapBtn.transform.Translate(new Vector3(0, 0, 1000));
             MenuBtn.GetComponent<Button>().enabled = false;
+            InfoCloseImg.enabled = true;
         }
 
         isMenuActive = !isMenuActive;

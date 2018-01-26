@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 using UnityEngine;
 using TileTypeDefine;
 
@@ -22,6 +23,7 @@ public class Control_Animation : MonoBehaviour {
     private bool bossMonsterHurtedAnimation = false;
     private bool bossMonsterAbilityAnimation = false;
     private bool obsUpdateAnimation = false;
+    public bool isViewAllMapMode = false;
     private SpriteRenderer bossSpecialSprite = null;
 
 	// Use this for initialization
@@ -216,6 +218,10 @@ public class Control_Animation : MonoBehaviour {
         }
     }
 
+    /*
+     * OBSTACLE ANIMS
+     * */
+
     public void ObsUpdateAnimStart()
     {
         obsUpdateAnimation = true;
@@ -305,10 +311,37 @@ public class Control_Animation : MonoBehaviour {
     }
 
     /*
-    *** MAIN ANIMATION CONTROL ***
-    */
+     * VIEW ALL MAP MODE
+     * */
+    public void ViewAllMapMode()
+    {
+        GameObject Game_Panel = GameObject.Find("Game Panel");
+        if (isViewAllMapMode)
+        {
+            Game_Panel.transform.position = new Vector3(0f, -0.1f);
+            Game_Panel.transform.localScale = new Vector3(1, 1, 1);
+            levelMap.thePlayer.thePlayerDisp.playerFacingSprite.enabled = true;
+            GameObject.Find("Map Button Text").GetComponent<Text>().text = "VIEW WHOLE MAP";
+        }
+        else
+        {
+            float dh = (levelMap.playerStartTile[0] - levelMap.height) / 3f;
+            float dw = (levelMap.playerStartTile[1] - levelMap.width) / 3f;
+            Game_Panel.transform.position = new Vector3(dh, dw);
+            float s = 10f / Mathf.Max(levelMap.height, levelMap.width);
+            Game_Panel.transform.localScale = new Vector3(s, s, 1);
+            levelMap.thePlayer.thePlayerDisp.playerFacingSprite.enabled = false;
+            GameObject.Find("Map Button Text").GetComponent<Text>().text ="BACK TO GAME";
 
-    public void AnimSetup()
+        }
+        isViewAllMapMode = !isViewAllMapMode;
+    }
+
+    /*
+     * MAIN MOVE CONTROL ANIMATION
+     * */
+
+    public void AnimStart()
     {
         times_irreponsive = Time.time + ANIM_DUR_TIME;
         moveAnimation = true;
@@ -374,32 +407,36 @@ public class Control_Animation : MonoBehaviour {
             ObsUpdateAnim();
         }
 
-        /* for playing on PC */
-        if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
+        // can't do control in view-all-map mode
+        if (!isViewAllMapMode)
         {
-            levelMap.thePlayer.playerMoveUp();
-        }
-        else if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
-        {
-            levelMap.thePlayer.playerMoveLeft();
-        }
-        else if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
-        {
-            levelMap.thePlayer.playerMoveDown();
-        }
-        else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
-        {
-            levelMap.thePlayer.playerMoveRight();
-        }
-        else if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
-        {
-            levelMap.thePlayer.playerDoAbility();
-        }
-        /* for testing on PC */
+            /* for playing on PC */
+            if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
+            {
+                levelMap.thePlayer.playerMoveUp();
+            }
+            else if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
+            {
+                levelMap.thePlayer.playerMoveLeft();
+            }
+            else if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
+            {
+                levelMap.thePlayer.playerMoveDown();
+            }
+            else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
+            {
+                levelMap.thePlayer.playerMoveRight();
+            }
+            else if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            {
+                levelMap.thePlayer.playerDoAbility();
+            }
+            /* for playing on PC */
 
-        if (moveAnimation)
-        {
-            Anim();
+            if (moveAnimation)
+            {
+                Anim();
+            }
         }
     }
 }

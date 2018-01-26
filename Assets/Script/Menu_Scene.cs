@@ -166,15 +166,15 @@ public class Menu_Scene : MonoBehaviour {
         Color toFadeOutColor = titleImg.color;
         if (toFadeInColor.a < 0.2f)
         {
-            toFadeInColor.a = Mathf.Lerp(toFadeInColor.a, 1.0f, 3.0f * Time.deltaTime);
-            toFadeOutColor.a = Mathf.Lerp(toFadeOutColor.a, 0.0f, 3.0f * Time.deltaTime);
+            toFadeInColor.a = Mathf.Lerp(toFadeInColor.a, 1.0f, 3.2f * Time.deltaTime);
+            toFadeOutColor.a = Mathf.Lerp(toFadeOutColor.a, 0.0f, 3.2f * Time.deltaTime);
             titleImgIcon.color = toFadeInColor;
             titleImg.color = toFadeOutColor;
         }
         else if (toFadeInColor.a < 0.98f)
         {
-            toFadeInColor.a = Mathf.Lerp(toFadeInColor.a, 1.0f, 4.0f * Time.deltaTime);
-            toFadeOutColor.a = Mathf.Lerp(toFadeOutColor.a, 0.0f, 4.0f * Time.deltaTime);
+            toFadeInColor.a = Mathf.Lerp(toFadeInColor.a, 1.0f, 4.8f * Time.deltaTime);
+            toFadeOutColor.a = Mathf.Lerp(toFadeOutColor.a, 0.0f, 4.8f * Time.deltaTime);
             titleImgIcon.color = toFadeInColor;
             titleImg.color = toFadeOutColor;
         }
