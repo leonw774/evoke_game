@@ -207,9 +207,11 @@ public class Player_Control : MonoBehaviour {
         int dh = -1, dw = -1;
         if (theControlPanel.isMenuActive || abilityCooldown > 0)
             return false;
+        levelMap.theAnimation.ObsUpdateAnimStart();
+        /*
         while (dh <= 1)
         {
-            levelMap.theObstacles.ObsUpdate(h + dh, w + dw);
+            levelMap.theObstacle.ObsUpdate(h + dh, w + dw);
             // upadte neighbor tiles ij
             if (dw == 1)
             {
@@ -219,6 +221,7 @@ public class Player_Control : MonoBehaviour {
             else if (dh == 0 & dw == -1) dw = 1;
             else dw++;
         }
+        */
         SetAbilityCooldown(1);
         energyPointObject.text = (--energyPoint).ToString();
         return true;

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TileTypeDefine;
 
 public class Control_Animation : MonoBehaviour {
 
@@ -12,6 +13,7 @@ public class Control_Animation : MonoBehaviour {
     public float times_boss_hurted_sprite = 0;
     public float times_boss_ability_sprite = 0;
     public float times_player_hurted_sprite = 0;
+    public float time_obs_update = 0;
     public readonly float ANIM_DUR_TIME = 0.225f;
     private bool monsters_ask_for_end = false, player_ask_for_end = false;
 
@@ -19,6 +21,7 @@ public class Control_Animation : MonoBehaviour {
     private bool playerHurtedAnimation = false;
     private bool bossMonsterHurtedAnimation = false;
     private bool bossMonsterAbilityAnimation = false;
+    private bool obsUpdateAnimation = false;
     private SpriteRenderer bossSpecialSprite = null;
 
 	// Use this for initialization
@@ -213,6 +216,94 @@ public class Control_Animation : MonoBehaviour {
         }
     }
 
+    public void ObsUpdateAnimStart()
+    {
+        obsUpdateAnimation = true;
+        int h = levelMap.thePlayer.h;
+        int w = levelMap.thePlayer.w;
+        int dh = -1, dw = -1, pos = -1;
+        SpriteRenderer thisObsSprtie;
+        while (dh <= 1)
+        {
+            pos = (h + dh) * levelMap.width + (w + dw);
+            levelMap.theMonsters.KillMonsterByPos(pos);
+            if (levelMap.theObstacles.positionList.Exists(x => x == pos))
+            {
+                // to be Destroyed
+                thisObsSprtie = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
+                thisObsSprtie.transform.localScale = new Vector3(1f, 0.45f, 1f);
+                thisObsSprtie.transform.position -= new Vector3(0f, 0.27f, 0f);
+            }
+            else if (levelMap.tiles[h+ dh, w + dw] == TILE_TYPE.WALKABLE)
+            {
+                // Created
+                levelMap.theObstacles.ObsCreate(pos);
+                thisObsSprtie = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
+                thisObsSprtie.transform.localScale = new Vector3(1f, 0.55f, 1f);
+                thisObsSprtie.transform.position -= new Vector3(0f, 0.27f, 0f);
+            }
+            // upadte neighbor tiles ij
+            if (dw == 1)
+            {
+                dh++;
+                dw = -1;
+            }
+            else if (dh == 0 & dw == -1) dw = 1;
+            else dw++;
+        }
+        time_obs_update = Time.time + ANIM_DUR_TIME / 9f;
+    }
+
+    private void ObsUpdateAnim()
+    {
+        int h = levelMap.thePlayer.h;
+        int w = levelMap.thePlayer.w;
+        int dh = -1, dw = -1, pos = -1;
+        bool is_last = false;
+        SpriteRenderer thisObsSprtie;
+        while (dh <= 1)
+        {
+            if (levelMap.tiles[h + dh, w + dw] == TILE_TYPE.WALKABLE)
+            {
+                pos = (h + dh) * levelMap.width + (w + dw);
+                thisObsSprtie = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
+                if (thisObsSprtie.transform.localScale.y < 0.5f)
+                {
+                    // to be Destroyed
+                    thisObsSprtie.transform.localScale -= new Vector3(0f, 0.05f, 0f);
+                    thisObsSprtie.transform.position -= new Vector3(0f, 0.03f, 0f);
+                    if (thisObsSprtie.transform.localScale.y <= 0f)
+                    {
+                        thisObsSprtie = null;
+                        levelMap.theObstacles.ObsDestroy(pos);
+                        is_last = true;
+                    }
+                }
+                else
+                {
+                    // Created
+                    thisObsSprtie.transform.localScale += new Vector3(0f, 0.05f, 0f);
+                    thisObsSprtie.transform.position += new Vector3(0f, 0.03f, 0f);
+                }
+            }
+            // upadte neighbor tiles ij
+            if (dw == 1)
+            {
+                dh++;
+                dw = -1;
+            }
+            else if (dh == 0 & dw == -1) dw = 1;
+            else dw++;
+        }
+        if (is_last)
+            ObsUpdateAnimEnd();
+    }
+
+    private void ObsUpdateAnimEnd()
+    {
+        obsUpdateAnimation = false;
+    }
+
     /*
     *** MAIN ANIMATION CONTROL ***
     */
@@ -278,7 +369,12 @@ public class Control_Animation : MonoBehaviour {
             BossMonsterAbilityAnimEnd();
         }
 
-        /* for testing on PC */
+        if (obsUpdateAnimation && time_obs_update <= Time.time)
+        {
+            ObsUpdateAnim();
+        }
+
+        /* for playing on PC */
         if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
         {
             levelMap.thePlayer.playerMoveUp();

@@ -51,7 +51,6 @@ public class Obstacles : MonoBehaviour {
         // if there is not obs & block is walkable then
         else if (levelMap.tiles[h, w] == 0)
         {
-            levelMap.theMonsters.KillMonsterByPos(pos);
             ObsCreate(h, w);
         }
     }
@@ -83,7 +82,7 @@ public class Obstacles : MonoBehaviour {
         {
             if (obs[k].name == "Obstacle Sprite" + pos.ToString())
             {
-                Destroy(obs[k], 0.125f);
+                Destroy(obs[k], 0.1f);
                 obs[k] = null;
             }
         }
