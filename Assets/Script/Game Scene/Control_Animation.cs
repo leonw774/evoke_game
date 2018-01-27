@@ -1,152 +1,286 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine.UI;
+﻿using UnityEngine.UI;
 using UnityEngine;
 using TileTypeDefine;
 
 public class Control_Animation : MonoBehaviour {
 
-    private Player_Display thePlayerDisplay;
-    private Level_Map levelMap;
-
-    public float times_irreponsive = 0;
+    public Level_Map levelMap;
     public float times_monster_change_sprite = 0;
     public float times_boss_hurted_sprite = 0;
     public float times_boss_ability_sprite = 0;
-    public float times_player_hurted_sprite = 0;
-    public float time_obs_update = 0;
     public float time_view_map_mode = 0;
 
-    public readonly float ANIM_DUR_TIME = 0.225f;
     public bool isViewMapMode = false;
     public bool viewMapModeAnimation = false;
     private Vector3 vamm_pos, vamm_scale;
     GameObject Game_Panel;
 
-    private bool monsters_ask_for_end = false, player_ask_for_end = false;
-    private bool moveAnimation = false;
-    private bool playerHurtedAnimation = false;
     private bool bossMonsterHurtedAnimation = false;
     private bool bossMonsterAbilityAnimation = false;
-    private bool obsUpdateAnimation = false;
     private SpriteRenderer bossSpecialSprite = null;
 
-	// Use this for initialization
-	void Start ()
+    abstract public class Animation
+    {
+        protected Level_Map levelMap;
+        public float times_flagged = 0;
+        public bool isGoing = false;
+        public static readonly float ANIM_DUR_TIME = 0.225f;
+
+        public Animation()
+        {
+            levelMap = GameObject.Find("Game Panel").GetComponent<Level_Map>();
+        }
+
+        abstract public void Start();
+        abstract public void Update();
+        abstract public void End();
+    }
+
+    public class PlayerAnim : Animation
+    {
+        public Player_Display pd;
+        private PlayerHurtedAnim playerHurtedAnim = new PlayerHurtedAnim();
+
+        public PlayerAnim()
+        {
+            pd = levelMap.thePlayer.thePlayerDisp;
+        }
+
+        public override void Start()
+        {
+            times_flagged = Time.time + ANIM_DUR_TIME;
+            isGoing = true;
+        }
+
+        public override void Update()
+        {
+            if ((pd.animEndPos - pd.ObjPos).magnitude < 0.01f || this.times_flagged <= Time.time)
+            {
+                if (!playerHurtedAnim.isGoing)
+                {
+                    pd.ObjPos = pd.animEndPos;
+                    if (levelMap.thePlayer.IsPlayerAttacked())
+                        playerHurtedAnim.Start();
+                    else
+                        End();
+                }
+                else
+                {
+                    playerHurtedAnim.Update();
+                    // check if it end at this update
+                    if (!playerHurtedAnim.isGoing)
+                        End();
+                }
+            }
+            else
+                pd.ObjPos += (pd.animEndPos - pd.animBeginPos) / ANIM_DUR_TIME * Time.deltaTime * 0.995f;
+        }
+
+        public override void End()
+        {
+            Debug.Log("playerAnim.End");
+            isGoing = false;
+            pd.animEndPos = new Vector3(0.0f, 0.0f, -1.0f);
+            pd.animBeginPos = new Vector3(0.0f, 0.0f, -1.0f);
+        }
+    }
+
+    private class PlayerHurtedAnim : Animation
+    {
+        public override void Start()
+        {
+            times_flagged = Time.time + ANIM_DUR_TIME;
+            isGoing = true;
+            GameObject.Find("Player Attacked Effect").GetComponent<SpriteRenderer>().enabled = true;
+        }
+
+        public override void Update()
+        {
+            if (times_flagged <= Time.time)
+                End();
+        }
+
+        public override void End()
+        {
+            isGoing = false;
+            GameObject.Find("Player Attacked Effect").GetComponent<SpriteRenderer>().enabled = false;
+            if (levelMap.thePlayer.healthPoint <= 0)
+                levelMap.thePlayer.theControlPanel.toggleFailMenu();
+        }
+    }
+
+    public class MonstersAnim : Animation
+    {
+        public override void Start()
+        {
+            isGoing = true;
+            times_flagged = Time.time + ANIM_DUR_TIME;
+        }
+
+        public override void Update()
+        {
+            if (times_flagged <= Time.time)
+            {
+                End();
+            }
+            else if (levelMap.theMonsters.monsList.Count > 0)
+            {
+                bool can_end = false;
+                foreach (Monster x in levelMap.theMonsters.monsList)
+                {
+                    if (x.animBeginPos != new Vector3(0.0f, 0.0f, -1.0f))
+                    {
+                        x.SpriteObj.transform.position += (x.animEndPos - x.animBeginPos) / ANIM_DUR_TIME * Time.deltaTime * 0.995f;
+                        if (!can_end)
+                        {
+                            if ((x.animEndPos - x.SpriteObj.transform.position).magnitude < 0.01f)
+                                can_end = true;
+                        }
+                    }
+                }
+                if (can_end)
+                {
+                    End();
+                }
+            }
+        }
+
+        public override void End()
+        {
+            isGoing = false;
+            foreach (Monster x in levelMap.theMonsters.monsList)
+            {
+                if (x.animBeginPos != new Vector3(0.0f, 0.0f, -1.0f))
+                {
+                    x.SpriteObj.transform.position = x.animEndPos;
+                    x.animEndPos = new Vector3(0.0f, 0.0f, -1.0f);
+                    x.animBeginPos = new Vector3(0.0f, 0.0f, -1.0f);
+                }
+            }
+            if (levelMap.thePlayer.energyPoint == 0) levelMap.thePlayer.theControlPanel.toggleFailMenu();
+        }
+    }
+
+    public class ObsUpdateAnim : Animation
+    {
+        private int h = -1;
+        private int w = -1;
+        private SpriteRenderer thisObsSprtie;
+
+        public override void Start()
+        {
+            isGoing = true;
+            h = levelMap.thePlayer.h;
+            w = levelMap.thePlayer.w;
+            int dh = -1, dw = -1, pos = -1;
+            while (dh <= 1)
+            {
+                pos = (h + dh) * levelMap.width + (w + dw);
+                levelMap.theMonsters.KillMonsterByPos(pos);
+                if (levelMap.theObstacles.positionList.Exists(x => x == pos))
+                {
+                    // to be Destroyed
+                    thisObsSprtie = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
+                    thisObsSprtie.transform.localScale = new Vector3(1f, 0.45f, 1f);
+                    thisObsSprtie.transform.position -= new Vector3(0f, 0.27f, 0f);
+                }
+                else if (levelMap.tiles[h + dh, w + dw] == TILE_TYPE.WALKABLE)
+                {
+                    // Created
+                    levelMap.theObstacles.ObsCreate(pos);
+                    thisObsSprtie = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
+                    thisObsSprtie.transform.localScale = new Vector3(1f, 0.55f, 1f);
+                    thisObsSprtie.transform.position -= new Vector3(0f, 0.27f, 0f);
+                }
+                // upadte neighbor tiles ij
+                if (dw == 1)
+                {
+                    dh++;
+                    dw = -1;
+                }
+                else if (dh == 0 & dw == -1) dw = 1;
+                else dw++;
+            }
+            times_flagged = Time.time + ANIM_DUR_TIME / 16f;
+        }
+
+        public override void Update()
+        {
+            if (times_flagged <= Time.time)
+            {
+                int dh = -1, dw = -1, pos = -1;
+                bool is_last = false;
+                while (dh <= 1)
+                {
+                    if (levelMap.tiles[h + dh, w + dw] == TILE_TYPE.WALKABLE)
+                    {
+                        pos = (h + dh) * levelMap.width + (w + dw);
+                        thisObsSprtie = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
+                        if (thisObsSprtie.transform.localScale.y < 0.5f)
+                        {
+                            // to be Destroyed
+                            thisObsSprtie.transform.localScale -= new Vector3(0f, 0.05f, 0f);
+                            thisObsSprtie.transform.position -= new Vector3(0f, 0.03f, 0f);
+                            if (thisObsSprtie.transform.localScale.y <= 0f)
+                            {
+                                thisObsSprtie = null;
+                                levelMap.theObstacles.ObsDestroy(pos);
+                                is_last = true;
+                            }
+                        }
+                        else
+                        {
+                            // Created
+                            thisObsSprtie.transform.localScale += new Vector3(0f, 0.05f, 0f);
+                            thisObsSprtie.transform.position += new Vector3(0f, 0.03f, 0f);
+                        }
+                    }
+                    // upadte neighbor tiles ij
+                    if (dw == 1)
+                    {
+                        dh++;
+                        dw = -1;
+                    }
+                    else if (dh == 0 & dw == -1) dw = 1;
+                    else dw++;
+                }
+                if (is_last)
+                    End();
+                else
+                    times_flagged = Time.time + ANIM_DUR_TIME / 16f;
+            }
+        }
+
+        public override void End()
+        {
+            levelMap.thePlayer.CheckPlayerBlocked();
+            isGoing = false;
+        }
+    }
+
+    public PlayerAnim playerAnim;
+    public MonstersAnim monstersAnim;
+    public ObsUpdateAnim obsUpdateAnim;
+
+    // Use this for initialization
+    void Start ()
     {
 	}
 
     public void Initialize()
     {
+        Input.multiTouchEnabled = true;
         levelMap = GameObject.Find("Game Panel").GetComponent<Level_Map>();
         Game_Panel = GameObject.Find("Game Panel");
-        thePlayerDisplay = levelMap.thePlayer.thePlayerDisp;
-    }
-
-    /* ANIMATION */
-
-    /*
-    * in player.move() -> setup begin & end pos (become not 0,0,0)
-    * in monsters.move() -> sset up begin & end pos (become not 0,0,0)
-    * 
-    * animsetup()
-    * 
-    * Update call Anim() and find out that it have to work
-    * 
-    * In Anim(), do PlayerAnim & monsterAnim
-    * when anim() find it should stop, call playeranimend() & monsteranimend()
-    * 
-    * playerAnimEnd() set begin & end back to 0,0,0
-    * playerAnimEnd() check if player is attcked
-    * monsterAnimEnd() set begin & end back to 0,0,0
-    * */
-    
-    /* PLAYER ANIM */
-
-    public void PlayerAnimSetup(Vector3 begin, Vector3 end)
-    {
-        //Debug.Log("PlayerAnimSetup: " + begin.ToString() + " -> " + end.ToString());
-        thePlayerDisplay.animBeginPos = begin;
-        thePlayerDisplay.animEndPos = end;
-    }
-
-    private bool PlayerAnim()
-    {
-        levelMap.thePlayer.thePlayerDisp.objPosition += (thePlayerDisplay.animEndPos - thePlayerDisplay.animBeginPos) / ANIM_DUR_TIME * Time.deltaTime * 0.9f;
-        return (thePlayerDisplay.animEndPos - levelMap.thePlayer.thePlayerDisp.objPosition).magnitude < 0.01
-            || (thePlayerDisplay.animEndPos - levelMap.thePlayer.thePlayerDisp.objPosition).normalized == (thePlayerDisplay.animBeginPos - thePlayerDisplay.animEndPos).normalized;
-    }
-
-    private void PlayerAnimEnd()
-    {
-        levelMap.thePlayer.thePlayerDisp.objPosition = thePlayerDisplay.animEndPos;
-        thePlayerDisplay.animEndPos = new Vector3(0.0f, 0.0f, -1.0f);
-        thePlayerDisplay.animBeginPos = new Vector3(0.0f, 0.0f, -1.0f);
-        if (levelMap.thePlayer.IsPlayerAttacked())
-        {
-            PlayerHurtedAnimStart();
-        }
-    }
-
-    private void PlayerHurtedAnimStart()
-    {
-        times_player_hurted_sprite = Time.time + ANIM_DUR_TIME;
-        playerHurtedAnimation = true;
-        GameObject.Find("Player Attacked Effect").GetComponent<SpriteRenderer>().enabled = true;
-
-    }
-
-    private void PlayerHurtedAnimEnd()
-    {
-        playerHurtedAnimation = false;
-        GameObject.Find("Player Attacked Effect").GetComponent<SpriteRenderer>().enabled = false;
-
-        if (levelMap.thePlayer.healthPoint <= 0)
-            levelMap.thePlayer.theControlPanel.toggleFailMenu();
-    }
-
-    /* MONSTER ANIM */
-
-    public void MonsterAnimSetup(int index, Vector3 begin, Vector3 end)
-    {
-        levelMap.theMonsters.monsList[index].animBeginPos = begin;
-        levelMap.theMonsters.monsList[index].animEndPos = end;
-    }
-
-    private bool MonstersAnim()
-    {
-        if (levelMap.theMonsters.monsList.Count > 0)
-        {
-            foreach (Monster x in levelMap.theMonsters.monsList)
-            {
-                if (x.animBeginPos != new Vector3(0.0f, 0.0f, -1.0f))
-                    x.SpriteObj.transform.position += (x.animEndPos - x.animBeginPos) / ANIM_DUR_TIME * Time.deltaTime * 0.9f;
-            }
-            Monster exampleMons = levelMap.theMonsters.monsList[0];
-            if (exampleMons.animEndPos != new Vector3(0.0f, 0.0f, -1.0f)
-                && (exampleMons.animEndPos - exampleMons.SpriteObj.transform.position).normalized == (exampleMons.animBeginPos - exampleMons.animEndPos).normalized)
-                return true;
-        }
-        return false;
-    }
-
-    private void MonstersAnimEnd()
-    {
-        foreach (Monster x in levelMap.theMonsters.monsList)
-        {
-            if (x.animBeginPos != new Vector3(0.0f, 0.0f, -1.0f))
-            {
-                x.SpriteObj.transform.position = x.animEndPos;
-                x.animEndPos = new Vector3(0.0f, 0.0f, -1.0f);
-                x.animBeginPos = new Vector3(0.0f, 0.0f, -1.0f);
-            }
-        }
+        playerAnim = new PlayerAnim();
+        monstersAnim = new MonstersAnim();
+        obsUpdateAnim = new ObsUpdateAnim();
     }
 
     public void BossMonsterAbilityAnimStart()
     {
         bossMonsterAbilityAnimation = true;
-        times_boss_ability_sprite = Time.time + ANIM_DUR_TIME;
+        times_boss_ability_sprite = Time.time + Animation.ANIM_DUR_TIME;
         if (bossSpecialSprite == null)
         {
             switch (levelMap.theMonsters.boss.faceTo)
@@ -183,7 +317,7 @@ public class Control_Animation : MonoBehaviour {
     public void BossMonsterHurtedAnimStart()
     {
         bossMonsterHurtedAnimation = true;
-        times_boss_hurted_sprite = Time.time + ANIM_DUR_TIME;
+        times_boss_hurted_sprite = Time.time + Animation.ANIM_DUR_TIME;
         if (bossSpecialSprite == null)
         {
             switch (levelMap.theMonsters.boss.faceTo)
@@ -225,93 +359,6 @@ public class Control_Animation : MonoBehaviour {
     }
 
     /*
-     * OBSTACLE ANIMS
-     * */
-
-    public void ObsUpdateAnimStart()
-    {
-        obsUpdateAnimation = true;
-        int h = levelMap.thePlayer.h;
-        int w = levelMap.thePlayer.w;
-        int dh = -1, dw = -1, pos = -1;
-        SpriteRenderer thisObsSprtie;
-        while (dh <= 1)
-        {
-            pos = (h + dh) * levelMap.width + (w + dw);
-            levelMap.theMonsters.KillMonsterByPos(pos);
-            if (levelMap.theObstacles.positionList.Exists(x => x == pos))
-            {
-                // to be Destroyed
-                thisObsSprtie = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
-                thisObsSprtie.transform.localScale = new Vector3(1f, 0.45f, 1f);
-                thisObsSprtie.transform.position -= new Vector3(0f, 0.27f, 0f);
-            }
-            else if (levelMap.tiles[h+ dh, w + dw] == TILE_TYPE.WALKABLE)
-            {
-                // Created
-                levelMap.theObstacles.ObsCreate(pos);
-                thisObsSprtie = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
-                thisObsSprtie.transform.localScale = new Vector3(1f, 0.55f, 1f);
-                thisObsSprtie.transform.position -= new Vector3(0f, 0.27f, 0f);
-            }
-            // upadte neighbor tiles ij
-            if (dw == 1)
-            {
-                dh++;
-                dw = -1;
-            }
-            else if (dh == 0 & dw == -1) dw = 1;
-            else dw++;
-        }
-        time_obs_update = Time.time + ANIM_DUR_TIME / 9f;
-    }
-
-    private void ObsUpdateAnim()
-    {
-        int h = levelMap.thePlayer.h;
-        int w = levelMap.thePlayer.w;
-        int dh = -1, dw = -1, pos = -1;
-        bool is_last = false;
-        SpriteRenderer thisObsSprtie;
-        while (dh <= 1)
-        {
-            if (levelMap.tiles[h + dh, w + dw] == TILE_TYPE.WALKABLE)
-            {
-                pos = (h + dh) * levelMap.width + (w + dw);
-                thisObsSprtie = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
-                if (thisObsSprtie.transform.localScale.y < 0.5f)
-                {
-                    // to be Destroyed
-                    thisObsSprtie.transform.localScale -= new Vector3(0f, 0.05f, 0f);
-                    thisObsSprtie.transform.position -= new Vector3(0f, 0.03f, 0f);
-                    if (thisObsSprtie.transform.localScale.y <= 0f)
-                    {
-                        thisObsSprtie = null;
-                        levelMap.theObstacles.ObsDestroy(pos);
-                        is_last = true;
-                    }
-                }
-                else
-                {
-                    // Created
-                    thisObsSprtie.transform.localScale += new Vector3(0f, 0.05f, 0f);
-                    thisObsSprtie.transform.position += new Vector3(0f, 0.03f, 0f);
-                }
-            }
-            // upadte neighbor tiles ij
-            if (dw == 1)
-            {
-                dh++;
-                dw = -1;
-            }
-            else if (dh == 0 & dw == -1) dw = 1;
-            else dw++;
-        }
-        if (is_last)
-            obsUpdateAnimation = false;
-    }
-
-    /*
      * VIEW ALL MAP MODE
      * */
     public void ViewMapModeAnimStart()
@@ -339,17 +386,19 @@ public class Control_Animation : MonoBehaviour {
             GameObject.Find("CD Output").GetComponent<Text>().text = "you can now dragl\nor room in & out\nto look around map";
         }
         viewMapModeAnimation = true;
-        time_view_map_mode = Time.time + ANIM_DUR_TIME / 12;
+        time_view_map_mode = Time.time + Animation.ANIM_DUR_TIME / 12;
     }
 
     private void ViewMapModeAnim()
     {
         Game_Panel.transform.position = vamm_pos * 0.2f + Game_Panel.transform.position * 0.8f;
         Game_Panel.transform.localScale = vamm_scale * 0.2f + Game_Panel.transform.localScale * 0.8f;
-        time_view_map_mode = Time.time + ANIM_DUR_TIME / 16;
+        time_view_map_mode = Time.time + Animation.ANIM_DUR_TIME / 16;
         if (Mathf.Abs(Game_Panel.transform.position.magnitude - vamm_pos.magnitude) < 0.001f)
         {
             viewMapModeAnimation = false;
+            Game_Panel.transform.localScale = vamm_scale;
+            Game_Panel.transform.position = vamm_pos;
             if (vamm_scale != new Vector3(1, 1, 1))
             {
                 isViewMapMode = true;
@@ -357,34 +406,13 @@ public class Control_Animation : MonoBehaviour {
         }
     }
 
-    private void ViewMapModeMouseZoom(Vector2 v)
+    private void ViewMapModeMouseZoom(float y)
     {
-        float ds = v.y * 0.05f;
-        Debug.Log("v.x: " + v.x);
-        if (Game_Panel.transform.localScale.x + ds > 0.2 && Game_Panel.transform.localScale.x + ds <= 1f)
-            Game_Panel.transform.localScale += new Vector3(ds, ds);
-    }
-
-    private void ViewMapModeTouchZoom()
-    {
-        if (Input.GetTouch(0).phase == TouchPhase.Moved && Input.GetTouch(1).phase == TouchPhase.Moved)
-        {
-            // Dot > 0 means same move toward
-            float input0_direction =
-                (Input.GetTouch(1).position - Input.GetTouch(0).position).x * Input.GetTouch(0).deltaPosition.x +
-                (Input.GetTouch(1).position - Input.GetTouch(0).position).y * Input.GetTouch(0).deltaPosition.y;
-            float input1_direction =
-                (Input.GetTouch(0).position - Input.GetTouch(1).position).x * Input.GetTouch(1).deltaPosition.x +
-                (Input.GetTouch(0).position - Input.GetTouch(1).position).y * Input.GetTouch(1).deltaPosition.y;
-            float ds = input0_direction * input1_direction * 0.05f;
-            if (Game_Panel.transform.localScale.x + ds > 0.2 && Game_Panel.transform.localScale.x + ds <= 1f)
-            {
-                if (input0_direction > 0 && input1_direction > 0)
-                    Game_Panel.transform.localScale += new Vector3(ds, ds);
-                else if (input0_direction < 0 && input1_direction < 0)
-                    Game_Panel.transform.localScale -= new Vector3(ds, ds);
-            }
-        }
+        float ds = y * 0.025f;
+        Vector3 n = Game_Panel.transform.localScale + new Vector3(ds, ds);
+        Debug.Log(y + " " + ds);
+        if (n.x > 0.1f && n.x <= 1.5f)
+            Game_Panel.transform.localScale = n;
     }
 
     private Vector3 preMousePos = new Vector3();
@@ -393,65 +421,59 @@ public class Control_Animation : MonoBehaviour {
     {
         if (preMousePos != new Vector3())
         {
-            Vector3 newPos = Game_Panel.transform.position + (Input.mousePosition - preMousePos) * 0.025f;
-            if (Mathf.Abs(newPos.x) < 20 && Mathf.Abs(newPos.y) < 20)
+            Vector3 newPos = Game_Panel.transform.position + (Input.mousePosition - preMousePos) * 0.02f;
+            if (Mathf.Abs(newPos.x - vamm_pos.x) < 6f && Mathf.Abs(newPos.y - vamm_pos.y) < 6f)
                 Game_Panel.transform.position = newPos;
         }
         preMousePos = Input.mousePosition;
+    }
+
+    private void ViewMapModeTouchZoom()
+    {
+        Touch touch0 = Input.GetTouch(0);
+        Touch touch1 = Input.GetTouch(1);
+        if (touch0.phase == TouchPhase.Moved && touch1.phase == TouchPhase.Moved)
+        {
+            // Dot > 0 means same move toward
+            Vector2 dpos = touch1.position - touch0.position;
+            float input0_move_direction =
+                dpos.x * touch0.deltaPosition.x +
+                dpos.y * touch0.deltaPosition.y;
+            float input1_move_direction =
+                -dpos.x * touch1.deltaPosition.x +
+                -dpos.y * touch1.deltaPosition.y;
+            float ds = 0;
+            
+            if (input0_move_direction > 0 && input1_move_direction > 0)
+                ds = (touch0.deltaPosition + touch1.deltaPosition).magnitude * -0.002f;
+            else if (input0_move_direction < 0 && input1_move_direction < 0)
+                ds = (touch0.deltaPosition + touch1.deltaPosition).magnitude * 0.002f;
+            Vector3 n = Game_Panel.transform.localScale + new Vector3(ds, ds);
+            if (n.x > 0.1f && n.x <= 1.5f)
+                Game_Panel.transform.localScale = n;
+        }
     }
 
     private void ViewMapModeTouchDrag()
     {
         if (Input.GetTouch(0).phase == TouchPhase.Moved)
         {
-            Vector3 newPos = Game_Panel.transform.position + new Vector3(Input.GetTouch(0).deltaPosition.x * 0.025f, Input.GetTouch(0).deltaPosition.y * 0.025f); ;
-            if (Mathf.Abs(newPos.x) < 20 && Mathf.Abs(newPos.y) < 20)
+            Vector3 newPos = Game_Panel.transform.position + new Vector3(Input.GetTouch(0).deltaPosition.x * 0.01f, Input.GetTouch(0).deltaPosition.y * 0.01f);
+            if (Mathf.Abs(newPos.x - vamm_pos.x) < 6f && Mathf.Abs(newPos.y - vamm_pos.y) < 6f)
                 Game_Panel.transform.position = newPos;
-        }
-    }
-
-    /*
-     * MAIN MOVE CONTROL ANIMATION
-     * */
-    
-    public void AnimStart()
-    {
-        times_irreponsive = Time.time + ANIM_DUR_TIME;
-        moveAnimation = true;
-    }
-
-    private void Anim()
-    {
-        if (times_irreponsive <= Time.time || player_ask_for_end || monsters_ask_for_end)
-        {
-            moveAnimation = false;
-            monsters_ask_for_end = false;
-            player_ask_for_end = false;
-
-            // tidy up player pos
-            // if player was doing ability
-            if (thePlayerDisplay.animBeginPos != new Vector3(0.0f, 0.0f, -1.0f))
-                PlayerAnimEnd();
-            else
-                levelMap.thePlayer.CheckPlayerBlocked();
-
-            // tidy up monster pos
-            MonstersAnimEnd();
-        }
-        else
-        {
-            // if player was doing ability
-            if (thePlayerDisplay.animBeginPos != new Vector3(0.0f, 0.0f, -1.0f))
-            {
-                player_ask_for_end = PlayerAnim();
-            }
-            monsters_ask_for_end = MonstersAnim();
         }
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (playerAnim.isGoing)
+            playerAnim.Update();
+        if (monstersAnim.isGoing)
+            monstersAnim.Update();
+        if (obsUpdateAnim.isGoing)
+            obsUpdateAnim.Update();
+
         if (times_monster_change_sprite <= Time.time)
         {
             if (times_monster_change_sprite == 0)
@@ -461,71 +483,57 @@ public class Control_Animation : MonoBehaviour {
             levelMap.theMonsters.AllChangeFrame();
         }
 
-        if (playerHurtedAnimation && times_player_hurted_sprite <= Time.time)
-        {
-            PlayerHurtedAnimEnd();
-        }
-        else if (bossMonsterHurtedAnimation && times_boss_hurted_sprite <= Time.time)
-        {
+        if (bossMonsterHurtedAnimation && times_boss_hurted_sprite <= Time.time)
             BossMonsterHurtedAnimEnd();
-        }
-
         if (bossMonsterAbilityAnimation && times_boss_ability_sprite <= Time.time)
-        {
             BossMonsterAbilityAnimEnd();
-        }
-
-        if (obsUpdateAnimation && time_obs_update <= Time.time)
-        {
-            ObsUpdateAnim();
-        }
-
         if (viewMapModeAnimation && time_view_map_mode <= Time.time)
-        {
             ViewMapModeAnim();
-        }
 
         // can do drags to look around map in View-Map-Mode
         if (isViewMapMode)
         {
-            if (Input.touchCount == 1)
-                ViewMapModeTouchDrag();
-            else if (Input.GetMouseButton(1) || Input.GetMouseButton(0))
-                ViewMapModeMouseDrag();
-            else if (!Input.GetMouseButton(1) && !Input.GetMouseButton(0))
-                preMousePos = new Vector3();
-            else if (Input.touchCount == 2)
-                ViewMapModeTouchZoom();
-            else if (Input.mouseScrollDelta.y != 0)
-                ViewMapModeMouseZoom(Input.mouseScrollDelta);
+            if (Input.touchSupported)
+            {
+                if (Input.touchCount == 1)
+                    ViewMapModeTouchDrag();
+                else if (Input.touchCount == 2)
+                    ViewMapModeTouchZoom();
+            }
+            else if (Input.mousePresent)
+            {
+                if (Input.GetMouseButton(1) || Input.GetMouseButton(0))
+                    ViewMapModeMouseDrag();
+                else if (Input.mouseScrollDelta.y != 0)
+                    ViewMapModeMouseZoom(Input.mouseScrollDelta.y);
+
+                // reset preMousePos
+                if (!Input.GetMouseButton(1) && !Input.GetMouseButton(0))
+                    preMousePos = new Vector3();
+            }
         }
 
         // can't do control in View-Map-Mode
         // for playing on PC
         if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
         {
-            levelMap.thePlayer.playerMoveUp();
+            levelMap.thePlayer.PlayerMoveUp();
         }
         else if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
         {
-            levelMap.thePlayer.playerMoveLeft();
+            levelMap.thePlayer.PlayerMoveLeft();
         }
         else if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
         {
-            levelMap.thePlayer.playerMoveDown();
+            levelMap.thePlayer.PlayerMoveDown();
         }
         else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
         {
-            levelMap.thePlayer.playerMoveRight();
+            levelMap.thePlayer.PlayerMoveRight();
         }
         else if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
         {
-            levelMap.thePlayer.playerDoAbility();
-        }
-
-        if (moveAnimation)
-        {
-            Anim();
+            levelMap.thePlayer.PlayerDoAbility();
         }
     }
 }

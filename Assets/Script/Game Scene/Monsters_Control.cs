@@ -400,7 +400,8 @@ public class Monsters_Control: MonoBehaviour {
                     //Debug.Log("Monster " + i + "moved from " + thisMon.h + "," + thisMon.w + " to " + newh + "," + neww);
                     thisMon.MoveTo(newh, neww);
                     thisMon.FaceTo((FACETO) goingTo);
-                    levelMap.theAnimation.MonsterAnimSetup(i, thisMon.SpriteObj.transform.position, levelMap.MapCoordToWorldVec3(newh, neww, 1));
+                    thisMon.animBeginPos = thisMon.SpriteObj.transform.position;
+                    thisMon.animEndPos = levelMap.MapCoordToWorldVec3(newh, neww, 1);
                 }
             }
         }
@@ -449,7 +450,8 @@ public class Monsters_Control: MonoBehaviour {
                     //Debug.Log("Monster " + i + "moved from " + monsterList[i].h + "," + monsterList[i].w + " to " + newh + "," + neww);
                     thisMon.MoveTo(newh, neww);
                     thisMon.FaceTo((FACETO) goingTo);
-                    levelMap.theAnimation.MonsterAnimSetup(i, thisMon.SpriteObj.transform.position, levelMap.MapCoordToWorldVec3(newh, neww, 1));
+                    thisMon.animBeginPos = thisMon.SpriteObj.transform.position;
+                    thisMon.animEndPos = levelMap.MapCoordToWorldVec3(newh, neww, 1);
                     break;
                 }
             }

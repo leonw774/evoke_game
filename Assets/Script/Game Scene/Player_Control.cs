@@ -1,8 +1,6 @@
-﻿using UnityEngine;
+﻿using TileTypeDefine;
+using UnityEngine;
 using UnityEngine.UI;
-using TileTypeDefine;
-using System.Configuration;
-using System;
 
 public enum CHARACTER_FACING : int {BACK = 0, LEFT, FRONT, RIGHT};
 
@@ -12,7 +10,7 @@ public class Player_Display
     public SpriteRenderer playerFacingSprite;
     public Vector3 animBeginPos;
     public Vector3 animEndPos;
-    public Vector3 objPosition
+    public Vector3 ObjPos
     {
         set
         {
@@ -95,76 +93,76 @@ public class Player_Control : MonoBehaviour {
         abilitySound = GameObject.Find("Ability Sound").GetComponent<AudioSource>();
     }
 
-    public void playerMoveUp()
+    public void PlayerMoveUp()
     {
-        if (theAnimation.times_irreponsive <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
+        if (theAnimation.playerAnim.times_flagged <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
         {
             if (Move(-1, 0)) // it is monster's turn only if player did change position
             {
                 moveSound.Play();
                 thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.BACK);
                 levelMap.theMonsters.MonstersTurn();
-                levelMap.theAnimation.AnimStart();
-                if (energyPoint == 0) theControlPanel.toggleFailMenu();
+                levelMap.theAnimation.playerAnim.Start();
+                levelMap.theAnimation.monstersAnim.Start();
             }
         }
     }
 
-    public void playerMoveLeft()
+    public void PlayerMoveLeft()
     {
-        if (theAnimation.times_irreponsive <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
+        if (theAnimation.playerAnim.times_flagged <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
         {
             if (Move(0, -1))
             {
                 moveSound.Play();
                 thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.LEFT);
                 levelMap.theMonsters.MonstersTurn();
-                levelMap.theAnimation.AnimStart();
-                if (energyPoint == 0) theControlPanel.toggleFailMenu();
+                levelMap.theAnimation.playerAnim.Start();
+                levelMap.theAnimation.monstersAnim.Start();
             }
         }
     }
 
-    public void playerMoveDown()
+    public void PlayerMoveDown()
     {
-        if (theAnimation.times_irreponsive <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
+        if (theAnimation.playerAnim.times_flagged <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
         {
             if (Move(1, 0))
             {
                 moveSound.Play();
                 thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.FRONT);
                 levelMap.theMonsters.MonstersTurn();
-                levelMap.theAnimation.AnimStart();
-                if (energyPoint == 0) theControlPanel.toggleFailMenu();
+                levelMap.theAnimation.playerAnim.Start();
+                levelMap.theAnimation.monstersAnim.Start();
             }
         }
     }
 
-    public void playerMoveRight()
+    public void PlayerMoveRight()
     {
-        if (theAnimation.times_irreponsive <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
+        if (theAnimation.playerAnim.times_flagged <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
         {
             if (Move(0, 1))
             {
                 moveSound.Play();
                 thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.RIGHT);
                 levelMap.theMonsters.MonstersTurn();
-                levelMap.theAnimation.AnimStart();
-                if (energyPoint == 0) theControlPanel.toggleFailMenu();
+                levelMap.theAnimation.playerAnim.Start();
+                levelMap.theAnimation.monstersAnim.Start();
             }
         }
     }
 
-    public void playerDoAbility()
+    public void PlayerDoAbility()
     {
-        if (theAnimation.times_irreponsive <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
+        if (theAnimation.obsUpdateAnim.times_flagged <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
         {
             if (DoAbility())
             {
                 abilitySound.Play();
+                levelMap.theAnimation.obsUpdateAnim.Start();
                 levelMap.theMonsters.MonstersTurn();
-                levelMap.theAnimation.AnimStart();
-                if (energyPoint == 0) theControlPanel.toggleFailMenu();
+                levelMap.theAnimation.monstersAnim.Start();
             }
         }
     }
@@ -183,7 +181,8 @@ public class Player_Control : MonoBehaviour {
             h = h + dh;
             w = w + dw;
             //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
-            levelMap.theAnimation.PlayerAnimSetup(thePlayerDisp.objPosition, levelMap.MapCoordToWorldVec3(h, w, 0));
+            thePlayerDisp.animBeginPos = thePlayerDisp.ObjPos;
+            thePlayerDisp.animEndPos = levelMap.MapCoordToWorldVec3(h, w, 0);
             SetEnergyPoint(energyPoint - 1);
             SetAbilityCooldown(--abilityCooldown);
             return true;
@@ -192,7 +191,6 @@ public class Player_Control : MonoBehaviour {
         {
             if (Save_Data.SelectedLevel != Save_Data.BossLevel || levelMap.theMonsters.boss == null)
             {
-                levelMap.theAnimation.PlayerAnimSetup(thePlayerDisp.objPosition, levelMap.MapCoordToWorldVec3(h, w, 0));
                 levelMap.UpdateSaveLevel();
                 theControlPanel.toggleFinishMenu();
                 return true;
@@ -206,7 +204,6 @@ public class Player_Control : MonoBehaviour {
     {
         if (theControlPanel.isMenuActive || abilityCooldown > 0)
             return false;
-        levelMap.theAnimation.ObsUpdateAnimStart();
         SetAbilityCooldown(1);
         energyPointObject.text = (--energyPoint).ToString();
         return true;
@@ -223,6 +220,7 @@ public class Player_Control : MonoBehaviour {
         int success = levelMap.theMonsters.TryAttackPlayer(h * levelMap.width + w);
         if (success > 0)
         {
+            // Debug.Log("player hurted");
             // try destroy obs because player might be hurted by obs in boss monster attack
             levelMap.theObstacles.ObsDestroy(h * levelMap.width + w);
             SetHealthPoint(healthPoint - success);
@@ -260,7 +258,7 @@ public class Player_Control : MonoBehaviour {
             h = newh;
             w = neww;
             //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
-            thePlayerDisp.objPosition = levelMap.MapCoordToWorldVec3(h, w, 0);
+            thePlayerDisp.ObjPos = levelMap.MapCoordToWorldVec3(h, w, 0);
         }
         else
         {
