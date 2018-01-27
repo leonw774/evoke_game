@@ -128,12 +128,6 @@ public class Level_Map : MonoBehaviour
             height = bmp.height;
             width = bmp.width;
             //Debug.Log("Image loaded: " + height + ", " + width);
-
-            // make mini map
-            Rect mapRect = new Rect(0.0f, 0.0f, (float)width, (float)height);
-            Sprite mapSp = Sprite.Create(bmp, mapRect, new Vector2(0.5f, 0.5f));
-            GameObject.Find("Large Map").GetComponent<SpriteRenderer>().sprite = mapSp;
-            return;
         }
         Debug.Log("No file path!");
     }

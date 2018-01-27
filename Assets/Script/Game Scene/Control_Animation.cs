@@ -15,15 +15,20 @@ public class Control_Animation : MonoBehaviour {
     public float times_boss_ability_sprite = 0;
     public float times_player_hurted_sprite = 0;
     public float time_obs_update = 0;
-    public readonly float ANIM_DUR_TIME = 0.225f;
-    private bool monsters_ask_for_end = false, player_ask_for_end = false;
+    public float time_view_all_map = 0;
 
+    public readonly float ANIM_DUR_TIME = 0.225f;
+    public bool isViewAllMapMode = false;
+    private bool viewAllMapModeAnimaion = false;
+    private Vector3 vamm_pos, vamm_scale;
+    GameObject Game_Panel;
+
+    private bool monsters_ask_for_end = false, player_ask_for_end = false;
     private bool moveAnimation = false;
     private bool playerHurtedAnimation = false;
     private bool bossMonsterHurtedAnimation = false;
     private bool bossMonsterAbilityAnimation = false;
     private bool obsUpdateAnimation = false;
-    public bool isViewAllMapMode = false;
     private SpriteRenderer bossSpecialSprite = null;
 
 	// Use this for initialization
@@ -34,6 +39,7 @@ public class Control_Animation : MonoBehaviour {
     public void Initialize()
     {
         levelMap = GameObject.Find("Game Panel").GetComponent<Level_Map>();
+        Game_Panel = GameObject.Find("Game Panel");
         thePlayerDisplay = levelMap.thePlayer.thePlayerDisp;
     }
 
@@ -302,12 +308,7 @@ public class Control_Animation : MonoBehaviour {
             else dw++;
         }
         if (is_last)
-            ObsUpdateAnimEnd();
-    }
-
-    private void ObsUpdateAnimEnd()
-    {
-        obsUpdateAnimation = false;
+            obsUpdateAnimation = false;
     }
 
     /*
@@ -315,26 +316,42 @@ public class Control_Animation : MonoBehaviour {
      * */
     public void ViewAllMapMode()
     {
-        GameObject Game_Panel = GameObject.Find("Game Panel");
+        float s = Mathf.Min(9f / levelMap.height, 11f / levelMap.width);
+        float dh = (levelMap.height / 2 - levelMap.thePlayer.h);
+        float dw = (levelMap.thePlayer.w - levelMap.width / 2);
         if (isViewAllMapMode)
         {
-            Game_Panel.transform.position = new Vector3(0f, -0.1f);
-            Game_Panel.transform.localScale = new Vector3(1, 1, 1);
+            vamm_pos = new Vector3(0f, -0.1f);
+            vamm_scale = new Vector3(1, 1, 1);
             levelMap.thePlayer.thePlayerDisp.playerFacingSprite.enabled = true;
             GameObject.Find("Map Button Text").GetComponent<Text>().text = "VIEW WHOLE MAP";
+
         }
         else
         {
-            float s = 10f / Mathf.Max(levelMap.height, levelMap.width);
-            float dh = (levelMap.height / 2 - levelMap.playerStartTile[0] - 0.5f);
-            float dw = (levelMap.playerStartTile[1] - levelMap.width / 2);
-            Game_Panel.transform.position = new Vector3(dw + 1f, dh);
-            Game_Panel.transform.localScale = new Vector3(s, s, 1);
+            vamm_pos = new Vector3(dw + 1f, dh + 0.1f);
+            vamm_scale = new Vector3(s, s, 1);
             levelMap.thePlayer.thePlayerDisp.playerFacingSprite.enabled = false;
-            GameObject.Find("Map Button Text").GetComponent<Text>().text ="BACK TO GAME";
-
+            GameObject.Find("Map Button Text").GetComponent<Text>().text ="RECENTER TO YOU";
         }
+        GameObject.Find("Field Frontground Outring").GetComponent<SpriteRenderer>().enabled = isViewAllMapMode;
+        Button[] b = GameObject.Find("Player Control Canvas").GetComponentsInChildren<Button>();
+        foreach (Button x in b)
+        {
+            x.enabled = isViewAllMapMode;
+        }
+        viewAllMapModeAnimaion = true;
+        time_view_all_map = Time.time + ANIM_DUR_TIME / 16;
         isViewAllMapMode = !isViewAllMapMode;
+    }
+
+    private void ViewAllMapModeAnim()
+    {
+        Game_Panel.transform.position = vamm_pos * 0.2f + Game_Panel.transform.position * 0.8f;
+        Game_Panel.transform.localScale = vamm_scale * 0.2f + Game_Panel.transform.localScale * 0.8f;
+        time_view_all_map = Time.time + ANIM_DUR_TIME / 16;
+        if (Mathf.Abs(Game_Panel.transform.position.magnitude - vamm_pos.magnitude) < 0.001f)
+            viewAllMapModeAnimaion = false;
     }
 
     /*
@@ -407,8 +424,12 @@ public class Control_Animation : MonoBehaviour {
             ObsUpdateAnim();
         }
 
-        // can't do control in view-all-map mode
-        if (!isViewAllMapMode)
+        if (viewAllMapModeAnimaion && time_view_all_map <= Time.time)
+        {
+            ViewAllMapModeAnim();
+        }
+
+        if (!isViewAllMapMode) // can't do control in view-all-map mode
         {
             /* for playing on PC */
             if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
