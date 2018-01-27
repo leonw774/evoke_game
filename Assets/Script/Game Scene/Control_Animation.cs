@@ -410,9 +410,9 @@ public class Control_Animation : MonoBehaviour {
     {
         float ds = y * 0.025f;
         Vector3 n = Game_Panel.transform.localScale + new Vector3(ds, ds);
-        Debug.Log(y + " " + ds);
-        if (n.x > 0.1f && n.x <= 1.5f)
-            Game_Panel.transform.localScale = n;
+        if (n.x > 0.2f && n.x <= 1.2f)
+            if (Mathf.Abs(Game_Panel.transform.position.x - vamm_pos.x) < levelMap.width / 2 * n.x && Mathf.Abs(Game_Panel.transform.position.y - vamm_pos.y) < levelMap.height / 2 * n.y)
+                Game_Panel.transform.localScale = n;
     }
 
     private Vector3 preMousePos = new Vector3();
@@ -422,7 +422,7 @@ public class Control_Animation : MonoBehaviour {
         if (preMousePos != new Vector3())
         {
             Vector3 newPos = Game_Panel.transform.position + (Input.mousePosition - preMousePos) * 0.02f;
-            if (Mathf.Abs(newPos.x - vamm_pos.x) < 6f && Mathf.Abs(newPos.y - vamm_pos.y) < 6f)
+            if (Mathf.Abs(newPos.x - vamm_pos.x) < levelMap.width / 2 * Game_Panel.transform.localScale.x && Mathf.Abs(newPos.y - vamm_pos.y) < levelMap.height / 2 * Game_Panel.transform.localScale.y)
                 Game_Panel.transform.position = newPos;
         }
         preMousePos = Input.mousePosition;
@@ -449,8 +449,9 @@ public class Control_Animation : MonoBehaviour {
             else if (input0_move_direction < 0 && input1_move_direction < 0)
                 ds = (touch0.deltaPosition + touch1.deltaPosition).magnitude * 0.002f;
             Vector3 n = Game_Panel.transform.localScale + new Vector3(ds, ds);
-            if (n.x > 0.1f && n.x <= 1.5f)
-                Game_Panel.transform.localScale = n;
+            if (n.x > 0.2f && n.x <= 1.2f)
+                if (Mathf.Abs(Game_Panel.transform.position.x - vamm_pos.x) < levelMap.width / 2 * n.x && Mathf.Abs(Game_Panel.transform.position.y - vamm_pos.y) < levelMap.height / 2 * n.y)
+                    Game_Panel.transform.localScale = n;
         }
     }
 
@@ -459,7 +460,7 @@ public class Control_Animation : MonoBehaviour {
         if (Input.GetTouch(0).phase == TouchPhase.Moved)
         {
             Vector3 newPos = Game_Panel.transform.position + new Vector3(Input.GetTouch(0).deltaPosition.x * 0.01f, Input.GetTouch(0).deltaPosition.y * 0.01f);
-            if (Mathf.Abs(newPos.x - vamm_pos.x) < 6f && Mathf.Abs(newPos.y - vamm_pos.y) < 6f)
+            if (Mathf.Abs(newPos.x - vamm_pos.x) < levelMap.width / 2 * Game_Panel.transform.localScale.x && Mathf.Abs(newPos.y - vamm_pos.y) < levelMap.height / 2 * Game_Panel.transform.localScale.y)
                 Game_Panel.transform.position = newPos;
         }
     }
