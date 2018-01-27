@@ -129,7 +129,8 @@ public class Level_Map : MonoBehaviour
             width = bmp.width;
             //Debug.Log("Image loaded: " + height + ", " + width);
         }
-        Debug.Log("No file path!");
+        else
+            Debug.Log("No file path!");
     }
 
     private bool ParseMapImg()

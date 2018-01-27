@@ -85,7 +85,6 @@
     <Compile Include="Assets\Script\Game Scene\Game_Menu.cs" />
     <Compile Include="Assets\Script\Game Scene\Info_Menu.cs" />
     <Compile Include="Assets\Script\Game Scene\Level_Map.cs" />
-    <Compile Include="Assets\Script\Game Scene\Map_View.cs" />
     <Compile Include="Assets\Script\Game Scene\MonsterAbility.cs" />
     <Compile Include="Assets\Script\Game Scene\Monsters_Control.cs" />
     <Compile Include="Assets\Script\Game Scene\Obstacles.cs" />

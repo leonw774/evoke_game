@@ -15,11 +15,11 @@ public class Control_Animation : MonoBehaviour {
     public float times_boss_ability_sprite = 0;
     public float times_player_hurted_sprite = 0;
     public float time_obs_update = 0;
-    public float time_view_all_map = 0;
+    public float time_view_map_mode = 0;
 
     public readonly float ANIM_DUR_TIME = 0.225f;
-    public bool isViewAllMapMode = false;
-    private bool viewAllMapModeAnimaion = false;
+    public bool isViewMapMode = false;
+    public bool viewMapModeAnimation = false;
     private Vector3 vamm_pos, vamm_scale;
     GameObject Game_Panel;
 
@@ -314,50 +314,106 @@ public class Control_Animation : MonoBehaviour {
     /*
      * VIEW ALL MAP MODE
      * */
-    public void ViewAllMapMode()
+    public void ViewMapModeAnimStart()
     {
         float s = Mathf.Min(9f / levelMap.height, 11f / levelMap.width);
         float dh = (levelMap.height / 2 - levelMap.thePlayer.h);
         float dw = (levelMap.thePlayer.w - levelMap.width / 2);
-        if (isViewAllMapMode)
+        levelMap.thePlayer.thePlayerDisp.playerFacingSprite.enabled = isViewMapMode;
+        GameObject.Find("Field Frontground Outring").GetComponent<SpriteRenderer>().enabled = isViewMapMode;
+        GameObject.Find("Player Control Canvas").GetComponent<Canvas>().enabled = isViewMapMode;
+        GameObject.Find("Ability Button Icon").GetComponent<SpriteRenderer>().enabled = isViewMapMode;
+        if (isViewMapMode)
         {
             vamm_pos = new Vector3(0f, -0.1f);
             vamm_scale = new Vector3(1, 1, 1);
-            levelMap.thePlayer.thePlayerDisp.playerFacingSprite.enabled = true;
             GameObject.Find("Map Button Text").GetComponent<Text>().text = "VIEW WHOLE MAP";
-
+            GameObject.Find("CD Output").GetComponent<Text>().text = "";
+            isViewMapMode = false;
         }
         else
         {
             vamm_pos = new Vector3(dw + 1f, dh + 0.1f);
             vamm_scale = new Vector3(s, s, 1);
-            levelMap.thePlayer.thePlayerDisp.playerFacingSprite.enabled = false;
             GameObject.Find("Map Button Text").GetComponent<Text>().text ="RECENTER TO YOU";
+            GameObject.Find("CD Output").GetComponent<Text>().text = "you can now dragl\nor room in & out\nto look around map";
         }
-        GameObject.Find("Field Frontground Outring").GetComponent<SpriteRenderer>().enabled = isViewAllMapMode;
-        Button[] b = GameObject.Find("Player Control Canvas").GetComponentsInChildren<Button>();
-        foreach (Button x in b)
-        {
-            x.enabled = isViewAllMapMode;
-        }
-        viewAllMapModeAnimaion = true;
-        time_view_all_map = Time.time + ANIM_DUR_TIME / 16;
-        isViewAllMapMode = !isViewAllMapMode;
+        viewMapModeAnimation = true;
+        time_view_map_mode = Time.time + ANIM_DUR_TIME / 12;
     }
 
-    private void ViewAllMapModeAnim()
+    private void ViewMapModeAnim()
     {
         Game_Panel.transform.position = vamm_pos * 0.2f + Game_Panel.transform.position * 0.8f;
         Game_Panel.transform.localScale = vamm_scale * 0.2f + Game_Panel.transform.localScale * 0.8f;
-        time_view_all_map = Time.time + ANIM_DUR_TIME / 16;
+        time_view_map_mode = Time.time + ANIM_DUR_TIME / 16;
         if (Mathf.Abs(Game_Panel.transform.position.magnitude - vamm_pos.magnitude) < 0.001f)
-            viewAllMapModeAnimaion = false;
+        {
+            viewMapModeAnimation = false;
+            if (vamm_scale != new Vector3(1, 1, 1))
+            {
+                isViewMapMode = true;
+            }
+        }
+    }
+
+    private void ViewMapModeMouseZoom(Vector2 v)
+    {
+        float ds = v.y * 0.05f;
+        Debug.Log("v.x: " + v.x);
+        if (Game_Panel.transform.localScale.x + ds > 0.2 && Game_Panel.transform.localScale.x + ds <= 1f)
+            Game_Panel.transform.localScale += new Vector3(ds, ds);
+    }
+
+    private void ViewMapModeTouchZoom()
+    {
+        if (Input.GetTouch(0).phase == TouchPhase.Moved && Input.GetTouch(1).phase == TouchPhase.Moved)
+        {
+            // Dot > 0 means same move toward
+            float input0_direction =
+                (Input.GetTouch(1).position - Input.GetTouch(0).position).x * Input.GetTouch(0).deltaPosition.x +
+                (Input.GetTouch(1).position - Input.GetTouch(0).position).y * Input.GetTouch(0).deltaPosition.y;
+            float input1_direction =
+                (Input.GetTouch(0).position - Input.GetTouch(1).position).x * Input.GetTouch(1).deltaPosition.x +
+                (Input.GetTouch(0).position - Input.GetTouch(1).position).y * Input.GetTouch(1).deltaPosition.y;
+            float ds = input0_direction * input1_direction * 0.05f;
+            if (Game_Panel.transform.localScale.x + ds > 0.2 && Game_Panel.transform.localScale.x + ds <= 1f)
+            {
+                if (input0_direction > 0 && input1_direction > 0)
+                    Game_Panel.transform.localScale += new Vector3(ds, ds);
+                else if (input0_direction < 0 && input1_direction < 0)
+                    Game_Panel.transform.localScale -= new Vector3(ds, ds);
+            }
+        }
+    }
+
+    private Vector3 preMousePos = new Vector3();
+
+    private void ViewMapModeMouseDrag()
+    {
+        if (preMousePos != new Vector3())
+        {
+            Vector3 newPos = Game_Panel.transform.position + (Input.mousePosition - preMousePos) * 0.025f;
+            if (Mathf.Abs(newPos.x) < 20 && Mathf.Abs(newPos.y) < 20)
+                Game_Panel.transform.position = newPos;
+        }
+        preMousePos = Input.mousePosition;
+    }
+
+    private void ViewMapModeTouchDrag()
+    {
+        if (Input.GetTouch(0).phase == TouchPhase.Moved)
+        {
+            Vector3 newPos = Game_Panel.transform.position + new Vector3(Input.GetTouch(0).deltaPosition.x * 0.025f, Input.GetTouch(0).deltaPosition.y * 0.025f); ;
+            if (Mathf.Abs(newPos.x) < 20 && Mathf.Abs(newPos.y) < 20)
+                Game_Panel.transform.position = newPos;
+        }
     }
 
     /*
      * MAIN MOVE CONTROL ANIMATION
      * */
-
+    
     public void AnimStart()
     {
         times_irreponsive = Time.time + ANIM_DUR_TIME;
@@ -424,40 +480,52 @@ public class Control_Animation : MonoBehaviour {
             ObsUpdateAnim();
         }
 
-        if (viewAllMapModeAnimaion && time_view_all_map <= Time.time)
+        if (viewMapModeAnimation && time_view_map_mode <= Time.time)
         {
-            ViewAllMapModeAnim();
+            ViewMapModeAnim();
         }
 
-        if (!isViewAllMapMode) // can't do control in view-all-map mode
+        // can do drags to look around map in View-Map-Mode
+        if (isViewMapMode)
         {
-            /* for playing on PC */
-            if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
-            {
-                levelMap.thePlayer.playerMoveUp();
-            }
-            else if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
-            {
-                levelMap.thePlayer.playerMoveLeft();
-            }
-            else if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
-            {
-                levelMap.thePlayer.playerMoveDown();
-            }
-            else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
-            {
-                levelMap.thePlayer.playerMoveRight();
-            }
-            else if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
-            {
-                levelMap.thePlayer.playerDoAbility();
-            }
-            /* for playing on PC */
+            if (Input.touchCount == 1)
+                ViewMapModeTouchDrag();
+            else if (Input.GetMouseButton(1) || Input.GetMouseButton(0))
+                ViewMapModeMouseDrag();
+            else if (!Input.GetMouseButton(1) && !Input.GetMouseButton(0))
+                preMousePos = new Vector3();
+            else if (Input.touchCount == 2)
+                ViewMapModeTouchZoom();
+            else if (Input.mouseScrollDelta.y != 0)
+                ViewMapModeMouseZoom(Input.mouseScrollDelta);
+        }
 
-            if (moveAnimation)
-            {
-                Anim();
-            }
+        // can't do control in View-Map-Mode
+        // for playing on PC
+        if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
+        {
+            levelMap.thePlayer.playerMoveUp();
+        }
+        else if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
+        {
+            levelMap.thePlayer.playerMoveLeft();
+        }
+        else if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
+        {
+            levelMap.thePlayer.playerMoveDown();
+        }
+        else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
+        {
+            levelMap.thePlayer.playerMoveRight();
+        }
+        else if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+        {
+            levelMap.thePlayer.playerDoAbility();
+        }
+
+        if (moveAnimation)
+        {
+            Anim();
         }
     }
 }

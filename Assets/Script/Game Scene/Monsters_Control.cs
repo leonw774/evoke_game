@@ -122,7 +122,6 @@ public class Monsters_Control: MonoBehaviour {
             SpawnBoss(1);
 
         const int MIN_DIS_BTW_MONS = 6;
-        int walkbaleTileNum = (levelMap.tiles.Length - levelMap.wallsNumber);
         int spawnedCount = 0;
         int emegercyJumpOut = 0;
         int h = -1, w = -1;

@@ -97,7 +97,7 @@ public class Player_Control : MonoBehaviour {
 
     public void playerMoveUp()
     {
-        if (theAnimation.times_irreponsive <= Time.time && !theAnimation.isViewAllMapMode)
+        if (theAnimation.times_irreponsive <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
         {
             if (Move(-1, 0)) // it is monster's turn only if player did change position
             {
@@ -112,7 +112,7 @@ public class Player_Control : MonoBehaviour {
 
     public void playerMoveLeft()
     {
-        if (theAnimation.times_irreponsive <= Time.time && !theAnimation.isViewAllMapMode)
+        if (theAnimation.times_irreponsive <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
         {
             if (Move(0, -1))
             {
@@ -127,7 +127,7 @@ public class Player_Control : MonoBehaviour {
 
     public void playerMoveDown()
     {
-        if (theAnimation.times_irreponsive <= Time.time && !theAnimation.isViewAllMapMode)
+        if (theAnimation.times_irreponsive <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
         {
             if (Move(1, 0))
             {
@@ -142,7 +142,7 @@ public class Player_Control : MonoBehaviour {
 
     public void playerMoveRight()
     {
-        if (theAnimation.times_irreponsive <= Time.time && !theAnimation.isViewAllMapMode)
+        if (theAnimation.times_irreponsive <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
         {
             if (Move(0, 1))
             {
@@ -157,7 +157,7 @@ public class Player_Control : MonoBehaviour {
 
     public void playerDoAbility()
     {
-        if (theAnimation.times_irreponsive <= Time.time && !theAnimation.isViewAllMapMode)
+        if (theAnimation.times_irreponsive <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
         {
             if (DoAbility())
             {
@@ -277,23 +277,23 @@ public class Player_Control : MonoBehaviour {
 
     public void SetHealthPoint(int h)
     {
-        healthPointObject.color = (h == 1) ? new Color(1.0f, 0.2f, 0.2f) : new Color(0.1098f, 0.882353f, 0.1098f);
-        healthPointObject.fontSize = (h == 1) ? 36 : 30;
+        healthPointObject.color = (h <= 1) ? new Color(1.0f, 0.2f, 0.2f) : new Color(0.1098f, 0.882353f, 0.1098f);
+        healthPointObject.fontSize = (h <= 1) ? 36 : 30;
         healthPointObject.text = (healthPoint = h).ToString();
     }
 
     public void SetAbilityCooldown(int cd)
     {
+        abilityCooldown = cd;
         if (cd > 0)
         {
-            abilityCooldownObject.text = (abilityCooldown = cd).ToString();
+            abilityCooldownObject.text = "C.D."; // abilityCooldown.ToString();
             GameObject.Find("Ability Button").GetComponent<Button>().interactable = false;
         }
         else
         {
             GameObject.Find("Ability Button").GetComponent<Button>().interactable = true;
-            abilityCooldownObject.text = " ";
-            abilityCooldown = 0;
+            abilityCooldownObject.text = "";
         }
     }
 }
