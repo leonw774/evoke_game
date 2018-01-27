@@ -325,10 +325,10 @@ public class Control_Animation : MonoBehaviour {
         }
         else
         {
-            float dh = (levelMap.playerStartTile[0] - levelMap.height) / 3f;
-            float dw = (levelMap.playerStartTile[1] - levelMap.width) / 3f;
-            Game_Panel.transform.position = new Vector3(dh, dw);
             float s = 10f / Mathf.Max(levelMap.height, levelMap.width);
+            float dh = (levelMap.height / 2 - levelMap.playerStartTile[0] - 0.5f);
+            float dw = (levelMap.playerStartTile[1] - levelMap.width / 2);
+            Game_Panel.transform.position = new Vector3(dw + 1f, dh);
             Game_Panel.transform.localScale = new Vector3(s, s, 1);
             levelMap.thePlayer.thePlayerDisp.playerFacingSprite.enabled = false;
             GameObject.Find("Map Button Text").GetComponent<Text>().text ="BACK TO GAME";

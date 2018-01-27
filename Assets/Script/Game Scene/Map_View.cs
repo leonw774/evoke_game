@@ -21,7 +21,6 @@ public class Map_View : MonoBehaviour {
 
     public void toggleMapMenu()
     {
-        /*
         if (isMenuActive)
         {
             gameObject.transform.Translate(new Vector3(0.0f, 0.0f, -1.0f));
@@ -39,6 +38,5 @@ public class Map_View : MonoBehaviour {
             MenuBtn.GetComponent<Button>().enabled = false;
         }
         isMenuActive = !isMenuActive;
-        */
     }
 }
