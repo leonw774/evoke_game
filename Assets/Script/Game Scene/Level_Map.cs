@@ -285,7 +285,7 @@ public class Level_Map : MonoBehaviour
         if (Save_Data.SelectedLevel == Save_Data.BossLevel)
         {
             ep_to_set += (int) (monsterNumToStep * adjustedmonsterNum + 0.5);
-            hp_to_set += 2;
+            hp_to_set += 3;
         }
 
         thePlayer.SetEnergyPoint(ep_to_set);

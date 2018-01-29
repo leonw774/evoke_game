@@ -276,9 +276,8 @@ public class Monsters_Control: MonoBehaviour {
         if (boss != null)
         {
             int bossloss = boss.monAbility.TryAttackPlayer();
-            if ((bossloss > 0 && boss.monAbility.decision == 1) || boss.monAbility.decision == 2)
+            if (bossloss > 0 && boss.monAbility.decision == 1)
             {
-                levelMap.theAnimation.bossAbilityAnim.Start();
                 loss += bossloss;
             }
         }
@@ -308,7 +307,7 @@ public class Monsters_Control: MonoBehaviour {
         {
             distanceToPlayer = System.Math.Abs(levelMap.thePlayer.h - monsList[i].h) + System.Math.Abs(levelMap.thePlayer.w - monsList[i].w);
             if (distanceToPlayer <= ((monsList[i].id >= 0) ? 6 : 12)
-                && Random.Range(-1, 30) > 0)
+                && (Random.Range(-1, 30) > 0 || monsList[i].id < 0))
             {
                 if (monsList[i].id >= 0)
                 {

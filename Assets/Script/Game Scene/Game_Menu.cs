@@ -87,9 +87,9 @@ public class Game_Menu : MonoBehaviour {
 
     public void ToggleFinishMenu()
     {
-        ToggleGameMenu();
         if (!isFinishMenu)
         {
+            ToggleGameMenu();
             FinishSound.Play();
             WriteSaveData(Save_Data.PassedLevel);
             if (Save_Data.SelectedLevel == Save_Data.BossLevel)
@@ -104,9 +104,9 @@ public class Game_Menu : MonoBehaviour {
 
     public void ToggleFailMenu()
     {
-        ToggleGameMenu();
         if (!isFailMenu)
         {
+            ToggleGameMenu();
             FailSound.Play();
             FailGO.transform.Translate(new Vector3(0, 0, 1000));
             ResumeBtn.transform.Translate(new Vector3(0, 0, 1000));

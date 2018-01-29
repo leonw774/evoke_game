@@ -95,7 +95,7 @@ public class Player_Control : MonoBehaviour {
 
     public void PlayerMoveUp()
     {
-        if (theAnimation.playerAnim.times_flagged <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
+        if (!theAnimation.is_irresponsive && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
         {
             thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.BACK);
             if (Move(-1, 0)) // it is monster's turn only if player did change position
@@ -110,7 +110,7 @@ public class Player_Control : MonoBehaviour {
 
     public void PlayerMoveLeft()
     {
-        if (theAnimation.playerAnim.times_flagged <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
+        if (!theAnimation.is_irresponsive && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
         {
             thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.LEFT);
             if (Move(0, -1))
@@ -125,7 +125,7 @@ public class Player_Control : MonoBehaviour {
 
     public void PlayerMoveDown()
     {
-        if (theAnimation.playerAnim.times_flagged <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
+        if (!theAnimation.is_irresponsive && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
         {
             thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.FRONT);
             if (Move(1, 0))
@@ -140,7 +140,7 @@ public class Player_Control : MonoBehaviour {
 
     public void PlayerMoveRight()
     {
-        if (theAnimation.playerAnim.times_flagged <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
+        if (!theAnimation.is_irresponsive && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
         {
             thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.RIGHT);
             if (Move(0, 1))
@@ -155,7 +155,7 @@ public class Player_Control : MonoBehaviour {
 
     public void PlayerDoAbility()
     {
-        if (theAnimation.playerAbilityAnim.times_flagged <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
+        if (!theAnimation.is_irresponsive && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
         {
             if (DoAbility())
             {
@@ -218,6 +218,8 @@ public class Player_Control : MonoBehaviour {
             return false;
         
         int success = levelMap.theMonsters.TryAttackPlayer(h * levelMap.width + w);
+        if (levelMap.theObstacles.positionList.Exists(x => x == h * levelMap.width + w))
+            success++;
         if (success > 0)
         {
             // Debug.Log("player hurted");
