@@ -11,7 +11,6 @@ public class Obstacles : MonoBehaviour {
     // Use this for initialization
     void Start()
     {
-        Debug.Log("Obstacles.Start()");
     }
     
     public void Initialize()

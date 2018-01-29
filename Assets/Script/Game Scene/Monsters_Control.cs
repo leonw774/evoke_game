@@ -171,19 +171,8 @@ public class Monsters_Control: MonoBehaviour {
                 int h_tocheck = 0, w_tocheck = 0;
                 for (int direction = 0; direction < 4; direction++)
                 {
-                    h_tocheck = h;
-                    w_tocheck = w;
-                    switch (direction)
-                    {
-                        case 0: // top
-                            h_tocheck--; break;
-                        case 1: // left
-                            w_tocheck--; break;
-                        case 2: // down
-                            h_tocheck++; break;
-                        case 3: // right
-                            w_tocheck++; break;
-                    }
+                    h_tocheck = h + ((direction % 2 == 0) ? (direction - 1) : 0);
+                    w_tocheck = w + ((direction % 2 == 1) ? (direction - 2) : 0);
                     if (levelMap.IsTileWalkable(h_tocheck, w_tocheck))
                         chi_of_this_tile++;
                 }
@@ -204,7 +193,7 @@ public class Monsters_Control: MonoBehaviour {
             }
         }
         Debug.Log("emegercyJumpOut: " + emegercyJumpOut);
-        Debug.Log("Monster Ganeration: " + monsList.Count + "mons are spawned.");
+        Debug.Log("MonsGen: " + monsList.Count + "mons spawned.");
     }
 
     public void SpawnBoss(int bossIndex)
@@ -369,18 +358,8 @@ public class Monsters_Control: MonoBehaviour {
         else
         {
             //Debug.Log("MonsterMoveToPlayer()");
-            int newh = thisMon.h, neww = thisMon.w;
-            switch(goingTo)
-            {
-                case 0: // up
-                    newh--; break;
-                case 1: // left
-                    neww--; break;
-                case 2: // down
-                    newh++; break;
-                case 3: // right
-                    neww++; break;
-            }
+            int newh = thisMon.h + ((goingTo % 2 == 0) ? (goingTo - 1) : 0);
+            int neww = thisMon.w + ((goingTo % 2 == 1) ? (goingTo - 2) : 0);
             if (levelMap.IsTileWalkable(newh, neww))
             {
                 int j = 0;
@@ -405,30 +384,17 @@ public class Monsters_Control: MonoBehaviour {
         //Debug.Log("MonsterMoveRandom()");
         Monster thisMon = (monsList[i].id >= 0) ? monsList[i] : boss;
 
-        int tryCount = 0;
         if (thisMon.h == levelMap.thePlayer.h && thisMon.w == levelMap.thePlayer.w)
             return;
 
-        int goingTo = -1;
+        int tryCount = 0, goingTo = -1;
         int newh = thisMon.h, neww = thisMon.w;
-        while (tryCount++ <= 6)
+        while (tryCount++ <= 8)
         {
-            newh = thisMon.h;
-            neww = thisMon.w;
-            goingTo = Random.Range(0, 4);
+            goingTo = (Random.Range(0, 4) == 0 ? (int)thisMon.faceTo : Random.Range(0, 4));
             if (Random.Range(-1, 8) < 0) break; // monter wont move
-            switch (goingTo)
-            {
-                case 0:
-                    newh--; break;
-                case 1:
-                    neww--; break;
-                case 2:
-                    newh++; break;
-                case 3:
-                    neww++; break;
-            }
-            //Debug.Log("montser try" + newh + "," + neww);
+            newh = thisMon.h + ((goingTo % 2 == 0) ? (goingTo - 1) : 0);
+            neww = thisMon.w + ((goingTo % 2 == 1) ? (goingTo - 2) : 0);
             if (levelMap.tiles[newh, neww] != TILE_TYPE.WALL
                 && !levelMap.theObstacles.positionList.Exists(x => x == (newh * levelMap.width + neww))
                 && (levelMap.thePlayer.h != newh || levelMap.thePlayer.w != neww))

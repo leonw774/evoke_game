@@ -119,9 +119,7 @@ public class Control_Animation : MonoBehaviour {
         public override void Update()
         {
             if (times_flagged <= Time.time)
-            {
                 End();
-            }
             else if (levelMap.theMonsters.monsList.Count > 0)
             {
                 bool can_end = false;
@@ -131,16 +129,11 @@ public class Control_Animation : MonoBehaviour {
                     {
                         x.SpriteObj.transform.position += (x.animEndPos - x.animBeginPos) / ANIM_DUR_TIME * Time.deltaTime * 0.99f;
                         if (!can_end)
-                        {
-                            if ((x.animEndPos - x.SpriteObj.transform.position).magnitude < 0.01f)
-                                can_end = true;
-                        }
+                            can_end = ((x.animEndPos - x.SpriteObj.transform.position).magnitude < 0.01f);
                     }
                 }
                 if (can_end)
-                {
                     End();
-                }
             }
         }
 
@@ -169,7 +162,7 @@ public class Control_Animation : MonoBehaviour {
     {
         private int h = -1;
         private int w = -1;
-        private SpriteRenderer thisObsSprtie;
+        private SpriteRenderer thisObsSprite;
 
         public override void Start()
         {
@@ -184,17 +177,17 @@ public class Control_Animation : MonoBehaviour {
                 if (levelMap.theObstacles.positionList.Exists(x => x == pos))
                 {
                     // to be Destroyed
-                    thisObsSprtie = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
-                    thisObsSprtie.transform.localScale = new Vector3(1f, 0.45f, 1f);
-                    thisObsSprtie.transform.position -= new Vector3(0f, 0.27f, 0f);
+                    thisObsSprite = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
+                    thisObsSprite.transform.localScale = new Vector3(1f, 0.45f, 1f);
+                    thisObsSprite.transform.position -= new Vector3(0f, 0.27f, 0f);
                 }
                 else if (levelMap.tiles[h + dh, w + dw] == TILE_TYPE.WALKABLE)
                 {
                     // Created
                     levelMap.theObstacles.ObsCreate(pos);
-                    thisObsSprtie = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
-                    thisObsSprtie.transform.localScale = new Vector3(1f, 0.55f, 1f);
-                    thisObsSprtie.transform.position -= new Vector3(0f, 0.27f, 0f);
+                    thisObsSprite = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
+                    thisObsSprite.transform.localScale = new Vector3(1f, 0.55f, 1f);
+                    thisObsSprite.transform.position -= new Vector3(0f, 0.27f, 0f);
                 }
                 // upadte neighbor tiles ij
                 if (dw == 1)
@@ -213,40 +206,41 @@ public class Control_Animation : MonoBehaviour {
             if (times_flagged <= Time.time)
             {
                 int dh = -1, dw = -1, pos = -1;
-                bool is_last = false;
+                bool is_last = true;
                 while (dh <= 1)
                 {
                     if (levelMap.tiles[h + dh, w + dw] == TILE_TYPE.WALKABLE)
                     {
                         pos = (h + dh) * levelMap.width + (w + dw);
-                        if (!(is_last = (GameObject.Find("Obstacle Sprite" + pos.ToString()) == null)))
+                        if (GameObject.Find("Obstacle Sprite" + pos.ToString()) != null)
                         {
-                            thisObsSprtie = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
-                            if (thisObsSprtie.transform.localScale.y < 0.5f)
+                            thisObsSprite = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
+                            if (thisObsSprite.transform.localScale.y < 0.5f)
                             {
                                 // to be Destroyed
-                                if (is_last = (thisObsSprtie.transform.localScale.y <= 0f))
+                                if (is_last = (thisObsSprite.transform.localScale.y <= 0f))
                                 {
-                                    thisObsSprtie = null;
+                                    thisObsSprite = null;
                                     levelMap.theObstacles.ObsDestroy(pos);
-                                    is_last = true;
                                 }
                                 else
                                 {
-                                    thisObsSprtie.transform.localScale -= new Vector3(0f, 0.05f, 0f);
-                                    thisObsSprtie.transform.position -= new Vector3(0f, 0.03f, 0f);
+                                    thisObsSprite.transform.localScale -= new Vector3(0f, 0.05f, 0f);
+                                    thisObsSprite.transform.position -= new Vector3(0f, 0.03f, 0f);
                                 }
                             }
                             else
                             {
                                 // Created
-                                if (!(is_last = thisObsSprtie.transform.localScale.y >= 1f))
+                                if (!(is_last = thisObsSprite.transform.localScale.y >= 1f))
                                 {
-                                    thisObsSprtie.transform.localScale += new Vector3(0f, 0.05f, 0f);
-                                    thisObsSprtie.transform.position += new Vector3(0f, 0.03f, 0f);
+                                    thisObsSprite.transform.localScale += new Vector3(0f, 0.05f, 0f);
+                                    thisObsSprite.transform.position += new Vector3(0f, 0.03f, 0f);
                                 }
                             }
-                        }
+                        }   
+                        else
+                            is_last = is_last && true;
                     }
                     // upadte neighbor tiles
                     if (dw == 1)
@@ -266,23 +260,21 @@ public class Control_Animation : MonoBehaviour {
         public override void End()
         {
             int dh = -1, dw = -1, pos = -1;
-            bool is_last = false;
             while (dh <= 1)
             {
                 if (levelMap.tiles[h + dh, w + dw] == TILE_TYPE.WALKABLE)
                 {
                     pos = (h + dh) * levelMap.width + (w + dw);
-                    if (!(is_last = (GameObject.Find("Obstacle Sprite" + pos.ToString()) == null)))
+                    if (GameObject.Find("Obstacle Sprite" + pos.ToString()) != null)
                     {
-                        thisObsSprtie = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
-                        if (thisObsSprtie.transform.localScale.y < 0.5f)
+                        thisObsSprite = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
+                        if (thisObsSprite.transform.localScale.y < 0.5f) // Destroy
                         {
-                            // Destroy
-                            thisObsSprtie = null;
+                            thisObsSprite = null;
                             levelMap.theObstacles.ObsDestroy(pos);
                         }
                         else // Created
-                            thisObsSprtie.transform.localScale = new Vector3(1f, 1f, 1f);
+                            thisObsSprite.transform.localScale = new Vector3(1f, 1f, 1f);
                     }
                 }
                 // upadte neighbor tiles
@@ -304,42 +296,29 @@ public class Control_Animation : MonoBehaviour {
         private int h = -1, w = -1, dh = 0, dw = 0;
         private FACETO f = FACETO.DOWN;
         private SpriteRenderer bossSpecialSprite = null;
-        private SpriteRenderer thisObsSprtie;
+        private SpriteRenderer thisObsSprite;
 
         public override void Start()
         {
             dh = dw = 0;
-            int pos = -1;
-            int lookat = -1; // side -1, middle 0, side 1
+            int pos = -1, lookat = -1; // side -1, middle 0, side 1
             h = levelMap.theMonsters.boss.h;
             w = levelMap.theMonsters.boss.w;
             f = levelMap.theMonsters.boss.faceTo;
-            switch ((int)f)
-            {
-                case 0: // up
-                    dh--; break;
-                case 1: // left
-                    dw--; break;
-                case 2: // down
-                    dh++; break;
-                case 3: // right
-                    dw++; break;
-            }
+            dh = ((int)f % 2 == 0) ? ((int)f - 1) : 0;
+            dw = ((int)f % 2 == 1) ? ((int)f - 2) : 0;
             while (lookat <= 1)
             {
-                if ((int)f % 2 == 0)
-                    pos = (h + dh) * levelMap.width + (w + dw + lookat);
-                else
-                    pos = (h + dh + lookat) * levelMap.width + (w + dw);
-
+                pos = (h + dh) * levelMap.width + w + dw;
+                pos += ((int)f % 2 == 0) ? lookat : (lookat * levelMap.width);
                 lookat++;
                 levelMap.theMonsters.KillMonsterByPos(pos);
                 if (levelMap.theObstacles.positionList.Exists(x => x == pos))
                 {
                     // to be Destroyed
-                    thisObsSprtie = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
-                    thisObsSprtie.transform.localScale = new Vector3(1f, 0.45f, 1f);
-                    thisObsSprtie.transform.position -= new Vector3(0f, 0.27f, 0f);
+                    thisObsSprite = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
+                    thisObsSprite.transform.localScale = new Vector3(1f, 0.45f, 1f);
+                    thisObsSprite.transform.position -= new Vector3(0f, 0.27f, 0f);
                 }
             }
             Debug.Log("BossAb: h:" + h + " w: " + w + " f: " + f);
@@ -372,37 +351,34 @@ public class Control_Animation : MonoBehaviour {
         {
             if (times_flagged <= Time.time)
             {
-                int pos = -1;
-                int lookat = -1; // side -1, middle 0, side 1
+                int pos = -1, lookat = -1; // side -1, middle 0, side 1
                 bool is_last = false;
                 while (lookat <= 1)
                 {
-                    if ((int)f % 2 == 0)
-                        pos = (h + dh) * levelMap.width + (w + dw + lookat);
-                    else
-                        pos = (h + dh + lookat) * levelMap.width + (w + dw);
+                    pos = (h + dh) * levelMap.width + w + dw;
+                    pos += ((int)f % 2 == 0) ? lookat : (lookat * levelMap.width);
                     lookat++;
                     if (GameObject.Find("Obstacle Sprite" + pos.ToString()) != null)
                     {
-                        thisObsSprtie = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
-                        if (thisObsSprtie.transform.localScale.y < 0.5f)
+                        thisObsSprite = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
+                        if (thisObsSprite.transform.localScale.y < 0.5f)
                         {
                             // to be Destroyed
-                            if (is_last = (thisObsSprtie.transform.localScale.y <= 0f))
+                            if (is_last = (thisObsSprite.transform.localScale.y <= 0f))
                             {
                                 Debug.Log("Boss ObsDestroy:" + pos);
-                                thisObsSprtie = null;
+                                thisObsSprite = null;
                                 levelMap.theObstacles.ObsDestroy(pos);
                             }
                             else
                             {
-                                thisObsSprtie.transform.localScale -= new Vector3(0f, 0.05f, 0f);
-                                thisObsSprtie.transform.position -= new Vector3(0f, 0.03f, 0f);
+                                thisObsSprite.transform.localScale -= new Vector3(0f, 0.05f, 0f);
+                                thisObsSprite.transform.position -= new Vector3(0f, 0.03f, 0f);
                             }
                         }
                     }
                     else
-                        is_last = true;
+                        is_last = is_last && true;
                 }
                 times_flagged = Time.time + ANIM_DUR_TIME / 16f;
                 if (is_last)
@@ -416,19 +392,17 @@ public class Control_Animation : MonoBehaviour {
             int pos = -1, lookat = -1; // side -1, middle 0, side 1
             while (lookat <= 1)
             {
-                if ((int)f % 2 == 0)
-                    pos = (h + dh) * levelMap.width + (w + dw + lookat);
-                else
-                    pos = (h + dh + lookat) * levelMap.width + (w + dw);
+                pos = (h + dh) * levelMap.width + w + dw;
+                pos += ((int)f % 2 == 0) ? lookat : (lookat * levelMap.width);
                 lookat++;
                 if (GameObject.Find("Obstacle Sprite" + pos.ToString()) != null)
                 {
-                    thisObsSprtie = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
-                    if (thisObsSprtie.transform.localScale.y >= 0f)
+                    thisObsSprite = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
+                    if (thisObsSprite.transform.localScale.y >= 0f)
                     {
                         // Destroy!
                         Debug.Log("Boss ObsDestroy:" + pos);
-                        thisObsSprtie = null;
+                        thisObsSprite = null;
                         levelMap.theObstacles.ObsDestroy(pos);
                     }
                 }
@@ -534,7 +508,7 @@ public class Control_Animation : MonoBehaviour {
             vamm_pos = new Vector3(dw + 1f, dh + 0.1f);
             vamm_scale = new Vector3(s, s, 1);
             GameObject.Find("Map Button Text").GetComponent<Text>().text ="RECENTER TO YOU";
-            GameObject.Find("CD Output").GetComponent<Text>().text = "you can now dragl\nor room in & out\nto look around map";
+            GameObject.Find("CD Output").GetComponent<Text>().text = "you can now drag\nroom in & out\nto look around map";
         }
         viewMapModeAnimation = true;
         time_view_map_mode = Time.time + Animation.ANIM_DUR_TIME / 12;
@@ -544,7 +518,6 @@ public class Control_Animation : MonoBehaviour {
     {
         Game_Panel.transform.position = vamm_pos * 0.2f + Game_Panel.transform.position * 0.8f;
         Game_Panel.transform.localScale = vamm_scale * 0.2f + Game_Panel.transform.localScale * 0.8f;
-        time_view_map_mode = Time.time + Animation.ANIM_DUR_TIME / 16;
         if (Mathf.Abs(Game_Panel.transform.position.magnitude - vamm_pos.magnitude) < 0.001f)
         {
             viewMapModeAnimation = false;
@@ -555,6 +528,7 @@ public class Control_Animation : MonoBehaviour {
                 isViewMapMode = true;
             }
         }
+        time_view_map_mode = Time.time + Animation.ANIM_DUR_TIME / 12;
     }
 
     private void ViewMapModeMouseZoom(float y)
@@ -562,8 +536,17 @@ public class Control_Animation : MonoBehaviour {
         float ds = y * 0.025f;
         Vector3 n = Game_Panel.transform.localScale + new Vector3(ds, ds);
         if (n.x > 0.2f && n.x <= 1.2f)
-            if (Mathf.Abs(Game_Panel.transform.position.x - vamm_pos.x) < levelMap.width / 2 * n.x && Mathf.Abs(Game_Panel.transform.position.y - vamm_pos.y) < levelMap.height / 2 * n.y)
-                Game_Panel.transform.localScale = n;
+        {
+            Game_Panel.transform.localScale = n;
+            if (Game_Panel.transform.position.x > vamm_pos.x + levelMap.width / 2 * n.x)
+                Game_Panel.transform.position = new Vector3(vamm_pos.x + levelMap.width / 2 * n.x, Game_Panel.transform.position.y, 0);
+            else if (Game_Panel.transform.position.x < vamm_pos.x - levelMap.width / 2 * n.x)
+                Game_Panel.transform.position = new Vector3(vamm_pos.x - levelMap.width / 2 * n.x, Game_Panel.transform.position.y, 0);
+            if (Game_Panel.transform.position.y > vamm_pos.y + levelMap.height / 2 * n.y)
+                Game_Panel.transform.position = new Vector3(Game_Panel.transform.position.x, vamm_pos.y + levelMap.height / 2 * n.y, 0);
+            else if (Game_Panel.transform.position.y < vamm_pos.y - levelMap.height / 2 * n.y)
+                Game_Panel.transform.position = new Vector3(Game_Panel.transform.position.x, vamm_pos.y - levelMap.height / 2 * n.y, 0);
+        }
     }
 
     private Vector3 preMousePos = new Vector3();
@@ -601,8 +584,17 @@ public class Control_Animation : MonoBehaviour {
                 ds = (touch0.deltaPosition + touch1.deltaPosition).magnitude * 0.002f;
             Vector3 n = Game_Panel.transform.localScale + new Vector3(ds, ds);
             if (n.x > 0.2f && n.x <= 1.2f)
-                if (Mathf.Abs(Game_Panel.transform.position.x - vamm_pos.x) < levelMap.width / 2 * n.x && Mathf.Abs(Game_Panel.transform.position.y - vamm_pos.y) < levelMap.height / 2 * n.y)
-                    Game_Panel.transform.localScale = n;
+            {
+                Game_Panel.transform.localScale = n;
+                if (Game_Panel.transform.position.x > vamm_pos.x + levelMap.width / 2 * n.x)
+                    Game_Panel.transform.position = new Vector3(vamm_pos.x + levelMap.width / 2 * n.x, Game_Panel.transform.position.y, 0);
+                else if (Game_Panel.transform.position.x < vamm_pos.x - levelMap.width / 2 * n.x)
+                    Game_Panel.transform.position = new Vector3(vamm_pos.x - levelMap.width / 2 * n.x, Game_Panel.transform.position.y, 0);
+                if (Game_Panel.transform.position.y > vamm_pos.y + levelMap.height / 2 * n.y)
+                    Game_Panel.transform.position = new Vector3(Game_Panel.transform.position.x, vamm_pos.y + levelMap.height / 2 * n.y, 0);
+                else if (Game_Panel.transform.position.y < vamm_pos.y - levelMap.height / 2 * n.y)
+                    Game_Panel.transform.position = new Vector3(Game_Panel.transform.position.x, vamm_pos.y - levelMap.height / 2 * n.y, 0);
+            }
         }
     }
 

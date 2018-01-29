@@ -69,19 +69,8 @@ public class Boss1_Ability : MonsterAbility {
 
         //monAstar.PrintPath();
         //Debug.Log("self.FaceTo = " + (int) self.faceTo);
-
-        int h_tocheck = self.h, w_tocheck = self.w;
-        switch ((int)self.faceTo)
-        {
-            case 0: // up
-                h_tocheck--; break;
-            case 1: // left
-                w_tocheck--; break;
-            case 2: // down
-                h_tocheck++; break;
-            case 3: // right
-                w_tocheck++; break;
-        }
+        int h_tocheck = self.h + (((int)self.faceTo % 2 == 0) ? ((int)self.faceTo - 1) : 0);
+        int w_tocheck = self.w + (((int)self.faceTo % 2 == 1) ? ((int)self.faceTo - 2) : 0);
         //Debug.Log("boss TryDoAbility(): boss at " + self.h + ", " + self.w + "; try at " + h_tocheck + ", " + w_tocheck);
         return levelMap.theObstacles.positionList.Exists(x => x == h_tocheck * levelMap.width + w_tocheck);
     }

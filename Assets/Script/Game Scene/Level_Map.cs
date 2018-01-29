@@ -68,10 +68,8 @@ public class Level_Map : MonoBehaviour
     {
         // initialize all the Resources which this level need
         mapFileName = "map" + thisMapLevel.ToString();
-        //Debug.Log("mapFileMap: " + mapFileName);
-        // set up prototype sprites of themes
+        // Debug.Log("mapFileMap: " + mapFileName);
         LoadThemeSprites();
-        // at the same time, make maps
         LoadMapImg();
     }
 
@@ -168,8 +166,7 @@ public class Level_Map : MonoBehaviour
     // Don't call this function in GameRestart()
     public void MapFirstConstruction()
     {
-        // delete previous walls
-        // wallNumber will set to 0
+        // delete previous walls; wallNumber will set to 0
         DeleteWalls(); 
         // make wall objects on map
         CreateWalls();
@@ -237,22 +234,13 @@ public class Level_Map : MonoBehaviour
 
     private void SetMonsterNumber()
     {
-        // normal monster
-        switch (Save_Data.SelectedLevel)
-        {
-            case 0:
-                monsterNumber = 2; break;
-            case 1:
-                monsterNumber = 4; break;
-            case 2:
-                monsterNumber = 6; break;
-            case 3:
-                monsterNumber = 12; break;
-            default:
-                monsterNumber = (tiles.Length - wallsNumber - 8) / 32 + ((Save_Data.SelectedLevel > 4) ? 4 : Save_Data.SelectedLevel);
-                break;
-        }
-        Debug.Log("map ask for " + monsterNumber + " mons");
+        if (Save_Data.SelectedLevel < 3)
+            monsterNumber = 2 * (Save_Data.SelectedLevel + 1);
+        else if (Save_Data.SelectedLevel == 3)
+            monsterNumber = 10;
+        else
+            monsterNumber = (tiles.Length - wallsNumber - 8) / 32 + ((Save_Data.SelectedLevel > 4) ? 4 : Save_Data.SelectedLevel);
+        //Debug.Log("map ask for " + monsterNumber + " mons");
     }
 
     private void SetPlayerInfo()
@@ -269,17 +257,13 @@ public class Level_Map : MonoBehaviour
         float monsterNumToStep = 3.6f;
         float multiPathFactor = ((int)(walkableTilesNnum / (estimatedStep * 3.6f) * 100) / 100f);
 
-        if (multiPathFactor > 1.1f)
-        {
-            walkableTilesNnum = walkableTilesNnum + (int) (theObstacles.positionList.Count / (multiPathFactor * 1.3));
-            multiPathFactor = ((int)(walkableTilesNnum / (estimatedStep * 3.6f) * 100) / 100f);
-            adjustedmonsterNum /= multiPathFactor;
-        }
-
+        walkableTilesNnum += (int) (theObstacles.positionList.Count / ((multiPathFactor > 1f) ? multiPathFactor : 1f));
+        multiPathFactor = (int)(walkableTilesNnum / (estimatedStep * 3.6f) * 100) / 100f;
+        adjustedmonsterNum /= multiPathFactor;
         Debug.Log("multiPathFactor: " + multiPathFactor);
         //Debug.Log("adjustedmonsterNum: " + adjustedmonsterNum);
 
-        int ep_to_set = (int) (estimatedStep * (1.35 - ((Save_Data.SelectedLevel / 3) * 0.04))) + (int) (monsterNumToStep * adjustedmonsterNum) + 1;
+        int ep_to_set = (int) (estimatedStep * (1.36 - ((Save_Data.SelectedLevel / 3) * 0.03))) + (int) (monsterNumToStep * adjustedmonsterNum) + 1;
         int hp_to_set = (int) adjustedmonsterNum / 15 + 2;
 
         if (Save_Data.SelectedLevel == Save_Data.BossLevel)
@@ -300,9 +284,7 @@ public class Level_Map : MonoBehaviour
     {
         // only do MapConstruct in first start
         MapFirstConstruction();
-        // construct obstacles
         theObstacles.Construct();
-        // generate monsters
         if(monsterNumber > 0)
             theMonsters.SpawnMonsters(monsterNumber);
         SetPlayerInfo();
@@ -311,7 +293,7 @@ public class Level_Map : MonoBehaviour
     /* called by retry button */
     public void GameRestart()
     {
-        Debug.Log("Restart");
+        //Debug.Log("Restart");
         theObstacles.DestroyAllObstacles();
         theMonsters.DestroyAllMonsters();
         theObstacles.Construct();
@@ -324,11 +306,9 @@ public class Level_Map : MonoBehaviour
     public void UpdateSaveLevel()
     {
         if (Save_Data.SelectedLevel != Save_Data.BossLevel && Save_Data.SelectedLevel == Save_Data.PassedLevel + 1)
-        {
             Save_Data.UpdatePassedLevel();
-        }
-        Debug.Log("SelectedLevel: " + Save_Data.SelectedLevel);
-        Debug.Log("PassedLevel: " + Save_Data.PassedLevel);
+        //Debug.Log("SelectedLevel: " + Save_Data.SelectedLevel);
+        //Debug.Log("PassedLevel: " + Save_Data.PassedLevel);
     }
 
     public void GameNextLevel()
@@ -337,7 +317,6 @@ public class Level_Map : MonoBehaviour
         theObstacles.DestroyAllObstacles();
         theMonsters.DestroyAllMonsters();
         Save_Data.SelectedNextLevel();
-
         // start a level from the very beginning
         GameInitial();
     }
