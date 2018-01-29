@@ -16,7 +16,6 @@ public class Control_Animation : MonoBehaviour {
     GameObject Game_Panel;
 
     private bool bossMonsterHurtedAnimation = false;
-    private bool bossMonsterAbilityAnimation = false;
     private SpriteRenderer bossSpecialSprite = null;
 
     abstract public class Animation
@@ -78,7 +77,6 @@ public class Control_Animation : MonoBehaviour {
 
         public override void End()
         {
-            Debug.Log("playerAnim.End");
             isGoing = false;
             pd.animEndPos = new Vector3(0.0f, 0.0f, -1.0f);
             pd.animBeginPos = new Vector3(0.0f, 0.0f, -1.0f);
@@ -105,7 +103,7 @@ public class Control_Animation : MonoBehaviour {
             isGoing = false;
             GameObject.Find("Player Attacked Effect").GetComponent<SpriteRenderer>().enabled = false;
             if (levelMap.thePlayer.healthPoint <= 0)
-                levelMap.thePlayer.theControlPanel.toggleFailMenu();
+                levelMap.thePlayer.theControlPanel.ToggleFailMenu();
         }
     }
 
@@ -157,11 +155,11 @@ public class Control_Animation : MonoBehaviour {
                     x.animBeginPos = new Vector3(0.0f, 0.0f, -1.0f);
                 }
             }
-            if (levelMap.thePlayer.energyPoint == 0) levelMap.thePlayer.theControlPanel.toggleFailMenu();
+            if (levelMap.thePlayer.energyPoint == 0) levelMap.thePlayer.theControlPanel.ToggleFailMenu();
         }
     }
 
-    public class PlayerObsUpdateAnim : Animation
+    public class PlayerAbilityAnim : Animation
     {
         private int h = -1;
         private int w = -1;
@@ -215,24 +213,31 @@ public class Control_Animation : MonoBehaviour {
                     if (levelMap.tiles[h + dh, w + dw] == TILE_TYPE.WALKABLE)
                     {
                         pos = (h + dh) * levelMap.width + (w + dw);
-                        thisObsSprtie = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
-                        if (thisObsSprtie.transform.localScale.y < 0.5f)
-                        {
-                            // to be Destroyed
-                            thisObsSprtie.transform.localScale -= new Vector3(0f, 0.05f, 0f);
-                            thisObsSprtie.transform.position -= new Vector3(0f, 0.03f, 0f);
-                            if (thisObsSprtie.transform.localScale.y <= 0f)
-                            {
-                                thisObsSprtie = null;
-                                levelMap.theObstacles.ObsDestroy(pos);
-                                is_last = true;
-                            }
-                        }
+                        if (GameObject.Find("Obstacle Sprite" + pos.ToString()) == null)
+                            continue;
                         else
                         {
-                            // Created
-                            thisObsSprtie.transform.localScale += new Vector3(0f, 0.05f, 0f);
-                            thisObsSprtie.transform.position += new Vector3(0f, 0.03f, 0f);
+                            thisObsSprtie = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
+                            if (thisObsSprtie.transform.localScale.y < 0.5f)
+                            {
+                                // to be Destroyed
+                                thisObsSprtie.transform.localScale -= new Vector3(0f, 0.05f, 0f);
+                                thisObsSprtie.transform.position -= new Vector3(0f, 0.03f, 0f);
+                                if (thisObsSprtie.transform.localScale.y <= 0f)
+                                {
+                                    thisObsSprtie = null;
+                                    levelMap.theObstacles.ObsDestroy(pos);
+                                    is_last = true;
+                                }
+                            }
+                            else
+                            {
+                                // Created
+                                thisObsSprtie.transform.localScale += new Vector3(0f, 0.05f, 0f);
+                                thisObsSprtie.transform.position += new Vector3(0f, 0.03f, 0f);
+                                if (thisObsSprtie.transform.localScale.y >= 1f)
+                                    is_last = true;
+                            }
                         }
                     }
                     // upadte neighbor tiles ij
@@ -258,21 +263,38 @@ public class Control_Animation : MonoBehaviour {
         }
     }
 
-    public class BossObsUpdateAnim : Animation
+    public class BossAbilityAnim : Animation
     {
-        private int h = -1;
-        private int w = -1;
+        private int h = -1, w = -1, dh = 0, dw = 0;
+        private FACETO f = FACETO.DOWN;
+        private SpriteRenderer bossSpecialSprite = null;
         private SpriteRenderer thisObsSprtie;
 
         public override void Start()
         {
-            isGoing = true;
-            h = levelMap.thePlayer.h;
-            w = levelMap.thePlayer.w;
-            int dh = -1, dw = -1, pos = -1;
-            while (dh <= 1)
+            dh = dw = 0;
+            int pos = -1;
+            int lookat = -1; // side -1, middle 0, side 1
+            h = levelMap.theMonsters.boss.h;
+            w = levelMap.theMonsters.boss.w;
+            f = levelMap.theMonsters.boss.faceTo;
+            switch ((int)f)
             {
-                pos = (h + dh) * levelMap.width + (w + dw);
+                case 0: // up
+                    dh--; break;
+                case 1: // left
+                    dw--; break;
+                case 2: // down
+                    dh++; break;
+                case 3: // right
+                    dw++; break;
+            }
+            while (lookat <= 1)
+            {
+                if ((int)f % 2 == 0)
+                    pos = (h + dh) * levelMap.width + (w + dw + lookat);
+                else
+                    pos = (h + dh + lookat) * levelMap.width + (w + dw);
                 levelMap.theMonsters.KillMonsterByPos(pos);
                 if (levelMap.theObstacles.positionList.Exists(x => x == pos))
                 {
@@ -289,15 +311,31 @@ public class Control_Animation : MonoBehaviour {
                     thisObsSprtie.transform.localScale = new Vector3(1f, 0.55f, 1f);
                     thisObsSprtie.transform.position -= new Vector3(0f, 0.27f, 0f);
                 }
-                // upadte neighbor tiles ij
-                if (dw == 1)
-                {
-                    dh++;
-                    dw = -1;
-                }
-                else if (dh == 0 & dw == -1) dw = 1;
-                else dw++;
+                lookat++;
             }
+            Debug.Log("BossAb: h:" + h + " w: " + w + " f: " + f);
+            if (bossSpecialSprite == null)
+            {
+                switch (levelMap.theMonsters.boss.faceTo)
+                {
+                    case FACETO.UP:
+                        bossSpecialSprite = GameObject.Find("Back Boss Sprite Ability").GetComponent<SpriteRenderer>();
+                        break;
+                    case FACETO.LEFT:
+                        bossSpecialSprite = GameObject.Find("Left Boss Sprite Ability").GetComponent<SpriteRenderer>();
+                        break;
+                    case FACETO.DOWN:
+                        bossSpecialSprite = GameObject.Find("Front Boss Sprite Ability").GetComponent<SpriteRenderer>();
+                        break;
+                    case FACETO.RIGHT:
+                        bossSpecialSprite = GameObject.Find("Right Boss Sprite Ability").GetComponent<SpriteRenderer>();
+                        break;
+                    default:
+                        return;
+                }
+                bossSpecialSprite.enabled = true;
+            }
+            isGoing = true;
             times_flagged = Time.time + ANIM_DUR_TIME / 16f;
         }
 
@@ -305,13 +343,19 @@ public class Control_Animation : MonoBehaviour {
         {
             if (times_flagged <= Time.time)
             {
-                int dh = -1, dw = -1, pos = -1;
+                int pos = -1;
+                int lookat = -1; // side -1, middle 0, side 1
                 bool is_last = false;
-                while (dh <= 1)
+                while (lookat <= 1)
                 {
-                    if (levelMap.tiles[h + dh, w + dw] == TILE_TYPE.WALKABLE)
+                    if ((int)f % 2 == 0)
+                        pos = (h + dh) * levelMap.width + (w + dw + lookat);
+                    else
+                        pos = (h + dh + lookat) * levelMap.width + (w + dw);
+                    if (GameObject.Find("Obstacle Sprite" + pos.ToString()) == null)
+                        continue;
+                    else
                     {
-                        pos = (h + dh) * levelMap.width + (w + dw);
                         thisObsSprtie = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
                         if (thisObsSprtie.transform.localScale.y < 0.5f)
                         {
@@ -320,6 +364,7 @@ public class Control_Animation : MonoBehaviour {
                             thisObsSprtie.transform.position -= new Vector3(0f, 0.03f, 0f);
                             if (thisObsSprtie.transform.localScale.y <= 0f)
                             {
+                                Debug.Log("Boss ObsDestroy:" + pos);
                                 thisObsSprtie = null;
                                 levelMap.theObstacles.ObsDestroy(pos);
                                 is_last = true;
@@ -330,16 +375,11 @@ public class Control_Animation : MonoBehaviour {
                             // Created
                             thisObsSprtie.transform.localScale += new Vector3(0f, 0.05f, 0f);
                             thisObsSprtie.transform.position += new Vector3(0f, 0.03f, 0f);
+                            if (thisObsSprtie.transform.localScale.y >= 1f)
+                                is_last = true;
                         }
                     }
-                    // upadte neighbor tiles ij
-                    if (dw == 1)
-                    {
-                        dh++;
-                        dw = -1;
-                    }
-                    else if (dh == 0 & dw == -1) dw = 1;
-                    else dw++;
+                    lookat++;
                 }
                 if (is_last)
                     End();
@@ -350,15 +390,22 @@ public class Control_Animation : MonoBehaviour {
 
         public override void End()
         {
+            Debug.Log("BossAb: End");
             levelMap.thePlayer.CheckPlayerBlocked();
+            thisObsSprtie = null;
+            if (bossSpecialSprite != null)
+            {
+                bossSpecialSprite.enabled = false;
+                bossSpecialSprite = null;
+            }
             isGoing = false;
         }
     }
 
     public PlayerAnim playerAnim;
     public MonstersAnim monstersAnim;
-    public PlayerObsUpdateAnim playerObsUpdateAnim;
-    public BossObsUpdateAnim bossObsUpdateAnim
+    public PlayerAbilityAnim playerAbilityAnim;
+    public BossAbilityAnim bossAbilityAnim;
 
     // Use this for initialization
     void Start ()
@@ -372,44 +419,8 @@ public class Control_Animation : MonoBehaviour {
         Game_Panel = GameObject.Find("Game Panel");
         playerAnim = new PlayerAnim();
         monstersAnim = new MonstersAnim();
-        playerObsUpdateAnim = new PlayerObsUpdateAnim();
-    }
-
-    public void BossMonsterAbilityAnimStart()
-    {
-        bossMonsterAbilityAnimation = true;
-        times_boss_ability_sprite = Time.time + Animation.ANIM_DUR_TIME;
-        if (bossSpecialSprite == null)
-        {
-            switch (levelMap.theMonsters.boss.faceTo)
-            {
-                case FACETO.UP:
-                    bossSpecialSprite = GameObject.Find("Back Boss Sprite Ability").GetComponent<SpriteRenderer>();
-                    break;
-                case FACETO.LEFT:
-                    bossSpecialSprite = GameObject.Find("Left Boss Sprite Ability").GetComponent<SpriteRenderer>();
-                    break;
-                case FACETO.DOWN:
-                    bossSpecialSprite = GameObject.Find("Front Boss Sprite Ability").GetComponent<SpriteRenderer>();
-                    break;
-                case FACETO.RIGHT:
-                    bossSpecialSprite = GameObject.Find("Right Boss Sprite Ability").GetComponent<SpriteRenderer>();
-                    break;
-                default:
-                    return;
-            }
-            bossSpecialSprite.enabled = true;
-        }
-    }
-
-    private void BossMonsterAbilityAnimEnd()
-    {
-        if (bossSpecialSprite != null)
-        {
-            bossMonsterAbilityAnimation = false;
-            bossSpecialSprite.enabled = false;
-            bossSpecialSprite = null;
-        }
+        playerAbilityAnim = new PlayerAbilityAnim();
+        bossAbilityAnim = new BossAbilityAnim();
     }
 
     public void BossMonsterHurtedAnimStart()
@@ -570,8 +581,16 @@ public class Control_Animation : MonoBehaviour {
             playerAnim.Update();
         if (monstersAnim.isGoing)
             monstersAnim.Update();
-        if (playerObsUpdateAnim.isGoing)
-            playerObsUpdateAnim.Update();
+
+        if (playerAbilityAnim.isGoing)
+            playerAbilityAnim.Update();
+        else if (bossAbilityAnim.isGoing)
+            bossAbilityAnim.Update();
+
+        if (bossMonsterHurtedAnimation && times_boss_hurted_sprite <= Time.time)
+            BossMonsterHurtedAnimEnd();
+        if (viewMapModeAnimation && time_view_map_mode <= Time.time)
+            ViewMapModeAnim();
 
         if (times_monster_change_sprite <= Time.time)
         {
@@ -581,13 +600,6 @@ public class Control_Animation : MonoBehaviour {
                 times_monster_change_sprite += 1.1f;
             levelMap.theMonsters.AllChangeFrame();
         }
-
-        if (bossMonsterHurtedAnimation && times_boss_hurted_sprite <= Time.time)
-            BossMonsterHurtedAnimEnd();
-        if (bossMonsterAbilityAnimation && times_boss_ability_sprite <= Time.time)
-            BossMonsterAbilityAnimEnd();
-        if (viewMapModeAnimation && time_view_map_mode <= Time.time)
-            ViewMapModeAnim();
 
         // can do drags to look around map in View-Map-Mode
         if (isViewMapMode)

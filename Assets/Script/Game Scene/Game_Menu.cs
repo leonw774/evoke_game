@@ -41,13 +41,13 @@ public class Game_Menu : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             if (isMenuActive)
-                toggleGameMenu();
+                ToggleGameMenu();
             else
-                gameExitButton();
+                GameExitButton();
         }
     }
 
-    public void toggleGameMenu()
+    public void ToggleGameMenu()
     {
         if (isMenuActive)
         {
@@ -85,13 +85,13 @@ public class Game_Menu : MonoBehaviour {
         }
     }
 
-    public void toggleFinishMenu()
+    public void ToggleFinishMenu()
     {
-        toggleGameMenu();
+        ToggleGameMenu();
         if (!isFinishMenu)
         {
             FinishSound.Play();
-            writeSaveData(Save_Data.PassedLevel);
+            WriteSaveData(Save_Data.PassedLevel);
             if (Save_Data.SelectedLevel == Save_Data.BossLevel)
             {
                 GameObject.Find("Next Level Button").transform.Translate(new Vector3(0, 0, -1000));
@@ -102,9 +102,9 @@ public class Game_Menu : MonoBehaviour {
         }
     }
 
-    public void toggleFailMenu()
+    public void ToggleFailMenu()
     {
-        toggleGameMenu();
+        ToggleGameMenu();
         if (!isFailMenu)
         {
             FailSound.Play();
@@ -114,13 +114,13 @@ public class Game_Menu : MonoBehaviour {
         }
     }
 
-    public void gameExitButton()
+    public void GameExitButton()
     {
-        writeSaveData(Save_Data.PassedLevel);
+        WriteSaveData(Save_Data.PassedLevel);
         SceneManager.LoadScene("Menu Scene");
     }
 
-    void writeSaveData(int level)
+    void WriteSaveData(int level)
     {
         string SaveFilePath = Application.persistentDataPath + "/save.txt";
         if (File.Exists(SaveFilePath))

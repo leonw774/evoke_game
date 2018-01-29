@@ -276,9 +276,9 @@ public class Monsters_Control: MonoBehaviour {
         if (boss != null)
         {
             int bossloss = boss.monAbility.TryAttackPlayer();
-            if (bossloss > 0)
+            if ((bossloss > 0 && boss.monAbility.decision == 1) || boss.monAbility.decision == 2)
             {
-                boss.monAbility.DoAbility();
+                levelMap.theAnimation.bossAbilityAnim.Start();
                 loss += bossloss;
             }
         }
@@ -326,19 +326,13 @@ public class Monsters_Control: MonoBehaviour {
                             else
                                 MonsterMoveRandom(i);
                             break;
-                        case 1: // attack behavier wont happen until every other monster are done moving
-                            levelMap.theAnimation.BossMonsterAbilityAnimStart();
-                            break;
-                        case 2:
-                            boss.monAbility.DoAbility();
-                            levelMap.theAnimation.BossMonsterAbilityAnimStart();
-                            break;
-                        case 3:
+                        case 1: // attack & ability behavier is handled in TryAttackPlayer
+                                // that wont happen until every other monster are done moving
+                        case 3: // special move
                             boss.monAbility.DoSpecialMove();
                             MonsterMoveToPlayer(i);
                             break;
                         default:
-                            Debug.Log("Boss can not decide!");
                             break;
                     }
                 }

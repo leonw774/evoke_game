@@ -84,34 +84,6 @@ public class Boss1_Ability : MonsterAbility {
         return levelMap.theObstacles.positionList.Exists(x => x == h_tocheck * levelMap.width + w_tocheck);
     }
 
-    override public void DoAbility()
-    {
-        int h_tocheck = self.h, w_tocheck = self.w;
-        int lookat = -1; // side -1, middle 0, side 1
-        Debug.Log("self.FaceTo = " + (int) self.faceTo);
-        switch ((int)self.faceTo)
-        {
-            case 0: // up
-                h_tocheck--; break;
-            case 1: // left
-                w_tocheck--; break;
-            case 2: // down
-                h_tocheck++; break;
-            case 3: // right
-                w_tocheck++; break;
-        }
-        while (lookat <= 1)
-        {
-            if ((int)self.faceTo % 2 == 0)
-                levelMap.theObstacles.ObsUpdate(levelMap.theObstacles.positionList.Find(x => x == h_tocheck * levelMap.width + (w_tocheck + lookat)));
-            else
-                levelMap.theObstacles.ObsUpdate(levelMap.theObstacles.positionList.Find(x => x == (h_tocheck + lookat) * levelMap.width + w_tocheck));
-            lookat++;
-        }
-
-        Debug.Log("boss DoAbility(): face to " + self.faceTo);
-    }
-
     public override void DoSpecialMove()
     {
         int goingTo = -1;

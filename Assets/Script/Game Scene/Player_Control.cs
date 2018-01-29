@@ -155,12 +155,12 @@ public class Player_Control : MonoBehaviour {
 
     public void PlayerDoAbility()
     {
-        if (theAnimation.playerObsUpdateAnim.times_flagged <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
+        if (theAnimation.playerAbilityAnim.times_flagged <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
         {
             if (DoAbility())
             {
                 abilitySound.Play();
-                levelMap.theAnimation.playerObsUpdateAnim.Start();
+                levelMap.theAnimation.playerAbilityAnim.Start();
                 levelMap.theMonsters.MonstersTurn();
                 levelMap.theAnimation.monstersAnim.Start();
             }
@@ -192,7 +192,7 @@ public class Player_Control : MonoBehaviour {
             if (Save_Data.SelectedLevel != Save_Data.BossLevel || levelMap.theMonsters.boss == null)
             {
                 levelMap.UpdateSaveLevel();
-                theControlPanel.toggleFinishMenu();
+                theControlPanel.ToggleFinishMenu();
                 return true;
             }
         }
@@ -236,7 +236,7 @@ public class Player_Control : MonoBehaviour {
                         levelMap.IsTileWalkable(h, w + 1) ||
                         levelMap.IsTileWalkable(h, w - 1));
         if (!not_blocked)
-            theControlPanel.toggleFailMenu();
+            theControlPanel.ToggleFailMenu();
     }
 
     /* SET VALUES */

@@ -12,7 +12,7 @@ using UnityEngine.UI;
  * here leaves a imperfect structure 
  * */
 
-public class MonsterAbility : MonoBehaviour {
+public class MonsterAbility {
 
     public Sprite sp_frame1, sp_frame2;
     public SpriteRenderer facingSprite;
@@ -79,12 +79,6 @@ public class MonsterAbility : MonoBehaviour {
     {
         Debug.Log("virtual public bool TryDoAbility()");
         return false;
-    }
-
-    virtual public void DoAbility()
-    {
-        Debug.Log("virtual public void DoAbility()");
-        return;
     }
 
     virtual public bool TrySpecialMove()
