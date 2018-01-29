@@ -97,10 +97,10 @@ public class Player_Control : MonoBehaviour {
     {
         if (theAnimation.playerAnim.times_flagged <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
         {
+            thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.BACK);
             if (Move(-1, 0)) // it is monster's turn only if player did change position
             {
                 moveSound.Play();
-                thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.BACK);
                 levelMap.theMonsters.MonstersTurn();
                 levelMap.theAnimation.playerAnim.Start();
                 levelMap.theAnimation.monstersAnim.Start();
@@ -112,10 +112,10 @@ public class Player_Control : MonoBehaviour {
     {
         if (theAnimation.playerAnim.times_flagged <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
         {
+            thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.LEFT);
             if (Move(0, -1))
             {
                 moveSound.Play();
-                thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.LEFT);
                 levelMap.theMonsters.MonstersTurn();
                 levelMap.theAnimation.playerAnim.Start();
                 levelMap.theAnimation.monstersAnim.Start();
@@ -127,10 +127,10 @@ public class Player_Control : MonoBehaviour {
     {
         if (theAnimation.playerAnim.times_flagged <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
         {
+            thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.FRONT);
             if (Move(1, 0))
             {
                 moveSound.Play();
-                thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.FRONT);
                 levelMap.theMonsters.MonstersTurn();
                 levelMap.theAnimation.playerAnim.Start();
                 levelMap.theAnimation.monstersAnim.Start();
@@ -142,10 +142,10 @@ public class Player_Control : MonoBehaviour {
     {
         if (theAnimation.playerAnim.times_flagged <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
         {
+            thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.RIGHT);
             if (Move(0, 1))
             {
                 moveSound.Play();
-                thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.RIGHT);
                 levelMap.theMonsters.MonstersTurn();
                 levelMap.theAnimation.playerAnim.Start();
                 levelMap.theAnimation.monstersAnim.Start();
@@ -155,12 +155,12 @@ public class Player_Control : MonoBehaviour {
 
     public void PlayerDoAbility()
     {
-        if (theAnimation.obsUpdateAnim.times_flagged <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
+        if (theAnimation.playerObsUpdateAnim.times_flagged <= Time.time && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
         {
             if (DoAbility())
             {
                 abilitySound.Play();
-                levelMap.theAnimation.obsUpdateAnim.Start();
+                levelMap.theAnimation.playerObsUpdateAnim.Start();
                 levelMap.theMonsters.MonstersTurn();
                 levelMap.theAnimation.monstersAnim.Start();
             }

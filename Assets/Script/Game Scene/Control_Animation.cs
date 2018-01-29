@@ -161,7 +161,104 @@ public class Control_Animation : MonoBehaviour {
         }
     }
 
-    public class ObsUpdateAnim : Animation
+    public class PlayerObsUpdateAnim : Animation
+    {
+        private int h = -1;
+        private int w = -1;
+        private SpriteRenderer thisObsSprtie;
+
+        public override void Start()
+        {
+            isGoing = true;
+            h = levelMap.thePlayer.h;
+            w = levelMap.thePlayer.w;
+            int dh = -1, dw = -1, pos = -1;
+            while (dh <= 1)
+            {
+                pos = (h + dh) * levelMap.width + (w + dw);
+                levelMap.theMonsters.KillMonsterByPos(pos);
+                if (levelMap.theObstacles.positionList.Exists(x => x == pos))
+                {
+                    // to be Destroyed
+                    thisObsSprtie = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
+                    thisObsSprtie.transform.localScale = new Vector3(1f, 0.45f, 1f);
+                    thisObsSprtie.transform.position -= new Vector3(0f, 0.27f, 0f);
+                }
+                else if (levelMap.tiles[h + dh, w + dw] == TILE_TYPE.WALKABLE)
+                {
+                    // Created
+                    levelMap.theObstacles.ObsCreate(pos);
+                    thisObsSprtie = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
+                    thisObsSprtie.transform.localScale = new Vector3(1f, 0.55f, 1f);
+                    thisObsSprtie.transform.position -= new Vector3(0f, 0.27f, 0f);
+                }
+                // upadte neighbor tiles ij
+                if (dw == 1)
+                {
+                    dh++;
+                    dw = -1;
+                }
+                else if (dh == 0 & dw == -1) dw = 1;
+                else dw++;
+            }
+            times_flagged = Time.time + ANIM_DUR_TIME / 16f;
+        }
+
+        public override void Update()
+        {
+            if (times_flagged <= Time.time)
+            {
+                int dh = -1, dw = -1, pos = -1;
+                bool is_last = false;
+                while (dh <= 1)
+                {
+                    if (levelMap.tiles[h + dh, w + dw] == TILE_TYPE.WALKABLE)
+                    {
+                        pos = (h + dh) * levelMap.width + (w + dw);
+                        thisObsSprtie = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
+                        if (thisObsSprtie.transform.localScale.y < 0.5f)
+                        {
+                            // to be Destroyed
+                            thisObsSprtie.transform.localScale -= new Vector3(0f, 0.05f, 0f);
+                            thisObsSprtie.transform.position -= new Vector3(0f, 0.03f, 0f);
+                            if (thisObsSprtie.transform.localScale.y <= 0f)
+                            {
+                                thisObsSprtie = null;
+                                levelMap.theObstacles.ObsDestroy(pos);
+                                is_last = true;
+                            }
+                        }
+                        else
+                        {
+                            // Created
+                            thisObsSprtie.transform.localScale += new Vector3(0f, 0.05f, 0f);
+                            thisObsSprtie.transform.position += new Vector3(0f, 0.03f, 0f);
+                        }
+                    }
+                    // upadte neighbor tiles ij
+                    if (dw == 1)
+                    {
+                        dh++;
+                        dw = -1;
+                    }
+                    else if (dh == 0 & dw == -1) dw = 1;
+                    else dw++;
+                }
+                if (is_last)
+                    End();
+                else
+                    times_flagged = Time.time + ANIM_DUR_TIME / 16f;
+            }
+        }
+
+        public override void End()
+        {
+            levelMap.thePlayer.CheckPlayerBlocked();
+            isGoing = false;
+        }
+    }
+
+    public class BossObsUpdateAnim : Animation
     {
         private int h = -1;
         private int w = -1;
@@ -260,7 +357,8 @@ public class Control_Animation : MonoBehaviour {
 
     public PlayerAnim playerAnim;
     public MonstersAnim monstersAnim;
-    public ObsUpdateAnim obsUpdateAnim;
+    public PlayerObsUpdateAnim playerObsUpdateAnim;
+    public BossObsUpdateAnim bossObsUpdateAnim
 
     // Use this for initialization
     void Start ()
@@ -274,7 +372,7 @@ public class Control_Animation : MonoBehaviour {
         Game_Panel = GameObject.Find("Game Panel");
         playerAnim = new PlayerAnim();
         monstersAnim = new MonstersAnim();
-        obsUpdateAnim = new ObsUpdateAnim();
+        playerObsUpdateAnim = new PlayerObsUpdateAnim();
     }
 
     public void BossMonsterAbilityAnimStart()
@@ -472,8 +570,8 @@ public class Control_Animation : MonoBehaviour {
             playerAnim.Update();
         if (monstersAnim.isGoing)
             monstersAnim.Update();
-        if (obsUpdateAnim.isGoing)
-            obsUpdateAnim.Update();
+        if (playerObsUpdateAnim.isGoing)
+            playerObsUpdateAnim.Update();
 
         if (times_monster_change_sprite <= Time.time)
         {
