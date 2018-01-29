@@ -276,6 +276,8 @@ public class Level_Map : MonoBehaviour
         thePlayer.SetHealthPoint(hp_to_set);
         thePlayer.SetAbilityCooldown(0);
         thePlayer.thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.FRONT);
+        if (theAnimation.isViewMapMode)
+            thePlayer.thePlayerDisp.playerFacingSprite.enabled = false;
         thePlayer.SetPositionTo(playerStartTile[0], playerStartTile[1]);
         //Debug.Log("Player States All Set");
     }

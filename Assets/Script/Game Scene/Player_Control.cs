@@ -253,10 +253,7 @@ public class Player_Control : MonoBehaviour {
         //Debug.Log("thePlayer.SetPositionTo() is called in Game_Panel");
         if (levelMap.tiles[newh, neww] != TILE_TYPE.WALL)
         {
-            if (levelMap.theObstacles.positionList.Exists(x => x == (newh * levelMap.width + neww)))
-            {
-                levelMap.theObstacles.ObsUpdate(newh, neww);
-            }
+            levelMap.theObstacles.ObsDestroy(newh * levelMap.width + neww);
             h = newh;
             w = neww;
             //Debug.Log("player position has been changed to (" + h + ", " + w + ")");

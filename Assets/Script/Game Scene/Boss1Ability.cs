@@ -29,7 +29,7 @@ public class Boss1_Ability : MonsterAbility {
         */
 
         // if player is near to it and they are seperated by some obstacles: ability
-        if (TryDoAbility() && distanceToPlayer < 12)
+        if (TryDoAbility() && distanceToPlayer <= 12)
             return decision = 2;
         return decision = 0;
     }

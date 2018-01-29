@@ -177,6 +177,7 @@ public class Control_Animation : MonoBehaviour {
                 if (levelMap.theObstacles.positionList.Exists(x => x == pos))
                 {
                     // to be Destroyed
+                    levelMap.theObstacles.positionList.Remove(pos);
                     thisObsSprite = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
                     thisObsSprite.transform.localScale = new Vector3(1f, 0.45f, 1f);
                     thisObsSprite.transform.position -= new Vector3(0f, 0.27f, 0f);
@@ -221,7 +222,7 @@ public class Control_Animation : MonoBehaviour {
                                 if (is_last = (thisObsSprite.transform.localScale.y <= 0f))
                                 {
                                     thisObsSprite = null;
-                                    levelMap.theObstacles.ObsDestroy(pos);
+                                    Destroy(GameObject.Find("Obstacle Sprite" + pos.ToString()));
                                 }
                                 else
                                 {
@@ -271,7 +272,7 @@ public class Control_Animation : MonoBehaviour {
                         if (thisObsSprite.transform.localScale.y < 0.5f) // Destroy
                         {
                             thisObsSprite = null;
-                            levelMap.theObstacles.ObsDestroy(pos);
+                            Destroy(GameObject.Find("Obstacle Sprite" + pos.ToString()));
                         }
                         else // Created
                             thisObsSprite.transform.localScale = new Vector3(1f, 1f, 1f);
@@ -316,12 +317,12 @@ public class Control_Animation : MonoBehaviour {
                 if (levelMap.theObstacles.positionList.Exists(x => x == pos))
                 {
                     // to be Destroyed
+                    levelMap.theObstacles.positionList.Remove(pos);
                     thisObsSprite = GameObject.Find("Obstacle Sprite" + pos.ToString()).GetComponent<SpriteRenderer>();
                     thisObsSprite.transform.localScale = new Vector3(1f, 0.45f, 1f);
                     thisObsSprite.transform.position -= new Vector3(0f, 0.27f, 0f);
                 }
             }
-            Debug.Log("BossAb: h:" + h + " w: " + w + " f: " + f);
             if (bossSpecialSprite == null)
             {
                 switch (levelMap.theMonsters.boss.faceTo)
@@ -352,7 +353,7 @@ public class Control_Animation : MonoBehaviour {
             if (times_flagged <= Time.time)
             {
                 int pos = -1, lookat = -1; // side -1, middle 0, side 1
-                bool is_last = false;
+                bool is_last = true;
                 while (lookat <= 1)
                 {
                     pos = (h + dh) * levelMap.width + w + dw;
@@ -366,9 +367,8 @@ public class Control_Animation : MonoBehaviour {
                             // to be Destroyed
                             if (is_last = (thisObsSprite.transform.localScale.y <= 0f))
                             {
-                                Debug.Log("Boss ObsDestroy:" + pos);
                                 thisObsSprite = null;
-                                levelMap.theObstacles.ObsDestroy(pos);
+                                Destroy(GameObject.Find("Obstacle Sprite" + pos.ToString()));
                             }
                             else
                             {
@@ -402,6 +402,7 @@ public class Control_Animation : MonoBehaviour {
                     {
                         // Destroy!
                         Debug.Log("Boss ObsDestroy:" + pos);
+                        Destroy(GameObject.Find("Obstacle Sprite" + pos.ToString()));
                         thisObsSprite = null;
                         levelMap.theObstacles.ObsDestroy(pos);
                     }
@@ -413,7 +414,9 @@ public class Control_Animation : MonoBehaviour {
                 bossSpecialSprite = null;
             }
             //levelMap.thePlayer.CheckPlayerBlocked();
-            levelMap.thePlayer.IsPlayerAttacked();
+            if(levelMap.thePlayer.IsPlayerAttacked())
+                if (levelMap.thePlayer.healthPoint <= 0)
+                    levelMap.thePlayer.theControlPanel.ToggleFailMenu();
             isGoing = false;
         }
     }
@@ -518,7 +521,7 @@ public class Control_Animation : MonoBehaviour {
     {
         Game_Panel.transform.position = vamm_pos * 0.2f + Game_Panel.transform.position * 0.8f;
         Game_Panel.transform.localScale = vamm_scale * 0.2f + Game_Panel.transform.localScale * 0.8f;
-        if (Mathf.Abs(Game_Panel.transform.position.magnitude - vamm_pos.magnitude) < 0.001f)
+        if (Mathf.Abs(Game_Panel.transform.position.magnitude - vamm_pos.magnitude) < 0.005f)
         {
             viewMapModeAnimation = false;
             Game_Panel.transform.localScale = vamm_scale;

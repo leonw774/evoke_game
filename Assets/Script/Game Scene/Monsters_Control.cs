@@ -183,11 +183,6 @@ public class Monsters_Control: MonoBehaviour {
                         Spawn(h, w, spawnedCount);
                         spawnedCount++;
                     }
-                    else if (chi_of_this_tile <= 3 && Random.Range(0, 10) > 0)
-                    {
-                        levelMap.theObstacles.ObsDestroy(pos);
-                        Spawn(h, w, spawnedCount++);
-                    }
                 }
                 // else: spawn failed;
             }
@@ -211,7 +206,6 @@ public class Monsters_Control: MonoBehaviour {
         {
             case 1:
                 boss = new BossMonster(levelMap.height / 2, levelMap.width / 3 * 2, -1, GameObject.Find("Boss Sprites"), new Boss1_Ability(levelMap, (int) (levelMap.monsterNumber / 4) + 4));
-                Debug.Log("Gave Boss its ability");
                 break;
             default:
                 break;
@@ -231,8 +225,8 @@ public class Monsters_Control: MonoBehaviour {
 
         // make Boss Sprites appear
         Vector3 trans = levelMap.MapCoordToWorldVec3(boss.h, boss.w, 1);
-        boss.SpriteObj.transform.position = trans;
-
+        boss.SpriteObj.transform.localPosition = trans;
+        boss.SpriteObj.transform.localScale = Vector3.one;
         Debug.Log("Boss Spawned");
     }
 
@@ -244,7 +238,8 @@ public class Monsters_Control: MonoBehaviour {
         created.name = "Monster Sprite" + index.ToString();
         created.tag = "Monster";
         created.transform.parent = GameObject.Find("Game Panel").transform;
-        created.transform.position = trans;
+        created.transform.localPosition = trans;
+        created.transform.localScale = Vector3.one;
         monsList.Add(new Monster(h, w, index, created));
     }
 
@@ -314,13 +309,12 @@ public class Monsters_Control: MonoBehaviour {
                             else
                                 MonsterMoveRandom(i);
                             break;
-                        case 1: // attack & ability behavier is handled in TryAttackPlayer
-                                // that wont happen until every other monster are done moving
                         case 3: // special move
                             boss.monAbility.DoSpecialMove();
-                            MonsterMoveToPlayer(i);
                             break;
                         default:
+                            // attack & ability behavier is handled in TryAttackPlayer
+                            // that wont happen until every other monster are done moving
                             break;
                     }
                 }
