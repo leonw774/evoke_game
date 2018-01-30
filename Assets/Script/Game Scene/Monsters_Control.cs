@@ -1,18 +1,17 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using TileTypeDefine;
 
 public enum FACETO {UP = 0, LEFT, DOWN, RIGHT};
 
 public class Monster
 {
-    public FACETO faceTo;
     public int h;
     public int w;
     public int id; // -1 to identify the boss, >=0 to label normal monsters
+    public FACETO faceTo;
     public GameObject SpriteObj;
 
-    public MonsterAbility monAbility;
+    public BossAbility monAbility;
 
     public Vector3 animBeginPos;
     public Vector3 animEndPos;
@@ -23,8 +22,7 @@ public class Monster
         w = _w;
         id = _id;
         SpriteObj = _ms;
-        if (id >= 0)
-            FaceTo((FACETO)Random.Range(0, 4));
+        FaceTo = (FACETO)Random.Range(0, 4);
         animBeginPos = new Vector3(0.0f, 0.0f, -1.0f);
         animEndPos = new Vector3(0.0f, 0.0f, -1.0f);
     }
@@ -40,47 +38,68 @@ public class Monster
         w = neww;
     }
 
-    virtual public void FaceTo(FACETO direction)
+    public FACETO FaceTo
     {
-        faceTo = direction;
-        if (direction == FACETO.RIGHT)
-            SpriteObj.GetComponent<SpriteRenderer>().flipX = true;
-        else if (direction == FACETO.LEFT)
-            SpriteObj.GetComponent<SpriteRenderer>().flipX = false;
+        get
+        {
+            return faceTo;
+        }
+        set
+        {
+            SpriteRenderer sr = SpriteObj.GetComponent<SpriteRenderer>();
+            faceTo = value;
+            if (sr != null)
+            {
+                if (value == FACETO.RIGHT)
+                    SpriteObj.GetComponent<SpriteRenderer>().flipX = true;
+                else if (value == FACETO.LEFT)
+                    SpriteObj.GetComponent<SpriteRenderer>().flipX = false;
+            }
+        }
     }
 }
 
 public class BossMonster : Monster
 {
-    public BossMonster(int _h, int _w, int _id, GameObject _ms, MonsterAbility _a) : base(_h, _w, _id, _ms)
+    public BossMonster(int _h, int _w, int _id, GameObject _ms, BossAbility _a) : base(_h, _w, _id, _ms)
     {
         monAbility = _a;
-        FaceTo((FACETO)Random.Range(0, 4));
+        FaceTo = (FACETO)Random.Range(0, 4);
+        // need to set faceTo again
+        // because the assignment in base will not do it
+        // until ability is giving
     }
 
-    override public void FaceTo(FACETO ft)
+    public new FACETO FaceTo
     {
-        faceTo = ft;
-        if (monAbility.facingSprite != null)
-            monAbility.facingSprite.enabled = false;
-        switch (ft)
+        get
         {
-            case FACETO.UP:
-                monAbility.facingSprite = GameObject.Find("Back Boss Sprite").GetComponent<SpriteRenderer>();
-                break;
-            case FACETO.LEFT:
-                monAbility.facingSprite = GameObject.Find("Left Boss Sprite").GetComponent<SpriteRenderer>();
-                break;
-            case FACETO.DOWN:
-                monAbility.facingSprite = GameObject.Find("Front Boss Sprite").GetComponent<SpriteRenderer>();
-                break;
-            case FACETO.RIGHT:
-                monAbility.facingSprite = GameObject.Find("Right Boss Sprite").GetComponent<SpriteRenderer>();
-                break;
-            default:
-                return;
+            return faceTo;
         }
-        monAbility.facingSprite.enabled = true;
+        set
+        {
+            faceTo = value;
+            if (monAbility.facingSprite != null)
+                monAbility.facingSprite.enabled = false;
+            switch (value)
+            {
+                case FACETO.UP:
+                    monAbility.facingSprite = GameObject.Find("Back Boss Sprite").GetComponent<SpriteRenderer>();
+                    break;
+                case FACETO.LEFT:
+                    monAbility.facingSprite = GameObject.Find("Left Boss Sprite").GetComponent<SpriteRenderer>();
+                    break;
+                case FACETO.DOWN:
+                    monAbility.facingSprite = GameObject.Find("Front Boss Sprite").GetComponent<SpriteRenderer>();
+                    break;
+                case FACETO.RIGHT:
+                    monAbility.facingSprite = GameObject.Find("Right Boss Sprite").GetComponent<SpriteRenderer>();
+                    break;
+                default:
+                    return;
+            }
+            monAbility.facingSprite.enabled = true; 
+        }
     }
 }
 
@@ -98,7 +117,6 @@ public class Monsters_Control: MonoBehaviour {
     // Use this for initialization
     void Start()
     {
-        //Debug.Log("Monsters.Start()");
     }
 
     public void Initialize()
@@ -124,9 +142,8 @@ public class Monsters_Control: MonoBehaviour {
         const int MIN_DIS_BTW_MONS = 6;
         int spawnedCount = 0;
         int emegercyJumpOut = 0;
-        int h = -1, w = -1;
+        int h = -1, w = -1, pos = -1;
         int mapWidth = levelMap.width;
-        int pos = -1;
         int prePos = levelMap.playerStartTile[0] * mapWidth + levelMap.playerStartTile[1];
         bool tooClose = false;
 
@@ -365,7 +382,7 @@ public class Monsters_Control: MonoBehaviour {
                 {
                     //Debug.Log("Monster " + i + "moved from " + thisMon.h + "," + thisMon.w + " to " + newh + "," + neww);
                     thisMon.MoveTo(newh, neww);
-                    thisMon.FaceTo((FACETO) goingTo);
+                    thisMon.FaceTo = (FACETO) goingTo;
                     thisMon.animBeginPos = thisMon.SpriteObj.transform.position;
                     thisMon.animEndPos = levelMap.MapCoordToWorldVec3(newh, neww, 1);
                 }
@@ -402,7 +419,7 @@ public class Monsters_Control: MonoBehaviour {
                 {
                     //Debug.Log("Monster " + i + "moved from " + monsterList[i].h + "," + monsterList[i].w + " to " + newh + "," + neww);
                     thisMon.MoveTo(newh, neww);
-                    thisMon.FaceTo((FACETO) goingTo);
+                    thisMon.FaceTo = (FACETO) goingTo;
                     thisMon.animBeginPos = thisMon.SpriteObj.transform.position;
                     thisMon.animEndPos = levelMap.MapCoordToWorldVec3(newh, neww, 1);
                     break;

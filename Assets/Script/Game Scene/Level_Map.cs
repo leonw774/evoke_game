@@ -1,13 +1,7 @@
-﻿using UnityEngine;
-using TileTypeDefine;
-using System.Security.AccessControl;
-using System;
-using UnityEngine.UI;
+﻿using System;
+using UnityEngine;
 
-namespace TileTypeDefine
-{
-    public enum TILE_TYPE : int { WALKABLE = 0, WALL = 1, ITEM = 2, PLAYER_START_POINT = 3, FINISH_POINT = 4, SHORTCUT = 5 };
-}
+public enum TILE_TYPE : int { WALKABLE = 0, WALL = 1, ITEM = 2, PLAYER_START_POINT = 3, FINISH_POINT = 4, SHORTCUT = 5 };
 
 public class Level_Map : MonoBehaviour
 {
@@ -263,19 +257,19 @@ public class Level_Map : MonoBehaviour
         Debug.Log("multiPathFactor: " + multiPathFactor);
         //Debug.Log("adjustedmonsterNum: " + adjustedmonsterNum);
 
-        int ep_to_set = (int) (estimatedStep * (1.36 - ((Save_Data.SelectedLevel / 3) * 0.03))) + (int) (monsterNumToStep * adjustedmonsterNum) + 1;
+        int ep_to_set = (int) (estimatedStep * (1.36 - ((Save_Data.SelectedLevel / 3) * 0.03))) + (int) (monsterNumToStep * adjustedmonsterNum) + 3;
         int hp_to_set = (int) adjustedmonsterNum / 15 + 2;
 
         if (Save_Data.SelectedLevel == Save_Data.BossLevel)
         {
             ep_to_set += (int) (monsterNumToStep * adjustedmonsterNum + 0.5);
-            hp_to_set += 3;
+            hp_to_set += 4;
         }
 
-        thePlayer.SetEnergyPoint(ep_to_set);
-        thePlayer.SetHealthPoint(hp_to_set);
-        thePlayer.SetAbilityCooldown(0);
-        thePlayer.thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.FRONT);
+        thePlayer.EP = ep_to_set;
+        thePlayer.HP = hp_to_set;
+        thePlayer.CD = 0;
+        thePlayer.thePlayerDisp.FaceTo = FACETO.DOWN;
         if (theAnimation.isViewMapMode)
             thePlayer.thePlayerDisp.playerFacingSprite.enabled = false;
         thePlayer.SetPositionTo(playerStartTile[0], playerStartTile[1]);

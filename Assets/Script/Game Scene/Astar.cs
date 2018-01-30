@@ -1,12 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using TileTypeDefine;
 
 public class Tile
 {
     public int h;
     public int w;
-    public int estimatedTotalCost; // estimated cost form here to goal + cost of form start to here; -1 == not yet calculated
+    public int estTotalCost; // estimated cost form here to goal + cost of form start to here; -1 == not yet calculated
 
     public Tile()
     {
@@ -18,31 +17,31 @@ public class Tile
     {
         this.h = other.h;
         this.w = other.w;
-        this.estimatedTotalCost = other.estimatedTotalCost;
+        this.estTotalCost = other.estTotalCost;
     }
 
     public Tile(int _i, int _j)
     {
         h = _i;
         w = _j;
-        estimatedTotalCost = -1;
+        estTotalCost = -1;
     }
 
-    public Tile getNeighbor(int neighborNumber)
+    public Tile getNeighbor(FACETO f)
     {
         // make neighbor
-        switch (neighborNumber)
+        switch (f)
         {
-            case 0: // top
+            case FACETO.UP:
                 return new Tile(h - 1, w);
-            case 1: // left
+            case FACETO.LEFT:
                 return new Tile(h, w - 1);
-            case 2: // down
+            case FACETO.DOWN:
                 return new Tile(h + 1, w);
-            case 3: // right
+            case FACETO.RIGHT:
                 return new Tile(h, w + 1);
             default:
-                return new Tile(-1, -1);
+                return new Tile();
         }
     }
 
@@ -56,9 +55,9 @@ public class TileComparer : IComparer<Tile>
 {
     public int Compare(Tile x, Tile y)
     {
-        if (x.estimatedTotalCost < y.estimatedTotalCost)
+        if (x.estTotalCost < y.estTotalCost)
             return -1;
-        if (x.estimatedTotalCost == y.estimatedTotalCost)
+        if (x.estTotalCost == y.estTotalCost)
             return 0;
         return 1;
     }
@@ -68,7 +67,7 @@ public class Astar {
 
     private enum PATH_TILE_TYPE : int { WALKABLE = 0, WALL = 1, OBSTACLE = 2 };
     private int height, width;
-    private int[,] GeoMap;
+    private PATH_TILE_TYPE[,] GeoMap;
     private int[,] CameFromMap;
     private int[,] CostMap; // cost of form start to here; -1 == not yet calculated
     private int[,] EstimatedTotalCostMap; // estimated cost form here to goal + cost of form start to here; -1 == not yet calculated
@@ -103,7 +102,7 @@ public class Astar {
     private void InitializeMaps(TILE_TYPE[,] tiles, List<int> obstaclePostionList)
     {
         // Map
-        GeoMap = new int[height, width];
+        GeoMap = new PATH_TILE_TYPE[height, width];
         CostMap = new int[height, width];
         EstimatedTotalCostMap = new int[height, width];
         CameFromMap = new int[height, width];
@@ -114,7 +113,7 @@ public class Astar {
                 CostMap[i, j] = 2048;
                 CameFromMap[i, j] = -1;
                 EstimatedTotalCostMap[i, j] = 2048;
-                GeoMap[i, j] = (int)tiles[i, j] + ((obstaclePostionList.IndexOf(i * width + j) >= 0) ? 2 : 0);
+                GeoMap[i, j] = (PATH_TILE_TYPE)((int)tiles[i, j] + ((obstaclePostionList.IndexOf(i * width + j) >= 0) ? 2 : 0));
             }
         }
         CostMap[StartTile.h, StartTile.w] = 0;
@@ -155,7 +154,7 @@ public class Astar {
             int nbNum = 0;
             while (nbNum < 4)
             {
-                nbTile = curTile.getNeighbor(nbNum);
+                nbTile = curTile.getNeighbor((FACETO)nbNum);
                 nbNum++;
                 //Debug.Log("looking at " + nbTile.h + ", " + nbTile.w);
                 // if already examined
@@ -163,7 +162,7 @@ public class Astar {
                     continue;
 
                 // if is wall then continue, but finishTile is actually a wall so:
-                if (!nbTile.IsEqualTile(GoalTile) && (GeoMap[nbTile.h, nbTile.w] == (int)PATH_TILE_TYPE.WALL))
+                if (!nbTile.IsEqualTile(GoalTile) && GeoMap[nbTile.h, nbTile.w] == PATH_TILE_TYPE.WALL)
                     continue;
 
                 // calculate cost form start to here
@@ -171,7 +170,7 @@ public class Astar {
                 // treatment for obstacles
                 if (!ignoreObs)
                 {
-                    if (GeoMap[nbTile.h, nbTile.w] == (int)PATH_TILE_TYPE.OBSTACLE)
+                    if (GeoMap[nbTile.h, nbTile.w] == PATH_TILE_TYPE.OBSTACLE)
                     {
                         // yes: add random steps for this obs 
                         if (canBreakThroughObs)
@@ -186,7 +185,7 @@ public class Astar {
                 if (!OpenList.Exists(x => x.IsEqualTile(nbTile)))
                 {
                     TileComparer nc = new TileComparer();
-                    nbTile.estimatedTotalCost = EstimateCost(nbTile) + nbCostScore;
+                    nbTile.estTotalCost = EstimateCost(nbTile) + nbCostScore;
                     OpenList.Add(nbTile);
                     OpenList.Sort(nc);
                 }
@@ -237,7 +236,7 @@ public class Astar {
         pathList.Reverse(); // reverse to {start -> goal} order
         return pathList;
     }
-
+    /*
     public void PrintPath() // debug
     {
         List<Vector3> pathList;
@@ -268,4 +267,5 @@ public class Astar {
             Debug.Log(v.x + ", " + v.y + ": " + v.z);
         }
     }
+    */
 }

@@ -1,8 +1,5 @@
-﻿using TileTypeDefine;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
-
-public enum CHARACTER_FACING : int {BACK = 0, LEFT, FRONT, RIGHT};
 
 public class Player_Display
 {
@@ -21,6 +18,38 @@ public class Player_Display
             return playerPositionObject.transform.position;
         }
     }
+    private FACETO faceTo;
+    public FACETO FaceTo
+    {
+        get
+        {
+            return faceTo;
+        }
+        set
+        {
+            faceTo = value;
+            if (playerFacingSprite != null)
+                playerFacingSprite.enabled = false;
+            switch (faceTo)
+            {
+                case FACETO.DOWN:
+                    playerFacingSprite = GameObject.Find("Front Player Sprite").GetComponent<SpriteRenderer>();
+                    break;
+                case FACETO.LEFT:
+                    playerFacingSprite = GameObject.Find("Left Player Sprite").GetComponent<SpriteRenderer>();
+                    break;
+                case FACETO.UP:
+                    playerFacingSprite = GameObject.Find("Back Player Sprite").GetComponent<SpriteRenderer>();
+                    break;
+                case FACETO.RIGHT:
+                    playerFacingSprite = GameObject.Find("Right Player Sprite").GetComponent<SpriteRenderer>();
+                    break;
+                default:
+                    return;
+            }
+            playerFacingSprite.enabled = true;
+        }
+    }
 
     public Player_Display()
     {
@@ -30,22 +59,22 @@ public class Player_Display
         animEndPos = new Vector3(0, 0, -1);
     }
 
-    public void ChangeFacingSpriteTo(CHARACTER_FACING ft)
+    public void ChangeFacingSpriteTo(FACETO ft)
     {
         if (playerFacingSprite != null)
             playerFacingSprite.enabled = false;
         switch (ft)
         {
-            case CHARACTER_FACING.FRONT:
+            case FACETO.DOWN:
                 playerFacingSprite = GameObject.Find("Front Player Sprite").GetComponent<SpriteRenderer>();
                 break;
-            case CHARACTER_FACING.LEFT:
+            case FACETO.LEFT:
                 playerFacingSprite = GameObject.Find("Left Player Sprite").GetComponent<SpriteRenderer>();
                 break;
-            case CHARACTER_FACING.BACK:
+            case FACETO.UP:
                 playerFacingSprite = GameObject.Find("Back Player Sprite").GetComponent<SpriteRenderer>();
                 break;
-            case CHARACTER_FACING.RIGHT:
+            case FACETO.RIGHT:
                 playerFacingSprite = GameObject.Find("Right Player Sprite").GetComponent<SpriteRenderer>();
                 break;
             default:
@@ -56,27 +85,74 @@ public class Player_Display
 }
 
 public class Player_Control : MonoBehaviour {
+
     public int h;
     public int w;
-
-    public int energyPoint;
-    public int healthPoint;
-    private int abilityCooldown;
 
     private Text energyPointObject;
     private Text healthPointObject;
     private Text abilityCooldownObject;
     private AudioSource abilitySound, moveSound;
 
-    public Control_Animation theAnimation;
+    private int energyPoint;
+    private int healthPoint;
+    private int abilityCooldown;
+    public int EP
+    {
+        get
+        {
+            return energyPoint;
+        }
+        set
+        {
+            energyPointObject.color = (value <= 10) ? new Color(1.0f, 0.2f, 0.2f) : new Color(0.1098f, 0.882353f, 0.882353f);
+            energyPointObject.fontSize = (value <= 10) ? 36 : 30;
+            energyPointObject.text = (energyPoint = value).ToString();
+        }
+    }
+    public int HP
+    {
+        get
+        {
+            return healthPoint;
+        }
+        set
+        {
+            healthPointObject.color = (value <= 1) ? new Color(1.0f, 0.2f, 0.2f) : new Color(0.1098f, 0.882353f, 0.1098f);
+            healthPointObject.fontSize = (value <= 1) ? 36 : 30;
+            healthPointObject.text = (healthPoint = value).ToString();
+        }
+    }
+    public int CD
+    {
+        get
+        {
+            return abilityCooldown;
+        }
+        set
+        {
+            abilityCooldown = value;
+            if (abilityCooldown > 0)
+            {
+                abilityCooldownObject.text = "C.D."; // abilityCooldown.ToString();
+                GameObject.Find("Ability Button").GetComponent<Button>().interactable = false;
+            }
+            else
+            {
+                GameObject.Find("Ability Button").GetComponent<Button>().interactable = true;
+                abilityCooldownObject.text = "";
+            }
+        }
+        
+    }
+    private Control_Animation theAnimation;
+    private Level_Map levelMap;
     public Player_Display thePlayerDisp;
     public Game_Menu theControlPanel;
-    private Level_Map levelMap;
 
     // Use this for initialization
     void Start()
     {
-        //Debug.Log("Player_Control.Start()");
     }
 
     public void Initialize()
@@ -93,57 +169,12 @@ public class Player_Control : MonoBehaviour {
         abilitySound = GameObject.Find("Ability Sound").GetComponent<AudioSource>();
     }
 
-    public void PlayerMoveUp()
+    public void PlayerMove(int direction)
     {
         if (!theAnimation.is_irresponsive && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
         {
-            thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.BACK);
-            if (Move(-1, 0)) // it is monster's turn only if player did change position
-            {
-                moveSound.Play();
-                levelMap.theMonsters.MonstersTurn();
-                levelMap.theAnimation.playerAnim.Start();
-                levelMap.theAnimation.monstersAnim.Start();
-            }
-        }
-    }
-
-    public void PlayerMoveLeft()
-    {
-        if (!theAnimation.is_irresponsive && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
-        {
-            thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.LEFT);
-            if (Move(0, -1))
-            {
-                moveSound.Play();
-                levelMap.theMonsters.MonstersTurn();
-                levelMap.theAnimation.playerAnim.Start();
-                levelMap.theAnimation.monstersAnim.Start();
-            }
-        }
-    }
-
-    public void PlayerMoveDown()
-    {
-        if (!theAnimation.is_irresponsive && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
-        {
-            thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.FRONT);
-            if (Move(1, 0))
-            {
-                moveSound.Play();
-                levelMap.theMonsters.MonstersTurn();
-                levelMap.theAnimation.playerAnim.Start();
-                levelMap.theAnimation.monstersAnim.Start();
-            }
-        }
-    }
-
-    public void PlayerMoveRight()
-    {
-        if (!theAnimation.is_irresponsive && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
-        {
-            thePlayerDisp.ChangeFacingSpriteTo(CHARACTER_FACING.RIGHT);
-            if (Move(0, 1))
+            thePlayerDisp.FaceTo = (FACETO)direction;
+            if (Move(direction)) // it is monster's turn only if player did change position
             {
                 moveSound.Play();
                 levelMap.theMonsters.MonstersTurn();
@@ -170,42 +201,41 @@ public class Player_Control : MonoBehaviour {
     /* HANDEL REAL THING THERE */
 
     // retrun true: player did change position; return false: player didn't move
-    private bool Move(int dh, int dw)
+    private bool Move(int direction)
     {
-        //Debug.Log("thePlayer.Move(" + dh + ", " + dw + ") is called");
-        //Debug.Log("plar wanna go to " + (h + dh) + ", " + (w + dw));
+        int newh = h + ((direction % 2 == 0) ? (direction - 1) : 0);
+        int neww = w + (direction % 2 == 1 ? (direction - 2) : 0);
         if (theControlPanel.isMenuActive)
             return false;
-        else if (levelMap.IsTileWalkable(h + dh, w + dw))
+        else if (levelMap.IsTileWalkable(newh, neww))
         {
-            h = h + dh;
-            w = w + dw;
-            //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
+            h = newh;
+            w = neww;
+            EP--;
+            CD--;
             thePlayerDisp.animBeginPos = thePlayerDisp.ObjPos;
             thePlayerDisp.animEndPos = levelMap.MapCoordToWorldVec3(h, w, 0);
-            SetEnergyPoint(energyPoint - 1);
-            SetAbilityCooldown(--abilityCooldown);
             return true;
         }
-        else if ((h + dh) == levelMap.finishTile[0] && (w + dw) == levelMap.finishTile[1])
+        else if (newh == levelMap.finishTile[0] && neww == levelMap.finishTile[1]
+            && (Save_Data.SelectedLevel != Save_Data.BossLevel || levelMap.theMonsters.boss == null))
         {
-            if (Save_Data.SelectedLevel != Save_Data.BossLevel || levelMap.theMonsters.boss == null)
-            {
-                levelMap.UpdateSaveLevel();
-                theControlPanel.ToggleFinishMenu();
-                return true;
-            }
+            thePlayerDisp.animBeginPos = thePlayerDisp.ObjPos;
+            thePlayerDisp.animEndPos = levelMap.MapCoordToWorldVec3(h, w, 0);
+            levelMap.UpdateSaveLevel();
+            theControlPanel.ToggleFinishMenu();
+            return true;
         }
         return false;       
     }
 
-    // retrun true: player did do ability; return false: player didn't make it
+    // retrun true: player did do ability; return false: player couldn't do it
     private bool DoAbility()
     {
         if (theControlPanel.isMenuActive || abilityCooldown > 0)
             return false;
-        SetAbilityCooldown(1);
-        energyPointObject.text = (--energyPoint).ToString();
+        CD = 1;
+        EP--;
         return true;
     }
 
@@ -217,15 +247,15 @@ public class Player_Control : MonoBehaviour {
         if (theControlPanel.isFinishMenu)
             return false;
         
-        int success = levelMap.theMonsters.TryAttackPlayer(h * levelMap.width + w);
+        int loss = levelMap.theMonsters.TryAttackPlayer(h * levelMap.width + w);
         if (levelMap.theObstacles.positionList.Exists(x => x == h * levelMap.width + w))
-            success++;
-        if (success > 0)
+            loss++;
+        if (loss > 0)
         {
             // Debug.Log("player hurted");
             // try destroy obs because player might be hurted by obs in boss monster attack
             levelMap.theObstacles.ObsDestroy(h * levelMap.width + w);
-            SetHealthPoint(healthPoint - success);
+            HP -= loss;
             return true;
         }
         return false;
@@ -245,52 +275,17 @@ public class Player_Control : MonoBehaviour {
 
     public void SetPositionTo(int newh, int neww)
     {
-        if (newh >= levelMap.height || neww >= levelMap.width || newh < 0 || neww < 0)
+        if (newh < levelMap.height && neww < levelMap.width && newh >= 0 && neww >= 0)
         {
-            Debug.Log("illegal position");
-            return;
+            if (levelMap.tiles[newh, neww] != TILE_TYPE.WALL)
+            {
+                levelMap.theObstacles.ObsDestroy(newh * levelMap.width + neww);
+                h = newh;
+                w = neww;
+                thePlayerDisp.ObjPos = levelMap.MapCoordToWorldVec3(h, w, 0);
+                return;
+            }
         }
-        //Debug.Log("thePlayer.SetPositionTo() is called in Game_Panel");
-        if (levelMap.tiles[newh, neww] != TILE_TYPE.WALL)
-        {
-            levelMap.theObstacles.ObsDestroy(newh * levelMap.width + neww);
-            h = newh;
-            w = neww;
-            //Debug.Log("player position has been changed to (" + h + ", " + w + ")");
-            thePlayerDisp.ObjPos = levelMap.MapCoordToWorldVec3(h, w, 0);
-        }
-        else
-        {
-            Debug.Log("Player_Control.SetPositionTo(): illegal position");
-        }
-    }
-
-    public void SetEnergyPoint(int e)
-    {
-        energyPointObject.color = (e <= 10) ? new Color(1.0f, 0.2f, 0.2f) : new Color(0.1098f, 0.882353f, 0.882353f);
-        energyPointObject.fontSize = (e <= 10) ? 36 : 30;
-        energyPointObject.text = (energyPoint = e).ToString();
-    }
-
-    public void SetHealthPoint(int h)
-    {
-        healthPointObject.color = (h <= 1) ? new Color(1.0f, 0.2f, 0.2f) : new Color(0.1098f, 0.882353f, 0.1098f);
-        healthPointObject.fontSize = (h <= 1) ? 36 : 30;
-        healthPointObject.text = (healthPoint = h).ToString();
-    }
-
-    public void SetAbilityCooldown(int cd)
-    {
-        abilityCooldown = cd;
-        if (cd > 0)
-        {
-            abilityCooldownObject.text = "C.D."; // abilityCooldown.ToString();
-            GameObject.Find("Ability Button").GetComponent<Button>().interactable = false;
-        }
-        else
-        {
-            GameObject.Find("Ability Button").GetComponent<Button>().interactable = true;
-            abilityCooldownObject.text = "";
-        }
+        Debug.Log("Player_Control.SetPositionTo(): illegal position");
     }
 }

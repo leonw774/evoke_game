@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 /*
@@ -12,13 +11,13 @@ using UnityEngine.UI;
  * here leaves a imperfect structure 
  * */
 
-public class MonsterAbility {
+public class BossAbility {
 
     public Sprite sp_frame1, sp_frame2;
     public SpriteRenderer facingSprite;
     public Text hpOutput;
     public bool killed;
-    protected Monster self;
+    protected BossMonster self;
     protected Level_Map levelMap;
 
     public int decision;
@@ -45,7 +44,7 @@ public class MonsterAbility {
     // in which they'll handle it like most of the monster
     // the function here is for its special ability
 
-    public MonsterAbility(Level_Map lm, int _hp)
+    public BossAbility(Level_Map lm, int _hp)
     {
         facingSprite = null;
         hpOutput = null;
@@ -57,7 +56,7 @@ public class MonsterAbility {
         self = null;
     }
 
-    public void SetSelf(Monster _self)
+    public void SetSelf(BossMonster _self)
     {
         self = _self;
     }

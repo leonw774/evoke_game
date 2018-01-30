@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Boss1_Ability : MonsterAbility {
+public class Boss1_Ability : BossAbility {
 
     public Boss1_Ability(Level_Map lm, int _hp) : base(lm, _hp)
     {
@@ -41,16 +41,16 @@ public class Boss1_Ability : MonsterAbility {
         if (1 == (System.Math.Abs(levelMap.thePlayer.h - self.h) + System.Math.Abs(levelMap.thePlayer.w - self.w)))
         {
             if (levelMap.thePlayer.h < self.h)
-                self.FaceTo(FACETO.UP);
+                self.FaceTo = FACETO.UP;
             else if (levelMap.thePlayer.h == self.h)
             {
                 if (levelMap.thePlayer.w > self.w)
-                    self.FaceTo(FACETO.RIGHT);
+                    self.FaceTo = FACETO.RIGHT;
                 else
-                    self.FaceTo(FACETO.LEFT);
+                    self.FaceTo = FACETO.LEFT;
             }
             else
-                self.FaceTo(FACETO.DOWN);
+                self.FaceTo = FACETO.DOWN;
             // returns the hp the player to be loss
             return 1;
         }
@@ -65,7 +65,7 @@ public class Boss1_Ability : MonsterAbility {
         monAstar.FindPathLength(false, true, true);
         List<int> pathList = monAstar.GetPath();
         if (pathList.Count > 1)
-            self.FaceTo((FACETO) pathList[0]);
+            self.FaceTo = (FACETO) pathList[0];
 
         //monAstar.PrintPath();
         //Debug.Log("self.FaceTo = " + (int) self.faceTo);
@@ -129,7 +129,7 @@ public class Boss1_Ability : MonsterAbility {
         {
             // no need to detect whether there is another mon on the way or not
             self.MoveTo(newh, neww);
-            self.FaceTo((FACETO)goingTo);
+            self.FaceTo = (FACETO)goingTo;
         }
     }
 }

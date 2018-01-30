@@ -1,6 +1,5 @@
 ﻿using UnityEngine.UI;
 using UnityEngine;
-using TileTypeDefine;
 
 public class Control_Animation : MonoBehaviour {
 
@@ -103,7 +102,7 @@ public class Control_Animation : MonoBehaviour {
         {
             isGoing = false;
             GameObject.Find("Player Attacked Effect").GetComponent<SpriteRenderer>().enabled = false;
-            if (levelMap.thePlayer.healthPoint <= 0)
+            if (levelMap.thePlayer.HP <= 0)
                 levelMap.thePlayer.theControlPanel.ToggleFailMenu();
         }
     }
@@ -154,7 +153,7 @@ public class Control_Animation : MonoBehaviour {
                 if (levelMap.theMonsters.boss.monAbility.decision == 1 || levelMap.theMonsters.boss.monAbility.decision == 2)
                     levelMap.theAnimation.bossAbilityAnim.Start();
             }
-            if (levelMap.thePlayer.energyPoint == 0) levelMap.thePlayer.theControlPanel.ToggleFailMenu();
+            if (levelMap.thePlayer.EP == 0) levelMap.thePlayer.theControlPanel.ToggleFailMenu();
         }
     }
 
@@ -388,7 +387,6 @@ public class Control_Animation : MonoBehaviour {
 
         public override void End()
         {
-            Debug.Log("BossAb: End");
             int pos = -1, lookat = -1; // side -1, middle 0, side 1
             while (lookat <= 1)
             {
@@ -401,7 +399,6 @@ public class Control_Animation : MonoBehaviour {
                     if (thisObsSprite.transform.localScale.y >= 0f)
                     {
                         // Destroy!
-                        Debug.Log("Boss ObsDestroy:" + pos);
                         Destroy(GameObject.Find("Obstacle Sprite" + pos.ToString()));
                         thisObsSprite = null;
                         levelMap.theObstacles.ObsDestroy(pos);
@@ -415,7 +412,7 @@ public class Control_Animation : MonoBehaviour {
             }
             //levelMap.thePlayer.CheckPlayerBlocked();
             if(levelMap.thePlayer.IsPlayerAttacked())
-                if (levelMap.thePlayer.healthPoint <= 0)
+                if (levelMap.thePlayer.HP <= 0)
                     levelMap.thePlayer.theControlPanel.ToggleFailMenu();
             isGoing = false;
         }
@@ -667,19 +664,19 @@ public class Control_Animation : MonoBehaviour {
         // for playing on PC
         if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
         {
-            levelMap.thePlayer.PlayerMoveUp();
+            levelMap.thePlayer.PlayerMove((int)FACETO.UP);
         }
         else if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
         {
-            levelMap.thePlayer.PlayerMoveLeft();
+            levelMap.thePlayer.PlayerMove((int)FACETO.LEFT);
         }
         else if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
         {
-            levelMap.thePlayer.PlayerMoveDown();
+            levelMap.thePlayer.PlayerMove((int)FACETO.DOWN);
         }
         else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
         {
-            levelMap.thePlayer.PlayerMoveRight();
+            levelMap.thePlayer.PlayerMove((int)FACETO.RIGHT);
         }
         else if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
         {

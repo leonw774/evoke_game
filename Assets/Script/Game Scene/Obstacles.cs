@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using TileTypeDefine;
 
 public class Obstacles : MonoBehaviour {
 
@@ -250,7 +249,7 @@ public class Obstacles : MonoBehaviour {
                         is_middle_all_walkable = is_middle_all_walkable && !(positionList.Exists(x => x == pos + d) || levelMap.tiles[i, j + d] == TILE_TYPE.WALL);
                         d++;
                     }
-                    if (is_middle_all_walkable && is_up_all_obs && is_down_all_obs && Random.Range(0, 32) > 0)
+                    if (is_middle_all_walkable && is_up_all_obs && is_down_all_obs && Random.Range(0, 24) > 0)
                     {
                         ListUpdate(i, j); // add an obs in the walk way
                         ListUpdate(i + ((Random.Range(0, 2) == 0) ? 1 : -1), j);// then randomly delete a obs
@@ -266,7 +265,7 @@ public class Obstacles : MonoBehaviour {
                         is_middle_all_walkable = is_middle_all_walkable && !(positionList.Exists(x => x == pos + d * mw) || levelMap.tiles[i + d, j] == TILE_TYPE.WALL);
                         d++;
                     }
-                    if (is_middle_all_walkable && is_left_all_obs && is_right_all_obs && Random.Range(0, 32) > 0)
+                    if (is_middle_all_walkable && is_left_all_obs && is_right_all_obs && Random.Range(0, 24) > 0)
                     {
                         ListUpdate(i, j); // add an obs in the walk way
                         ListUpdate(i, j + ((Random.Range(0, 2) == 0) ? 1 : -1)); // then randomly delete a obs
