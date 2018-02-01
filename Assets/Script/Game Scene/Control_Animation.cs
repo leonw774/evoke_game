@@ -631,9 +631,9 @@ public class Control_Animation : MonoBehaviour {
         if (times_monster_change_sprite <= Time.time)
         {
             if (times_monster_change_sprite == 0)
-                times_monster_change_sprite = Time.time + 0.5f;
+                times_monster_change_sprite = Time.time + 100f;
             else
-                times_monster_change_sprite += 1.1f;
+                times_monster_change_sprite += 100f;
             levelMap.theMonsters.AllChangeFrame();
         }
 

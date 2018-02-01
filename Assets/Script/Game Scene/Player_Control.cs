@@ -165,7 +165,7 @@ public class Player_Control : MonoBehaviour {
         energyPointObject = GameObject.Find("EP Output").GetComponent<Text>();
         healthPointObject = GameObject.Find("HP Output").GetComponent<Text>();
         abilityCooldownObject = GameObject.Find("CD Output").GetComponent<Text>();
-        moveSound = GameObject.Find("Move Sound").GetComponent<AudioSource>();
+        //moveSound = GameObject.Find("Move Sound").GetComponent<AudioSource>();
         abilitySound = GameObject.Find("Ability Sound").GetComponent<AudioSource>();
     }
 
@@ -176,7 +176,7 @@ public class Player_Control : MonoBehaviour {
             thePlayerDisp.FaceTo = (FACETO)direction;
             if (Move(direction)) // it is monster's turn only if player did change position
             {
-                moveSound.Play();
+                //moveSound.Play();
                 levelMap.theMonsters.MonstersTurn();
                 levelMap.theAnimation.playerAnim.Start();
                 levelMap.theAnimation.monstersAnim.Start();

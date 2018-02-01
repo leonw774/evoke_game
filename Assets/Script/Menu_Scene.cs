@@ -101,14 +101,6 @@ public class Menu_Scene : MonoBehaviour {
 
     /* JUMP TO OTHER SCENE */
 
-    private void FirstTimeInGameIntro()
-    {
-        GameObject.Find("Loading Title").GetComponent<SpriteRenderer>().enabled = true;
-        Save_Data.SelectLevel(0);
-        SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
-        SceneManager.LoadScene("Slide Scene");
-    }
-
     public void LoadIntroSlide(int num)
     {
         GameObject.Find("Loading Menu").GetComponent<SpriteRenderer>().enabled = true;
@@ -137,10 +129,8 @@ public class Menu_Scene : MonoBehaviour {
 
     public void AnimationStart()
     {
-        if (Save_Data.PassedLevel == -1 && Save_Data.SelectedLevel == -1)
-            FirstTimeInGameIntro();
-        else
-            isTitleAnimPlaying = true;
+        //isTitleAnimPlaying = true;
+        CameraMain2Menu();
     }
 
     public void CameraMain2Menu()
@@ -148,11 +138,13 @@ public class Menu_Scene : MonoBehaviour {
         // move camera
         mainCam.transform.Translate(new Vector3(-20, 0, 0));
         // set title logo back to transparent
+        /*
         Color c = titleImg.color, ci = titleImgIcon.color;
         c.a = 1.0f;
         ci.a = 0.0f;
         titleImg.color = c;
         titleImgIcon.color = ci;
+        */
     }
 
     public void CameraMenu2Main()

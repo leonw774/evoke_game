@@ -72,38 +72,39 @@ public class Level_Map : MonoBehaviour
         Texture2D thisThemeTex;
         Rect Rect;
         Sprite Sp;
+        String testString = "test";
 
         // get backgrounds
-        thisThemeTex = Resources.Load<Texture2D>("Themes/Background/background_" + Save_Data.SelectedTheme.ToString());
+        thisThemeTex = Resources.Load<Texture2D>("Themes/Background/background_" + testString);
         Rect = new Rect(0.0f, 0.0f, (float)thisThemeTex.width, (float)thisThemeTex.height);
         Sp = Sprite.Create(thisThemeTex, Rect, new Vector2(0.5f, 0.5f));
         GameObject.Find("Field Background").GetComponent<SpriteRenderer>().sprite = Sp;
 
         // get outring
-        thisThemeTex = Resources.Load<Texture2D>("Themes/Background/background_outring_" + Save_Data.SelectedTheme.ToString());
+        thisThemeTex = Resources.Load<Texture2D>("Themes/Background/background_outring_" + testString);
         Rect = new Rect(0.0f, 0.0f, (float)thisThemeTex.width, (float)thisThemeTex.height);
         Sp = Sprite.Create(thisThemeTex, Rect, new Vector2(0.5f, 0.5f));
         GameObject.Find("Field Frontground Outring").GetComponent<SpriteRenderer>().sprite = Sp;
 
         // get wall spaite
-        thisThemeTex = Resources.Load<Texture2D>("Themes/Wall/wall_" + Save_Data.SelectedTheme.ToString());
+        thisThemeTex = Resources.Load<Texture2D>("Themes/Wall/wall_" + testString);
         Rect = new Rect(0.0f, 0.0f, (float)thisThemeTex.width, (float)thisThemeTex.height);
         Sp = Sprite.Create(thisThemeTex, Rect, new Vector2(0.5f, 0.5f));
         GameObject.Find("Prototype Wall Sprite").GetComponent<SpriteRenderer>().sprite = Sp;
 
         // get obs sprite
-        thisThemeTex = Resources.Load<Texture2D>("Themes/Obs/obs_" + Save_Data.SelectedTheme.ToString());
+        thisThemeTex = Resources.Load<Texture2D>("Themes/Obs/obs_" + testString);
         Rect = new Rect(0.0f, 0.0f, (float)thisThemeTex.width, (float)thisThemeTex.height);
         Sp = Sprite.Create(thisThemeTex, Rect, new Vector2(0.5f, 0.5f));
         GameObject.Find("Prototype Obstacle Sprite").GetComponent<SpriteRenderer>().sprite = Sp;
 
         // get monster sprite
-        thisThemeTex = Resources.Load<Texture2D>("Themes/Monster/monster_frame1_" + Save_Data.SelectedTheme.ToString());
+        thisThemeTex = Resources.Load<Texture2D>("Themes/Monster/monster_frame1_" + testString);
         Rect = new Rect(0.0f, 0.0f, (float)thisThemeTex.width, (float)thisThemeTex.height);
         Sp = Sprite.Create(thisThemeTex, Rect, new Vector2(0.5f, 0.5f));
         GameObject.Find("Prototype Monster Sprite Frame 1").GetComponent<SpriteRenderer>().sprite = Sp;
 
-        thisThemeTex = Resources.Load<Texture2D>("Themes/Monster/monster_frame2_" + Save_Data.SelectedTheme.ToString());
+        thisThemeTex = Resources.Load<Texture2D>("Themes/Monster/monster_frame2_" + testString);
         Rect = new Rect(0.0f, 0.0f, (float)thisThemeTex.width, (float)thisThemeTex.height);
         Sp = Sprite.Create(thisThemeTex, Rect, new Vector2(0.5f, 0.5f));
         GameObject.Find("Prototype Monster Sprite Frame 2").GetComponent<SpriteRenderer>().sprite = Sp;

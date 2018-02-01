@@ -434,7 +434,7 @@ public class Monsters_Control: MonoBehaviour {
 
         if (monsList[i].id >= 0)
         {
-            GameObject.Find("Monster Hurt Sound").GetComponent<AudioSource>().PlayDelayed(0.11f);
+            //GameObject.Find("Monster Hurt Sound").GetComponent<AudioSource>().PlayDelayed(0.11f);
             Vector3 v = monsList[i].SpriteObj.transform.localScale;
             v.y /= 2f;
             monsList[i].SpriteObj.transform.localScale = v;
