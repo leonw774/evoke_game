@@ -464,7 +464,6 @@ public class Control_Animation : MonoBehaviour {
             }
             bossSpecialSprite.enabled = true;
         }
-        GameObject.Find("Boss Hurted Effect").GetComponent<SpriteRenderer>().enabled = true;
     }
 
     private void BossMonsterHurtedAnimEnd()
@@ -475,7 +474,6 @@ public class Control_Animation : MonoBehaviour {
             bossSpecialSprite.enabled = false;
             bossSpecialSprite = null;
         }
-        GameObject.Find("Boss Hurted Effect").GetComponent<SpriteRenderer>().enabled = false;
         if (levelMap.theMonsters.boss != null)
         {
             if (levelMap.theMonsters.boss.monAbility.killed)
@@ -508,7 +506,7 @@ public class Control_Animation : MonoBehaviour {
             vamm_pos = new Vector3(dw + 1f, dh + 0.1f);
             vamm_scale = new Vector3(s, s, 1);
             GameObject.Find("Map Button Text").GetComponent<Text>().text ="RECENTER TO YOU";
-            GameObject.Find("CD Output").GetComponent<Text>().text = "you can now drag\nroom in & out\nto look around map";
+            GameObject.Find("CD Output").GetComponent<Text>().text = "you can drag\nroom in/out\nto look around map";
         }
         viewMapModeAnimation = true;
         time_view_map_mode = Time.time + Animation.ANIM_DUR_TIME / 12;
