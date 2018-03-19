@@ -253,8 +253,8 @@ MonoBehaviour:
     y: 0
     width: 684
     height: 357
-  m_MinSize: {x: 204, y: 221}
-  m_MaxSize: {x: 4004, y: 4021}
+  m_MinSize: {x: 200, y: 200}
+  m_MaxSize: {x: 4000, y: 4000}
   m_ActualView: {fileID: 18}
   m_Panes:
   - {fileID: 17}
@@ -443,19 +443,19 @@ MonoBehaviour:
     m_ShowAllHits: 0
     m_SearchArea: 0
     m_Folders:
-    - Assets
+    - Assets/Resources/Themes/Monster
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets
+  - Assets/Resources/Themes/Monster
   m_LastFoldersGridSize: -1
-  m_LastProjectPath: D:\Projects\evoke_game
+  m_LastProjectPath: E:\Game Design Project\evoke_game
   m_IsLocked: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 4}
-    m_SelectedIDs: d6240000
-    m_LastClickedID: 9430
-    m_ExpandedIDs: 00000000d624000008250000be2500002e2600000828000000ca9a3bffffff7f
+    scrollPos: {x: 0, y: 0}
+    m_SelectedIDs: d0260000
+    m_LastClickedID: 9936
+    m_ExpandedIDs: 0000000084260000b02600002c270000782700002c29000000ca9a3bffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -483,7 +483,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 00000000d624000008250000be2500002e26000008280000
+    m_ExpandedIDs: 0000000084260000b02600002c270000782700002c290000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -601,7 +601,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: ce94ffffa095ffff7696ffff7a96ffff70edffff40eeffff02efffff0aefffffdefbffffe0fbffff00000000f62800008c290000b629000090360000b0360000ba3600000a3700002a370000343700003e37000050370000703700007a3700008c37000020390000de410000644d0000
+    m_ExpandedIDs: 0658ffff1c58fffff258fffff658ffffd85effff865fffff4460ffff4860ffff528effff1c8ffffff28ffffff68fffffe2f8ffffe4f8ffff00000000ac27000056280000963e0000b4480000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -657,9 +657,9 @@ MonoBehaviour:
   m_isRotationLocked: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 0.92599964, y: 0.31580508, z: 10}
+    m_Target: {x: -2.3538659, y: 9.909374, z: 10}
     speed: 2
-    m_Value: {x: 0.92599964, y: 0.31580508, z: 10}
+    m_Value: {x: -2.3538659, y: 9.909374, z: 10}
   m_RenderMode: 0
   m_ValidateTrueMetals: 0
   m_SceneViewState:
@@ -733,8 +733,8 @@ MonoBehaviour:
   m_ZoomArea:
     m_HRangeLocked: 0
     m_VRangeLocked: 0
-    m_HBaseRangeMin: -423.5
-    m_HBaseRangeMax: 423.5
+    m_HBaseRangeMin: -427
+    m_HBaseRangeMax: 427
     m_VBaseRangeMin: -240
     m_VBaseRangeMax: 240
     m_HAllowExceedBaseRangeMin: 1
