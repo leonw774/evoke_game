@@ -254,9 +254,9 @@ public class Monsters_Control: MonoBehaviour {
         GameObject created = Instantiate(prototype);
         created.name = "Monster Sprite" + index.ToString();
         created.tag = "Monster";
+        created.transform.localScale = new Vector3(0.875f, 0.875f, 1f);
         created.transform.parent = GameObject.Find("Game Panel").transform;
         created.transform.localPosition = trans;
-        created.transform.localScale = Vector3.one;
         monsList.Add(new Monster(h, w, index, created));
     }
 
