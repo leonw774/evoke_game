@@ -1,4 +1,0 @@
-Normal: BB9B66FF
-Highlighted: FFEEB7FF
-Uesed: A19B8AFF
-Disabled: 3E3C31DD
