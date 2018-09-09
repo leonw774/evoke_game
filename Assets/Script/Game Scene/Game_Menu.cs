@@ -117,6 +117,7 @@ public class Game_Menu : MonoBehaviour {
     public void GameExitButton()
     {
         WriteSaveData(Save_Data.PassedLevel);
+        GameObject.Find("Loading Control").GetComponent<SpriteRenderer>().enabled = true;
         SceneManager.LoadScene("Menu Scene");
     }
 

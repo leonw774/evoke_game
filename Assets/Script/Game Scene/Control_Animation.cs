@@ -490,23 +490,28 @@ public class Control_Animation : MonoBehaviour {
         float dh = (levelMap.height / 2 - levelMap.thePlayer.h);
         float dw = (levelMap.thePlayer.w - levelMap.width / 2);
         levelMap.thePlayer.thePlayerDisp.playerFacingSprite.enabled = isViewMapMode;
+        GameObject.Find("Player State Canvas").GetComponent<Canvas>().enabled = isViewMapMode;
+        foreach (GameObject o in GameObject.FindGameObjectsWithTag("Obstacle"))
+        {
+            o.GetComponent<SpriteRenderer>().enabled = isViewMapMode;
+        }
+
         GameObject.Find("Field Frontground Outring").GetComponent<SpriteRenderer>().enabled = isViewMapMode;
         GameObject.Find("Player Control Canvas").GetComponent<Canvas>().enabled = isViewMapMode;
-        GameObject.Find("Ability Button Icon").GetComponent<SpriteRenderer>().enabled = isViewMapMode;
         if (isViewMapMode)
         {
             vamm_pos = new Vector3(0f, -0.1f);
             vamm_scale = new Vector3(1, 1, 1);
-            GameObject.Find("Map Button Text").GetComponent<Text>().text = "VIEW WHOLE MAP";
-            GameObject.Find("CD Output").GetComponent<Text>().text = "";
+            GameObject.Find("Map Button Text").GetComponent<Text>().text = "觀看全地圖";
+            GameObject.Find("View Map Description").GetComponent<Text>().text = "";
             isViewMapMode = false;
         }
         else
         {
             vamm_pos = new Vector3(dw + 1f, dh + 0.1f);
             vamm_scale = new Vector3(s, s, 1);
-            GameObject.Find("Map Button Text").GetComponent<Text>().text ="RECENTER TO YOU";
-            GameObject.Find("CD Output").GetComponent<Text>().text = "you can drag\nroom in/out\nto look around map";
+            GameObject.Find("Map Button Text").GetComponent<Text>().text ="回到目前位置";
+            GameObject.Find("View Map Description").GetComponent<Text>().text = "現可拖移、縮放\n瀏覽地圖";
         }
         viewMapModeAnimation = true;
         time_view_map_mode = Time.time + Animation.ANIM_DUR_TIME / 12;

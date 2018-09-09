@@ -166,7 +166,7 @@ public class Monsters_Control: MonoBehaviour {
             w = pos % mapWidth;
             tooClose = false;
             // check if too close to player or finsh
-            if (4 > (System.Math.Abs(levelMap.playerStartTile[0] - h) + System.Math.Abs(levelMap.playerStartTile[1] - w))
+            if (5 > (System.Math.Abs(levelMap.playerStartTile[0] - h) + System.Math.Abs(levelMap.playerStartTile[1] - w))
              || 3 > (System.Math.Abs(levelMap.finishTile[0] - h) + System.Math.Abs(levelMap.finishTile[1] - w)))
                 tooClose = true;
             // check if too close to other monster
@@ -256,7 +256,7 @@ public class Monsters_Control: MonoBehaviour {
         created.tag = "Monster";
         created.transform.localScale = new Vector3(0.875f, 0.875f, 1f);
         created.transform.parent = GameObject.Find("Game Panel").transform;
-        created.transform.localPosition = trans;
+        created.transform.localPosition = trans + new Vector3(0.0f, 0.1f, 0.0f); //just a little adjust to y axis
         monsList.Add(new Monster(h, w, index, created));
     }
 

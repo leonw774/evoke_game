@@ -15,10 +15,10 @@ public class Info_Menu : MonoBehaviour {
         MenuBtn = GameObject.Find("Menu Button");
         MapBtn = GameObject.Find("Map Button");
         InfoCloseImg = GameObject.Find("Info Close Button").GetComponent<Image>();
-        if (Save_Data.SelectedLevel == 0) // level zero is tutoriel level
+        /*if (Save_Data.SelectedLevel == 0) // level zero is tutoriel level
         {
             toggleInfoMenu();
-        }
+        }*/
 	}
 
     public void toggleInfoMenu()

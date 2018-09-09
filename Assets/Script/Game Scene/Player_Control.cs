@@ -89,9 +89,8 @@ public class Player_Control : MonoBehaviour {
     public int h;
     public int w;
 
-    private Text energyPointObject;
-    private Text healthPointObject;
-    private Text abilityCooldownObject;
+    public Text energyPointObject;
+    public Text healthPointObject;
 
     private int energyPoint;
     private int healthPoint;
@@ -105,7 +104,7 @@ public class Player_Control : MonoBehaviour {
         set
         {
             energyPointObject.color = (value <= 10) ? new Color(1.0f, 0.2f, 0.2f) : new Color(0.1098f, 0.882353f, 0.882353f);
-            energyPointObject.fontSize = (value <= 10) ? 36 : 30;
+            energyPointObject.fontSize = (value <= 10) ? 22 : 20;
             energyPointObject.text = (energyPoint = value).ToString();
         }
     }
@@ -118,7 +117,7 @@ public class Player_Control : MonoBehaviour {
         set
         {
             healthPointObject.color = (value <= 1) ? new Color(1.0f, 0.2f, 0.2f) : new Color(0.1098f, 0.882353f, 0.1098f);
-            healthPointObject.fontSize = (value <= 1) ? 36 : 30;
+            healthPointObject.fontSize = (value <= 1) ? 22 : 20;
             healthPointObject.text = (healthPoint = value).ToString();
         }
     }
@@ -133,13 +132,11 @@ public class Player_Control : MonoBehaviour {
             abilityCooldown = value;
             if (abilityCooldown > 0)
             {
-                abilityCooldownObject.text = "C.D."; // abilityCooldown.ToString();
                 GameObject.Find("Ability Button").GetComponent<Button>().interactable = false;
             }
             else
             {
                 GameObject.Find("Ability Button").GetComponent<Button>().interactable = true;
-                abilityCooldownObject.text = "";
             }
         }
         
@@ -165,7 +162,6 @@ public class Player_Control : MonoBehaviour {
 
         energyPointObject = GameObject.Find("EP Output").GetComponent<Text>();
         healthPointObject = GameObject.Find("HP Output").GetComponent<Text>();
-        abilityCooldownObject = GameObject.Find("CD Output").GetComponent<Text>();
         abilitySound = GameObject.Find("Ability Sound").GetComponent<AudioSource>();
     }
 

@@ -234,7 +234,7 @@ public class Level_Map : MonoBehaviour
         else if (Save_Data.SelectedLevel == 3)
             monsterNumber = 11;
         else
-            monsterNumber = (tiles.Length - wallsNumber - 8) / 32 + ((Save_Data.SelectedLevel > 4) ? 4 : Save_Data.SelectedLevel);
+            monsterNumber = (tiles.Length - wallsNumber - 8) / 32 + ((Save_Data.SelectedLevel > 4) ? 4 : (int) (Save_Data.SelectedLevel * 1.2));
         //Debug.Log("map ask for " + monsterNumber + " mons");
     }
 
@@ -258,7 +258,7 @@ public class Level_Map : MonoBehaviour
         Debug.Log("multiPathFactor: " + multiPathFactor);
         //Debug.Log("adjustedmonsterNum: " + adjustedmonsterNum);
 
-        int ep_to_set = (int) (estimatedStep * (1.3 - ((Save_Data.SelectedLevel / 3) * 0.02))) + (int) (monsterNumToStep * adjustedmonsterNum) + 3;
+        int ep_to_set = (int) (estimatedStep * (1.31 - ((Save_Data.SelectedLevel / 2) * 0.015))) + (int) (monsterNumToStep * adjustedmonsterNum);
         int hp_to_set = (int) adjustedmonsterNum / 15 + 2;
 
         if (Save_Data.SelectedLevel == Save_Data.BossLevel)
