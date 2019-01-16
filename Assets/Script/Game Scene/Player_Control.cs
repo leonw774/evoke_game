@@ -171,11 +171,17 @@ public class Player_Control : MonoBehaviour {
         {
             theAnimation.is_irresponsive = true;
             thePlayerDisp.FaceTo = (FACETO)direction;
-            if (Move(direction)) // it is monster's turn only if player did change position
+            TILE_TYPE goingTo = Move(direction);
+            if (goingTo == TILE_TYPE.WALKABLE) // it is monster's turn only if player did change position
             {
                 levelMap.theMonsters.MonstersTurn();
                 StartCoroutine(theAnimation.PlayerMoveAnim());
                 StartCoroutine(theAnimation.MonstersMoveAnim());
+            }
+            else if (goingTo == TILE_TYPE.FINISH_POINT)
+            {
+                levelMap.UpdateSaveLevel();
+                theControlPanel.ToggleFinishMenu();
             }
         }
     }
@@ -199,12 +205,12 @@ public class Player_Control : MonoBehaviour {
     /* HANDEL REAL THING THERE */
 
     // retrun true: player did change position; return false: player didn't move
-    private bool Move(int direction)
+    private TILE_TYPE Move(int direction)
     {
         int newh = h + ((direction % 2 == 0) ? (direction - 1) : 0);
         int neww = w + (direction % 2 == 1 ? (direction - 2) : 0);
-        if (theControlPanel.isMenuActive || healthPoint <= 0)
-            return false;
+        if (theControlPanel.isMenuActive || healthPoint <= 0 || energyPoint <= 0)
+            return TILE_TYPE.WALL;
         else if (levelMap.IsTileWalkable(newh, neww))
         {
             h = newh;
@@ -213,18 +219,16 @@ public class Player_Control : MonoBehaviour {
             CD--;
             thePlayerDisp.animBeginPos = thePlayerDisp.ObjPos;
             thePlayerDisp.animEndPos = levelMap.MapCoordToWorldVec3(h, w, 0);
-            return true;
+            return TILE_TYPE.WALKABLE;
         }
         else if (newh == levelMap.finishTile[0] && neww == levelMap.finishTile[1]
-            && (Save_Data.SelectedLevel != Save_Data.BossLevel || levelMap.theMonsters.bossList.Count == 0))
+            && (Save_Data.SelectedLevel != Save_Data.MaxLevel || levelMap.theMonsters.bossList.Count == 0))
         {
             thePlayerDisp.animBeginPos = thePlayerDisp.ObjPos;
-            thePlayerDisp.animEndPos = levelMap.MapCoordToWorldVec3(h, w, 0);
-            levelMap.UpdateSaveLevel();
-            theControlPanel.ToggleFinishMenu();
-            return true;
+            thePlayerDisp.animEndPos = levelMap.MapCoordToWorldVec3(newh, neww, 0);
+            return TILE_TYPE.FINISH_POINT;
         }
-        return false;       
+        return TILE_TYPE.WALL;       
     }
 
     // retrun true: player did do ability; return false: player couldn't do it

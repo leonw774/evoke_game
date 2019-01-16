@@ -23,8 +23,6 @@
 
     public static int SelectedTheme = -1;
 
-    public readonly static int BossLevel = 10;
-
     public static void SelectLevel(int newlevel)
     {
         SelectedLevel = newlevel;

@@ -104,7 +104,7 @@ public class Game_Menu : MonoBehaviour {
             ToggleGameMenu();
             FinishSound.Play();
             WriteSaveData(Save_Data.PassedLevel);
-            if (Save_Data.SelectedLevel == Save_Data.BossLevel)
+            if (Save_Data.SelectedLevel == Save_Data.MaxLevel)
             {
                 GameObject.Find("Next Level Button").transform.Translate(new Vector3(0, 0, -1000));
             }

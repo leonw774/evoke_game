@@ -10,12 +10,13 @@ public class Control_Animation : MonoBehaviour {
     public float time_view_map_mode = 0;
 
     public static readonly float ANIM_DUR_TIME = 0.2f;
-    public static readonly float ANIM_PADDING_TIME = 0.01f;
+    public static readonly float ANIM_PADDING_TIME = 0.025f;
 
     public bool is_irresponsive = false;
     public bool is_anim = false;
     public bool is_bossability = false;
     public bool is_vmm = false;
+    public bool is_double_tap = false;
     private Vector3 vamm_pos, vamm_scale;
     GameObject Game_Panel;
 
@@ -263,6 +264,7 @@ public class Control_Animation : MonoBehaviour {
             default:
                 break;
         }
+        GameObject.Find("Monster Hurt Sound").GetComponent<AudioSource>().PlayDelayed(0.1f);
         while (i < ANIM_DUR_TIME)
         {
             i += Time.deltaTime;
@@ -324,21 +326,21 @@ public class Control_Animation : MonoBehaviour {
                         destroyObsObj.Add(thisObsObj);
                     }
                 }
-            }
-            switch (x.faceTo)
-            {
-                case FACETO.UP:
-                    x.facingSprite.sprite = GameObject.Find("Back Boss Sprite Ability").GetComponent<SpriteRenderer>().sprite;
-                    break;
-                case FACETO.LEFT:
-                    x.facingSprite.sprite = GameObject.Find("Left Boss Sprite Ability").GetComponent<SpriteRenderer>().sprite;
-                    break;
-                case FACETO.DOWN:
-                    x.facingSprite.sprite = GameObject.Find("Front Boss Sprite Ability").GetComponent<SpriteRenderer>().sprite;
-                    break;
-                case FACETO.RIGHT:
-                    x.facingSprite.sprite = GameObject.Find("Right Boss Sprite Ability").GetComponent<SpriteRenderer>().sprite;
-                    break;
+                switch (x.faceTo)
+                {
+                    case FACETO.UP:
+                        x.facingSprite.sprite = GameObject.Find("Back Boss Sprite Ability").GetComponent<SpriteRenderer>().sprite;
+                        break;
+                    case FACETO.LEFT:
+                        x.facingSprite.sprite = GameObject.Find("Left Boss Sprite Ability").GetComponent<SpriteRenderer>().sprite;
+                        break;
+                    case FACETO.DOWN:
+                        x.facingSprite.sprite = GameObject.Find("Front Boss Sprite Ability").GetComponent<SpriteRenderer>().sprite;
+                        break;
+                    case FACETO.RIGHT:
+                        x.facingSprite.sprite = GameObject.Find("Right Boss Sprite Ability").GetComponent<SpriteRenderer>().sprite;
+                        break;
+                }
             }
         }
         // update
@@ -416,8 +418,8 @@ public class Control_Animation : MonoBehaviour {
      * */
     public void ToggleViewMapMode(bool useAnim = true)
     {
-        float s = Mathf.Max(0.5f, Mathf.Min(12f / levelMap.height, 12f / levelMap.width));
-        float dh = (levelMap.height / 2 - levelMap.thePlayer.h);
+        float s = Mathf.Max(0.45f, Mathf.Min(12f / levelMap.height, 12f / levelMap.width));
+        float dh = (levelMap.height / 2 - levelMap.thePlayer.h) - 0.1f;
         float dw = (levelMap.thePlayer.w - levelMap.width / 2);
         levelMap.thePlayer.thePlayerDisp.playerFacingSprite.enabled = is_vmm;
         GameObject.Find("Player State Canvas").GetComponent<Canvas>().enabled = is_vmm;
@@ -457,12 +459,12 @@ public class Control_Animation : MonoBehaviour {
     private IEnumerator ViewMapModeAnim()
     {
         float i = 0;
-        float speed = 0.05f;
-        float vmm_anim_dur_time = 0.5f;
-        while (Mathf.Abs(Game_Panel.transform.position.magnitude - vamm_pos.magnitude) >= 0.001f)
+        float speed = 0.8f;
+        float vmm_anim_dur_time = 1.0f;
+        while (Mathf.Abs(Game_Panel.transform.position.magnitude - vamm_pos.magnitude) >= 0.01f)
         {
-            Game_Panel.transform.position = vamm_pos * (speed * i / vmm_anim_dur_time) + Game_Panel.transform.position * (1 - (speed * i / vmm_anim_dur_time));
-            Game_Panel.transform.localScale = vamm_scale * (speed * i / vmm_anim_dur_time) + Game_Panel.transform.localScale * (1 - (speed * i / vmm_anim_dur_time));
+            Game_Panel.transform.position += (vamm_pos - Game_Panel.transform.position) * (speed * i / vmm_anim_dur_time);
+            Game_Panel.transform.localScale += (vamm_scale - Game_Panel.transform.localScale) * (speed * i / vmm_anim_dur_time);
             is_anim = true;
             i += Time.deltaTime;
             yield return 0;
@@ -550,6 +552,32 @@ public class Control_Animation : MonoBehaviour {
         }
     }
 
+    private void HandleDragMoveControl()
+    {
+        float minDeltaDistance = 9f;
+        if (Input.GetTouch(0).phase == TouchPhase.Moved)
+        {
+            float m = Input.GetTouch(0).deltaPosition.x / Input.GetTouch(0).deltaPosition.y;
+            if (m > 3f) // left & right
+            {
+                if (Input.GetTouch(0).deltaPosition.x > minDeltaDistance * 0.9)
+                    levelMap.thePlayer.PlayerMove((int)FACETO.LEFT);
+                else if (Input.GetTouch(0).deltaPosition.x < -minDeltaDistance * 0.9)
+                    levelMap.thePlayer.PlayerMove((int)FACETO.RIGHT);
+            }
+            else if  (m < 0.25f)
+            {
+                if (Input.GetTouch(0).deltaPosition.y > minDeltaDistance)
+                    levelMap.thePlayer.PlayerMove((int)FACETO.DOWN);
+                else if (Input.GetTouch(0).deltaPosition.y < -minDeltaDistance)
+                    levelMap.thePlayer.PlayerMove((int)FACETO.UP);
+            }
+        }
+    }
+
+    float lastProgressTime = 0;
+    int doubleTapStep = 0;
+
     // Update is called once per frame
     void Update()
     {
@@ -586,10 +614,37 @@ public class Control_Animation : MonoBehaviour {
                     preMousePos = new Vector3();
             }
         }
-        /*
-        for (int i = 0; i < controlButtons.Length; i++)
-            controlButtons[i].interactable = !is_irresponsive;
-        */
+        else if(Input.touchSupported)
+        {
+            if (Input.touchCount == 1)
+            {
+                HandleDragMoveControl();
+            }
+        }
+
+        // handle double tap
+        if (doubleTapStep == 0 || doubleTapStep == 2)
+        {
+            if (Input.touchCount == 1)
+            {
+                if (Input.GetTouch(0).deltaTime < 0.12f)
+                {
+                    if (doubleTapStep == 2 && (Time.time - lastProgressTime) < 0.24f)
+                    {
+                        levelMap.thePlayer.PlayerDoAbility();
+                    }
+                    doubleTapStep = 1;
+                    lastProgressTime = Time.time;
+                }
+            }
+        }
+        else if (doubleTapStep == 1)
+        {
+            if (Input.touchCount == 0)
+            {
+                doubleTapStep = 2;
+            }
+        }
 
         // can't do control in View-Map-Mode
         // for playing on PC

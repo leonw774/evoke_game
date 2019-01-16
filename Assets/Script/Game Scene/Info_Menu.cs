@@ -39,7 +39,7 @@ public class Info_Menu : MonoBehaviour {
             MenuBtn.GetComponent<Button>().enabled = false;
             InfoCloseImg.enabled = true;
         }
-
+        MapBtn.GetComponent<Button>().interactable = isMenuActive;
         isMenuActive = !isMenuActive;
     }
 	

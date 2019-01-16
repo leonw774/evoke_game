@@ -213,7 +213,7 @@ public class Level_Map : MonoBehaviour
                     exitObj.transform.position = trans;
 
                     // in boss level, exit is closed
-                    if (Save_Data.SelectedLevel == Save_Data.BossLevel)
+                    if (Save_Data.SelectedLevel == Save_Data.MaxLevel)
                     {
                         exitObj.GetComponent<SpriteRenderer>().enabled = false;
                         exitObj = GameObject.Find("Closed Exit Sprite");
@@ -232,21 +232,21 @@ public class Level_Map : MonoBehaviour
 
     private void SetMonsterNumber()
     {
+        if (Save_Data.SelectedLevel >= 3 && Save_Data.SelectedLevel <= 5)
+            bossNumber = 1;
+        else if (Save_Data.SelectedLevel >= 6 && Save_Data.SelectedLevel <= 9)
+            bossNumber = 3;
+        else if (Save_Data.SelectedLevel == 10)
+            bossNumber = 5;
+        else
+            bossNumber = 0;
+
         if (Save_Data.SelectedLevel < 3)
             monsterNumber = 2 * (Save_Data.SelectedLevel + 1);
         else if (Save_Data.SelectedLevel == 3)
-            monsterNumber = 7;
+            monsterNumber = 6;
         else
-            monsterNumber = (tiles.Length - wallsNumber - 8) / 32 + ((Save_Data.SelectedLevel > 4) ? 4 : (int) (Save_Data.SelectedLevel * 1.2));
-
-        if (Save_Data.SelectedLevel >= 3)
-            bossNumber = 1;
-        else if (Save_Data.SelectedLevel >= 6 && Save_Data.SelectedLevel <= 9)
-            bossNumber = 2;
-        else if (Save_Data.SelectedLevel == 10)
-            bossNumber = 3;
-        else
-            bossNumber = 0;
+            monsterNumber = (tiles.Length - wallsNumber - 8) / 32 + ((Save_Data.SelectedLevel > 4) ? 4 : (int)(Save_Data.SelectedLevel * 1.2)) - (int) (bossNumber * 1.8);
 
         //Debug.Log("map ask for " + monsterNumber + " mons");
     }
@@ -262,21 +262,20 @@ public class Level_Map : MonoBehaviour
 
         int walkableTilesNnum = tiles.Length - wallsNumber;
         float monsterNumToStep = 3.6f;
-        float stepToTiles = 2.4f;
+        float stepToTiles = 3f;
         float multiPathFactor = Mathf.Max(1f, ((int)(walkableTilesNnum / (estimatedStep * stepToTiles) * 100) / 100f));
         Debug.Log("multiPathFactor: " + multiPathFactor);
 
         float adjustedmonsterNum = monsterNumber / multiPathFactor;
         //Debug.Log("adjustedmonsterNum: " + adjustedmonsterNum);
 
-        int adjustedestimatedStep = (int) (estimatedStep * (1.025 + 0.025 * (Save_Data.MaxLevel - Save_Data.SelectedLevel) / 2));
-        //Debug.Log("adjustedestimatedStep: " + adjustedestimatedStep +  "," + ((1.2 + 0.05 * (Save_Data.MaxLevel - Save_Data.SelectedLevel) / 2)));
+        int adjustedestimatedStep = (int) (estimatedStep * (1.1 + 0.05 * (Save_Data.MaxLevel - Save_Data.SelectedLevel) / 2));
 
         int ep_to_set = adjustedestimatedStep + (int) (monsterNumToStep * adjustedmonsterNum);
         int hp_to_set = (int) adjustedmonsterNum / 15 + 2;
 
-        ep_to_set += bossNumber * 24;
-        hp_to_set += (int) 1.5 * bossNumber;
+        ep_to_set += (int) ((bossNumber + 1) / 2 / multiPathFactor) * 24;
+        hp_to_set += (int) (bossNumber + 1) / 2;
 
         thePlayer.EP = ep_to_set;
         thePlayer.HP = hp_to_set;
@@ -317,7 +316,7 @@ public class Level_Map : MonoBehaviour
     /* this function is called by Player_Control when it find out player is at finish */
     public void UpdateSaveLevel()
     {
-        if (Save_Data.SelectedLevel != Save_Data.BossLevel && Save_Data.SelectedLevel == Save_Data.PassedLevel + 1)
+        if (Save_Data.SelectedLevel != Save_Data.MaxLevel && Save_Data.SelectedLevel == Save_Data.PassedLevel + 1)
             Save_Data.UpdatePassedLevel();
         //Debug.Log("SelectedLevel: " + Save_Data.SelectedLevel);
         //Debug.Log("PassedLevel: " + Save_Data.PassedLevel);

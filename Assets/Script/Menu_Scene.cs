@@ -13,13 +13,15 @@ public class Menu_Scene : MonoBehaviour {
     public bool isTitleAnimPlaying = false;
     public GameObject mainCam;
     public GameObject titleObj;
+    public SpriteRenderer titleLogo;
     public SpriteRenderer titleImg;
 
     public void Start()
     {
         mainCam = GameObject.Find("Main Camera");
         titleObj = GameObject.Find("Main Title");
-        titleImg = GameObject.Find("Main Title").GetComponent<SpriteRenderer>();
+        titleLogo = GameObject.Find("Main Title").GetComponent<SpriteRenderer>();
+        titleImg = GameObject.Find("Main Title Player Sprite").GetComponent<SpriteRenderer>();
         Text saveFileDebugOutput = GameObject.Find("Save File Debug Output").GetComponent<Text>();
 
 		SaveFilePath = Application.persistentDataPath + "/save.txt";
@@ -113,7 +115,7 @@ public class Menu_Scene : MonoBehaviour {
     public void LoadContinueLevel()
     {
         GameObject.Find("Loading Title").GetComponent<SpriteRenderer>().enabled = true;
-        Save_Data.SelectLevel(Save_Data.PassedLevel + ((Save_Data.PassedLevel == Save_Data.BossLevel) ? 0 : 1));
+        Save_Data.SelectLevel(Save_Data.PassedLevel + ((Save_Data.PassedLevel == Save_Data.MaxLevel) ? 0 : 1));
         SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
         SceneManager.LoadScene("Game Scene");
     }
@@ -130,6 +132,7 @@ public class Menu_Scene : MonoBehaviour {
 
     public void TitleAnimationStart()
     {
+        titleLogo.color = Color.clear;
         titleImg.color = Color.clear;
         isTitleAnimPlaying = true;
     }
@@ -138,7 +141,7 @@ public class Menu_Scene : MonoBehaviour {
     {
         // move camera
         mainCam.transform.Translate(new Vector3(-20, 0, 0));
-        // set title logo back to transparent
+        // set title logo to transparent
         /*
         Color c = titleImg.color, ci = titleImgIcon.color;
         c.a = 1.0f;
@@ -155,13 +158,16 @@ public class Menu_Scene : MonoBehaviour {
 
     public void TitleAnimation()
     {
-        if (titleImg.color.a < 0.9)
-            titleImg.color = titleImg.color * (1 - (Time.deltaTime / 1.0f)) + Color.black * (Time.deltaTime / 1.0f);
-        int cycleNum = (int) (Time.time / 2);
+        if (titleLogo.color.a < 0.99)
+        {
+            titleImg.color = titleLogo.color * (1 - (Time.deltaTime / 0.5f)) + Color.white * (Time.deltaTime / 0.5f);
+            titleLogo.color = titleLogo.color * (1 - (Time.deltaTime / 0.5f)) + Color.white * (Time.deltaTime / 0.5f);
+        }
+        int cycleNum = (int) (Time.time / 2.5);
         if (cycleNum % 2 == 0)
-            titleObj.transform.position += new Vector3(0f, 0.2f * Time.deltaTime, 0f);
+            titleObj.transform.position += new Vector3(0f, 0.06f * Time.deltaTime, 0f);
         else
-            titleObj.transform.position += new Vector3(0f, -0.2f * Time.deltaTime, 0f);
+            titleObj.transform.position += new Vector3(0f, -0.06f * Time.deltaTime, 0f);
     }
 
     void Update()

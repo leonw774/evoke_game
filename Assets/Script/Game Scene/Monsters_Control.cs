@@ -119,15 +119,21 @@ public class BossMonster : Monster
             {
                 case FACETO.UP:
                     facingSprite.sprite = GameObject.Find("Back Boss Sprite").GetComponent<SpriteRenderer>().sprite;
+                    facingSprite.transform.rotation = new Quaternion(0f, 0f, 1f, 1f);
                     break;
                 case FACETO.LEFT:
                     facingSprite.sprite = GameObject.Find("Left Boss Sprite").GetComponent<SpriteRenderer>().sprite;
+                    facingSprite.transform.rotation = new Quaternion(0f, 0f, 0f, 0f);
                     break;
                 case FACETO.DOWN:
                     facingSprite.sprite = GameObject.Find("Front Boss Sprite").GetComponent<SpriteRenderer>().sprite;
+                    facingSprite.flipX = true;
+                    facingSprite.transform.rotation = new Quaternion(0f, 0f, 1f, 1f);
                     break;
                 case FACETO.RIGHT:
                     facingSprite.sprite = GameObject.Find("Right Boss Sprite").GetComponent<SpriteRenderer>().sprite;
+                    facingSprite.flipX = true;
+                    facingSprite.transform.rotation = new Quaternion(0f, 0f, 0f, 0f);
                     break;
                 default:
                     return;
@@ -349,32 +355,37 @@ public class Monsters_Control: MonoBehaviour {
 
     private void SpawnAllBoss(int totalNum)
     {
+        Debug.Log("map ask " + totalNum + " boss");
         if (totalNum == 0)
             return;
 
         int spawnedCount = 0;
-        bool tooClose = false;
+        bool invalid = false;
         while (spawnedCount < totalNum)
         {
-            tooClose = false;
+            invalid = false;
             int h = Random.Range(1, levelMap.height - 1);
             int w = Random.Range(1, levelMap.width - 1);
             int pos = h * levelMap.width + w;
 
+            int disTpPlayer = System.Math.Abs(levelMap.playerStartTile[0] - h) + System.Math.Abs(levelMap.playerStartTile[1] - w);
+            int disToFinish = System.Math.Abs(levelMap.finishTile[0] - h) + System.Math.Abs(levelMap.finishTile[1] - w);
             // check if too close to player and boss have to spawn close to finsh
-            if (12 > (System.Math.Abs(levelMap.playerStartTile[0] - h) + System.Math.Abs(levelMap.playerStartTile[1] - w))
-             || (totalNum * 8) < (System.Math.Abs(levelMap.finishTile[0] - h) + System.Math.Abs(levelMap.finishTile[1] - w)))
-                tooClose = true;
+            if (disTpPlayer < 12)
+                invalid = true;
+            else if (disToFinish > 8 * (spawnedCount + 1) || disToFinish < 8 * spawnedCount + 1)
+                invalid = true;
+
             // check if too close to other boss
             foreach (BossMonster m in bossList)
             {
-                if (6 > (System.Math.Abs(m.h - h) + System.Math.Abs(m.w - w)))
+                if (7 > (System.Math.Abs(m.h - h) + System.Math.Abs(m.w - w)))
                 {
-                    tooClose = true;
+                    invalid = true;
                     break;
                 }
             }
-            if (!tooClose && levelMap.tiles[h, w] != TILE_TYPE.WALL)
+            if (!invalid && levelMap.tiles[h, w] != TILE_TYPE.WALL)
             {
                 // clear space for boss
                 levelMap.theObstacles.ObsDestroy(pos);
@@ -420,7 +431,7 @@ public class Monsters_Control: MonoBehaviour {
         stateCreated.transform.localScale = new Vector3(0.01f, 0.01f, 1f);
         stateCreated.transform.localPosition = new Vector3(0.0f, -0.02f, 0.0f); //just a little adjust to y axis
 
-        bossList.Add(new BossMonster(h, w, index, 4, stateCreated, spriteCreated, levelMap));
+        bossList.Add(new BossMonster(h, w, index, 3, stateCreated, spriteCreated, levelMap));
     }
 
     public void AllChangeFrame()
@@ -450,7 +461,7 @@ public class Monsters_Control: MonoBehaviour {
             {
                 MonsterMoveToPlayer(monsList[i], false);
             }
-            else if (distanceToPlayer >= 32)
+            else if (distanceToPlayer <= 32)
             {
                 MonsterMoveRandom(monsList[i]);
             }
@@ -465,7 +476,7 @@ public class Monsters_Control: MonoBehaviour {
                 switch (bossList[i].decision)
                 {
                     case DECISION.MOVE :
-                        if (distanceToPlayer <= 2 || Random.Range(0, 16) > 0)
+                        if (distanceToPlayer <= 2 || Random.Range(0, 32) == 0)
                             MonsterMoveRandom(bossList[i]);
                         else
                             MonsterMoveToPlayer(bossList[i], true);
@@ -630,14 +641,14 @@ public class Monsters_Control: MonoBehaviour {
     {
         //Debug.Log("destroy monster #" + monsList[i].id);
 
-        //GameObject.Find("Monster Hurt Sound").GetComponent<AudioSource>().PlayDelayed(0.11f);
+        GameObject.Find("Monster Hurt Sound").GetComponent<AudioSource>().PlayDelayed(0.1f);
         Vector3 v = monsList[i].SpriteObj.transform.localScale;
         v.y /= 2f;
         monsList[i].SpriteObj.transform.localScale = v;
         v = monsList[i].SpriteObj.transform.position;
         v.y -= 0.3f;
         monsList[i].SpriteObj.transform.position = v;
-        Destroy(monsList[i].SpriteObj, 0.15f);
+        Destroy(monsList[i].SpriteObj, 0.2f);
         monsList.RemoveAt(i);
     }
 
@@ -645,7 +656,7 @@ public class Monsters_Control: MonoBehaviour {
     {
         if (bossList[i].hp - 1 == -1) // boss dead && hurt animation is over
         {
-            //GameObject.Find("Monster Hurt Sound").GetComponent<AudioSource>().PlayDelayed(0.11f);
+            GameObject.Find("Monster Hurt Sound").GetComponent<AudioSource>().PlayDelayed(0.1f);
             Debug.Log("try destroy Boss Sprite" + bossList[i].id);
             Destroy(GameObject.Find("Boss Sprite" + bossList[i].id), 0.05f);
             bossList.RemoveAt(i);
