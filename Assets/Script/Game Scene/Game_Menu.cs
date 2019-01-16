@@ -87,6 +87,18 @@ public class Game_Menu : MonoBehaviour {
 
     public void ToggleFinishMenu()
     {
+        StartCoroutine(FinishWaitTime(0.05f));
+    }
+
+    public void ToggleFailMenu()
+    {
+        StartCoroutine(FailWaitTime(0.25f));
+    }
+
+    IEnumerator FinishWaitTime(float waitTime)
+    {
+        for (float i = 0f; i < waitTime; i += Time.deltaTime)
+            yield return 0;
         if (!isFinishMenu)
         {
             ToggleGameMenu();
@@ -102,8 +114,10 @@ public class Game_Menu : MonoBehaviour {
         }
     }
 
-    public void ToggleFailMenu()
+    IEnumerator FailWaitTime(float waitTime)
     {
+        for (float i = 0f; i < waitTime; i += Time.deltaTime)
+            yield return 0;
         if (!isFailMenu)
         {
             ToggleGameMenu();
@@ -131,4 +145,6 @@ public class Game_Menu : MonoBehaviour {
             SaveW.Close();
         }
     }
+
+
 }

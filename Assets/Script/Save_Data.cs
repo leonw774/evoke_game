@@ -6,8 +6,9 @@
      * */
 
     public static int PassedLevel = -1; // when player finish this level, this variable++
+    public readonly static int MaxLevel = 10;
 
-	public static void UpdatePassedLevel()
+    public static void UpdatePassedLevel()
 	{
 		Save_Data.PassedLevel++;
 	}
@@ -38,7 +39,7 @@
 
     public static void SetThemeSelectedLevel()
     {
-        if (SelectedLevel < 12)
+        if (SelectedLevel < MaxLevel)
             SelectedTheme = 1;
         else
             SelectedTheme = 2;

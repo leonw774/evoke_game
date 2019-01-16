@@ -11,15 +11,15 @@ public class Menu_Scene : MonoBehaviour {
     public StreamReader SaveR = null;
     public StreamWriter SaveW = null;
     public bool isTitleAnimPlaying = false;
-    public SpriteRenderer titleImg;
-    public SpriteRenderer titleImgIcon;
     public GameObject mainCam;
+    public GameObject titleObj;
+    public SpriteRenderer titleImg;
 
     public void Start()
     {
         mainCam = GameObject.Find("Main Camera");
+        titleObj = GameObject.Find("Main Title");
         titleImg = GameObject.Find("Main Title").GetComponent<SpriteRenderer>();
-        titleImgIcon = GameObject.Find("Main Title Icon").GetComponent<SpriteRenderer>();
         Text saveFileDebugOutput = GameObject.Find("Save File Debug Output").GetComponent<Text>();
 
 		SaveFilePath = Application.persistentDataPath + "/save.txt";
@@ -36,7 +36,7 @@ public class Menu_Scene : MonoBehaviour {
             else
             {
                 saveFileDebugOutput.text += "false\n";
-                GameObject.Find("Continue Button Text").GetComponent<Text>().text = "Begin";
+                GameObject.Find("Continue Button Text").GetComponent<Text>().text = "開始教學關";
                 // Passedlevel is still -1 until player finish level 0
                 if (Save_Data.SelectedLevel != -1)
                 {
@@ -57,6 +57,7 @@ public class Menu_Scene : MonoBehaviour {
 	    //Save_Data.PassedLevel = 2;
 
         SetupLevelMenuButton();
+        TitleAnimationStart();
     }
 
     void SetupLevelMenuButton()
@@ -100,7 +101,7 @@ public class Menu_Scene : MonoBehaviour {
     }
 
     /* JUMP TO OTHER SCENE */
-
+    /*
     public void LoadIntroSlide(int num)
     {
         GameObject.Find("Loading Menu").GetComponent<SpriteRenderer>().enabled = true;
@@ -108,7 +109,7 @@ public class Menu_Scene : MonoBehaviour {
         SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
         SceneManager.LoadScene("Slide Scene");
     }
-
+    */
     public void LoadContinueLevel()
     {
         GameObject.Find("Loading Title").GetComponent<SpriteRenderer>().enabled = true;
@@ -127,10 +128,10 @@ public class Menu_Scene : MonoBehaviour {
 
     /* ANIMATION */ 
 
-    public void AnimationStart()
+    public void TitleAnimationStart()
     {
-        //isTitleAnimPlaying = true;
-        CameraMain2Menu();
+        titleImg.color = Color.clear;
+        isTitleAnimPlaying = true;
     }
 
     public void CameraMain2Menu()
@@ -154,27 +155,13 @@ public class Menu_Scene : MonoBehaviour {
 
     public void TitleAnimation()
     {
-        Color toFadeInColor = titleImgIcon.color;
-        Color toFadeOutColor = titleImg.color;
-        if (toFadeInColor.a < 0.2f)
-        {
-            toFadeInColor.a = Mathf.Lerp(toFadeInColor.a, 1.0f, 3.2f * Time.deltaTime);
-            toFadeOutColor.a = Mathf.Lerp(toFadeOutColor.a, 0.0f, 3.2f * Time.deltaTime);
-            titleImgIcon.color = toFadeInColor;
-            titleImg.color = toFadeOutColor;
-        }
-        else if (toFadeInColor.a < 0.98f)
-        {
-            toFadeInColor.a = Mathf.Lerp(toFadeInColor.a, 1.0f, 4.8f * Time.deltaTime);
-            toFadeOutColor.a = Mathf.Lerp(toFadeOutColor.a, 0.0f, 4.8f * Time.deltaTime);
-            titleImgIcon.color = toFadeInColor;
-            titleImg.color = toFadeOutColor;
-        }
+        if (titleImg.color.a < 0.9)
+            titleImg.color = titleImg.color * (1 - (Time.deltaTime / 1.0f)) + Color.black * (Time.deltaTime / 1.0f);
+        int cycleNum = (int) (Time.time / 2);
+        if (cycleNum % 2 == 0)
+            titleObj.transform.position += new Vector3(0f, 0.2f * Time.deltaTime, 0f);
         else
-        {
-            isTitleAnimPlaying = false;
-            CameraMain2Menu();
-        }
+            titleObj.transform.position += new Vector3(0f, -0.2f * Time.deltaTime, 0f);
     }
 
     void Update()

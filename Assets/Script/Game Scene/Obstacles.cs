@@ -28,7 +28,7 @@ public class Obstacles : MonoBehaviour {
             DestroyAllObstacles();
             Generate();
             Adjust();
-        } while (positionList.Count < (int) (walkableTilesNum * 0.36) || positionList.Count > (int)(walkableTilesNum * 0.64));
+        } while (positionList.Count < (int) (walkableTilesNum * 0.4) || positionList.Count > (int)(walkableTilesNum * 0.55));
         CreateAllObstacles();
         Debug.Log("There are " + positionList.Count + " obs in map");
     }
@@ -56,7 +56,7 @@ public class Obstacles : MonoBehaviour {
     public void ObsDestroy(int pos)
     {
         GameObject destroy = GameObject.Find("Obstacle Sprite" + pos.ToString());
-        if (positionList.Exists(x => x == pos) || destroy != null)
+        if (positionList.Exists(x => x == pos) && destroy != null)
         {
             positionList.Remove(pos);
             Destroy(destroy);
@@ -252,7 +252,7 @@ public class Obstacles : MonoBehaviour {
                     if (is_middle_all_walkable && is_up_all_obs && is_down_all_obs && Random.Range(0, 24) > 0)
                     {
                         ListUpdate(i, j); // add an obs in the walk way
-                        ListUpdate(i + ((Random.Range(0, 2) == 0) ? 1 : -1), j);// then randomly delete a obs
+                        ListUpdate(i + ((Random.Range(0, 1) == 0) ? 1 : -1), j);// then randomly delete a obs
                         return;
                     }
                     // check horizontal corridor
@@ -268,7 +268,7 @@ public class Obstacles : MonoBehaviour {
                     if (is_middle_all_walkable && is_left_all_obs && is_right_all_obs && Random.Range(0, 24) > 0)
                     {
                         ListUpdate(i, j); // add an obs in the walk way
-                        ListUpdate(i, j + ((Random.Range(0, 2) == 0) ? 1 : -1)); // then randomly delete a obs
+                        ListUpdate(i, j + ((Random.Range(0, 1) == 0) ? 1 : -1)); // then randomly delete a obs
                     }
                 }
             } // end of for: j

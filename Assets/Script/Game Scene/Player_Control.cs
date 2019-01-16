@@ -167,28 +167,31 @@ public class Player_Control : MonoBehaviour {
 
     public void PlayerMove(int direction)
     {
-        if (!theAnimation.is_irresponsive && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
+        if (!theAnimation.is_irresponsive)
         {
+            theAnimation.is_irresponsive = true;
             thePlayerDisp.FaceTo = (FACETO)direction;
             if (Move(direction)) // it is monster's turn only if player did change position
             {
                 levelMap.theMonsters.MonstersTurn();
-                levelMap.theAnimation.playerAnim.Start();
-                levelMap.theAnimation.monstersAnim.Start();
+                StartCoroutine(theAnimation.PlayerMoveAnim());
+                StartCoroutine(theAnimation.MonstersMoveAnim());
             }
         }
     }
 
     public void PlayerDoAbility()
     {
-        if (!theAnimation.is_irresponsive && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
+        if (!theAnimation.is_irresponsive)
         {
             if (DoAbility())
             {
+                theAnimation.is_irresponsive = true;
                 abilitySound.Play();
-                levelMap.theAnimation.playerAbilityAnim.Start();
+                StartCoroutine(levelMap.theAnimation.PlayerAbilityAnim()); 
                 levelMap.theMonsters.MonstersTurn();
-                levelMap.theAnimation.monstersAnim.Start();
+                StartCoroutine(levelMap.theAnimation.MonstersMoveAnim());
+                levelMap.thePlayer.CheckPlayerBlocked();
             }
         }
     }
@@ -200,7 +203,7 @@ public class Player_Control : MonoBehaviour {
     {
         int newh = h + ((direction % 2 == 0) ? (direction - 1) : 0);
         int neww = w + (direction % 2 == 1 ? (direction - 2) : 0);
-        if (theControlPanel.isMenuActive)
+        if (theControlPanel.isMenuActive || healthPoint <= 0)
             return false;
         else if (levelMap.IsTileWalkable(newh, neww))
         {
@@ -213,7 +216,7 @@ public class Player_Control : MonoBehaviour {
             return true;
         }
         else if (newh == levelMap.finishTile[0] && neww == levelMap.finishTile[1]
-            && (Save_Data.SelectedLevel != Save_Data.BossLevel || levelMap.theMonsters.boss == null))
+            && (Save_Data.SelectedLevel != Save_Data.BossLevel || levelMap.theMonsters.bossList.Count == 0))
         {
             thePlayerDisp.animBeginPos = thePlayerDisp.ObjPos;
             thePlayerDisp.animEndPos = levelMap.MapCoordToWorldVec3(h, w, 0);
@@ -234,8 +237,7 @@ public class Player_Control : MonoBehaviour {
         return true;
     }
 
-    /* Checks for Animation */
-
+    /* after monster move animation end, we check if play is attacked */
     public bool IsPlayerAttacked()
     {
         // if player finish the map, monster can not fail it afterward.
@@ -244,12 +246,13 @@ public class Player_Control : MonoBehaviour {
         
         int loss = levelMap.theMonsters.TryAttackPlayer(h * levelMap.width + w);
         if (levelMap.theObstacles.positionList.Exists(x => x == h * levelMap.width + w))
+        {
+            levelMap.theObstacles.ObsDestroy(h * levelMap.width + w);
             loss++;
+        }
         if (loss > 0)
         {
             // Debug.Log("player hurted");
-            // try destroy obs because player might be hurted by obs in boss monster attack
-            levelMap.theObstacles.ObsDestroy(h * levelMap.width + w);
             HP -= loss;
             return true;
         }
