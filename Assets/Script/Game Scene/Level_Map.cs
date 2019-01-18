@@ -211,7 +211,7 @@ public class Level_Map : MonoBehaviour
                     tiles[h, w] = TILE_TYPE.WALL;
                     exitObj = GameObject.Find("Exit Sprite");
                     exitObj.transform.position = trans;
-
+                    /*
                     // in boss level, exit is closed
                     if (Save_Data.SelectedLevel == Save_Data.MaxLevel)
                     {
@@ -220,6 +220,7 @@ public class Level_Map : MonoBehaviour
                         exitObj.transform.position = trans;
                         exitObj.GetComponent<SpriteRenderer>().enabled = true;
                     }
+                    */
                 }
                 else if (tiles[h, w] == TILE_TYPE.PLAYER_START_POINT)
                 {
@@ -243,12 +244,8 @@ public class Level_Map : MonoBehaviour
 
         if (Save_Data.SelectedLevel < 3)
             monsterNumber = 2 * (Save_Data.SelectedLevel + 1);
-        else if (Save_Data.SelectedLevel == 3)
-            monsterNumber = 6;
         else
-            monsterNumber = (tiles.Length - wallsNumber - 8) / 32 + ((Save_Data.SelectedLevel > 4) ? 4 : (int)(Save_Data.SelectedLevel * 1.2)) - (int) (bossNumber * 1.8);
-
-        //Debug.Log("map ask for " + monsterNumber + " mons");
+            monsterNumber = (tiles.Length - wallsNumber - 8) / 32 + ((Save_Data.SelectedLevel > 4) ? 5 : (int)(Save_Data.SelectedLevel * 1.2)) - (int) (bossNumber * 1.8);
     }
 
     private void SetPlayerInfo()
@@ -274,7 +271,7 @@ public class Level_Map : MonoBehaviour
         int ep_to_set = adjustedestimatedStep + (int) (monsterNumToStep * adjustedmonsterNum);
         int hp_to_set = (int) adjustedmonsterNum / 15 + 2;
 
-        ep_to_set += (int) ((bossNumber + 1) / 2 / multiPathFactor) * 24;
+        ep_to_set += (int) (bossNumber - 0.5) * 24;
         hp_to_set += (int) (bossNumber + 1) / 2;
 
         thePlayer.EP = ep_to_set;

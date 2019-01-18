@@ -147,13 +147,17 @@ public class Obstacles : MonoBehaviour {
     public void Adjust()
     {
         int count = 0;
-        bool find_something_to_adjust = true;
-        while(find_something_to_adjust && count <= 2)
+        int find_something_to_adjust = 0;
+        while(find_something_to_adjust > 0 && count < 4)
         {
-            find_something_to_adjust = DistributeAdjust();
-            CorridorAdjust();
+            find_something_to_adjust = 0;
+            if (DistributionAdjust())
+                find_something_to_adjust++;
+            if (CorridorAdjust())
+                find_something_to_adjust++;
             count++;
         }
+        DistributionAdjust();
         //Debug.Log("Obstacles Adjusted");
 
         // in opening, too much obstacles should not neighbor or be on same block of the player and finish
@@ -165,7 +169,7 @@ public class Obstacles : MonoBehaviour {
         positionList.Remove(playerPosition - levelMap.width);
     }
 
-    private bool DistributeAdjust()
+    private bool DistributionAdjust()
     {
         int thisTilePos = -1;
         int chi_of_this = 4;
@@ -214,8 +218,8 @@ public class Obstacles : MonoBehaviour {
                     ListUpdate(i, j);
                     if (sameNeighborCount == 8)
                     {
-                        ListUpdate(i + Random.Range(-1, 2), j);
-                        ListUpdate(i, j + Random.Range(-1, 2));
+                        ListUpdate(i + Random.Range(-1, 2), j + Random.Range(-1, 2));
+                        ListUpdate(i + Random.Range(-1, 2), j + Random.Range(-1, 2));
                     }
                 }
             } // end of for: j
@@ -223,7 +227,7 @@ public class Obstacles : MonoBehaviour {
         return some_adjustment_are_done;
     }
 
-    private void CorridorAdjust()
+    private bool CorridorAdjust()
     {
         // after previous adjustion, there could be some "corridor shape" obstacles
         // we want to "close" those corridor
@@ -249,11 +253,19 @@ public class Obstacles : MonoBehaviour {
                         is_middle_all_walkable = is_middle_all_walkable && !(positionList.Exists(x => x == pos + d) || levelMap.tiles[i, j + d] == TILE_TYPE.WALL);
                         d++;
                     }
-                    if (is_middle_all_walkable && is_up_all_obs && is_down_all_obs && Random.Range(0, 24) > 0)
+                    if (is_middle_all_walkable && is_up_all_obs && is_down_all_obs)
                     {
-                        ListUpdate(i, j); // add an obs in the walk way
-                        ListUpdate(i + ((Random.Range(0, 1) == 0) ? 1 : -1), j);// then randomly delete a obs
-                        return;
+                        if (Random.Range(0, 6) > 0)
+                            ListUpdate(i, j); // add an obs in the walk way
+                        // then randomly delete a obs around it
+                        for (int k = -1; k <= 1; k++)
+                        {
+                            if (Random.Range(0, 12) <= 0)
+                                ListUpdate(i - 1, j + k);
+                            if (Random.Range(0, 12) <= 0)
+                                ListUpdate(i + 1, j + k);
+                        }
+                        return true;
                     }
                     // check horizontal corridor
                     d = -1;
@@ -267,12 +279,22 @@ public class Obstacles : MonoBehaviour {
                     }
                     if (is_middle_all_walkable && is_left_all_obs && is_right_all_obs && Random.Range(0, 24) > 0)
                     {
-                        ListUpdate(i, j); // add an obs in the walk way
-                        ListUpdate(i, j + ((Random.Range(0, 1) == 0) ? 1 : -1)); // then randomly delete a obs
+                        if (Random.Range(0, 6) > 0)
+                            ListUpdate(i, j); // add an obs in the walk way
+                        // then randomly delete a obs around it
+                        for (int k = -1; k <= 1; k++)
+                        {
+                            if (Random.Range(0, 12) <= 0)
+                                ListUpdate(i + k, j - 1);
+                            if (Random.Range(0, 12) <= 0)
+                                ListUpdate(i + k, j + 1);
+                        }
+                        return true;
                     }
                 }
             } // end of for: j
         } // end of for: i
+        return false;
     }
 
     public void DestroyAllObstacles()

@@ -11,13 +11,13 @@ public class Game_Menu : MonoBehaviour {
     GameObject menuCanvas;
     GameObject FinishGO;
     GameObject FailGO;
-    GameObject MenuBtn;
-    GameObject InfoBtn;
     GameObject MapBtn;
+    GameObject InfoBtn;
     GameObject ResumeBtn;
     AudioSource FinishSound;
     AudioSource FailSound;
 
+    public GameObject MenuBtn;
     public bool isMenuActive = false;
     public bool isFinishMenu = false, isFailMenu = false;
 

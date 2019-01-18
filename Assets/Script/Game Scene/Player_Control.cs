@@ -167,7 +167,7 @@ public class Player_Control : MonoBehaviour {
 
     public void PlayerMove(int direction)
     {
-        if (!theAnimation.is_irresponsive)
+        if (!theAnimation.is_irresponsive && theControlPanel.MenuBtn.GetComponent<Button>().enabled)
         {
             theAnimation.is_irresponsive = true;
             thePlayerDisp.FaceTo = (FACETO)direction;
@@ -188,7 +188,7 @@ public class Player_Control : MonoBehaviour {
 
     public void PlayerDoAbility()
     {
-        if (!theAnimation.is_irresponsive)
+        if (!theAnimation.is_irresponsive && theControlPanel.MenuBtn.GetComponent<Button>().enabled)
         {
             if (DoAbility())
             {
@@ -197,7 +197,6 @@ public class Player_Control : MonoBehaviour {
                 StartCoroutine(levelMap.theAnimation.PlayerAbilityAnim()); 
                 levelMap.theMonsters.MonstersTurn();
                 StartCoroutine(levelMap.theAnimation.MonstersMoveAnim());
-                levelMap.thePlayer.CheckPlayerBlocked();
             }
         }
     }
@@ -209,7 +208,7 @@ public class Player_Control : MonoBehaviour {
     {
         int newh = h + ((direction % 2 == 0) ? (direction - 1) : 0);
         int neww = w + (direction % 2 == 1 ? (direction - 2) : 0);
-        if (theControlPanel.isMenuActive || healthPoint <= 0 || energyPoint <= 0)
+        if (healthPoint <= 0 || energyPoint <= 0)
             return TILE_TYPE.WALL;
         else if (levelMap.IsTileWalkable(newh, neww))
         {
@@ -234,7 +233,7 @@ public class Player_Control : MonoBehaviour {
     // retrun true: player did do ability; return false: player couldn't do it
     private bool DoAbility()
     {
-        if (theControlPanel.isMenuActive || abilityCooldown > 0)
+        if (abilityCooldown > 0)
             return false;
         CD = 1;
         EP--;
@@ -269,7 +268,7 @@ public class Player_Control : MonoBehaviour {
                         levelMap.IsTileWalkable(h - 1, w) ||
                         levelMap.IsTileWalkable(h, w + 1) ||
                         levelMap.IsTileWalkable(h, w - 1));
-        if (!not_blocked)
+        if (!not_blocked && abilityCooldown > 0)
             theControlPanel.ToggleFailMenu();
     }
 

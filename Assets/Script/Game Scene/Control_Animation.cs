@@ -133,9 +133,14 @@ public class Control_Animation : MonoBehaviour {
         else 
         {
             if (levelMap.thePlayer.IsPlayerAttacked())
+            {
                 StartCoroutine(PlayerHurtedAnim());
+            }
             else
+            {
+                levelMap.thePlayer.CheckPlayerBlocked();
                 is_anim = false;
+            }
 
         }
         if (levelMap.thePlayer.EP == 0)
@@ -276,8 +281,6 @@ public class Control_Animation : MonoBehaviour {
         is_anim = false;
 
         // end
-        thisBoss.FaceTo = thisBoss.faceTo;
-
         // this will check if a boss's hp is 0, if true, then erase it
         if (thisBoss.hp == 0)
         {
@@ -286,8 +289,10 @@ public class Control_Animation : MonoBehaviour {
         }
         else
         {
-            // boss is hurted by and obs on it if boss was not dead, destroy obs
+            // boss is hurted by an obs created on it, if boss was not dead, destroy obs
             levelMap.theObstacles.ObsDestroy(thisBoss.GetPostion());
+            
+            thisBoss.FaceTo = thisBoss.faceTo;
         }
     }
 
@@ -398,6 +403,10 @@ public class Control_Animation : MonoBehaviour {
             if (levelMap.thePlayer.HP <= 0)
                 levelMap.thePlayer.theControlPanel.ToggleFailMenu();
         }
+        else
+        {
+            levelMap.thePlayer.CheckPlayerBlocked();
+        }
         is_bossability = false;
     }
 
@@ -421,15 +430,12 @@ public class Control_Animation : MonoBehaviour {
         float s = Mathf.Max(0.45f, Mathf.Min(12f / levelMap.height, 12f / levelMap.width));
         float dh = (levelMap.height / 2 - levelMap.thePlayer.h) - 0.1f;
         float dw = (levelMap.thePlayer.w - levelMap.width / 2);
-        levelMap.thePlayer.thePlayerDisp.playerFacingSprite.enabled = is_vmm;
-        GameObject.Find("Player State Canvas").GetComponent<Canvas>().enabled = is_vmm;
+        
         foreach (GameObject o in GameObject.FindGameObjectsWithTag("Obstacle"))
         {
             o.GetComponent<SpriteRenderer>().enabled = is_vmm;
         }
-
         GameObject.Find("Field Frontground Outring").GetComponent<SpriteRenderer>().enabled = is_vmm;
-        GameObject.Find("Player Control Canvas").GetComponent<Canvas>().enabled = is_vmm;
         if (is_vmm)
         {
             vamm_pos = new Vector3(0f, -0.1f);
@@ -441,9 +447,15 @@ public class Control_Animation : MonoBehaviour {
         {
             vamm_pos = new Vector3(dw + 1f, dh + 0.1f);
             vamm_scale = new Vector3(s, s, 1);
-            GameObject.Find("Map Button Text").GetComponent<Text>().text ="回到目前位置";
+            GameObject.Find("Map Button Text").GetComponent<Text>().text = "回到目前位置";
             GameObject.Find("View Map Description").GetComponent<Text>().text = "現可拖移、縮放\n瀏覽地圖";
             is_vmm = true;
+        }
+        if (vamm_scale != new Vector3(1, 1, 1))
+        {
+            GameObject.Find("Player Control Canvas").GetComponent<Canvas>().enabled = false;
+            levelMap.thePlayer.thePlayerDisp.playerFacingSprite.enabled = false;
+            GameObject.Find("Player State Canvas").GetComponent<Canvas>().enabled = false;
         }
         if (useAnim)
             StartCoroutine(ViewMapModeAnim());
@@ -451,6 +463,8 @@ public class Control_Animation : MonoBehaviour {
         {
             Game_Panel.transform.localScale = vamm_scale;
             Game_Panel.transform.position = vamm_pos;
+            if (!GameObject.Find("Player Control Canvas").GetComponent<Canvas>().enabled)
+                GameObject.Find("Player Control Canvas").GetComponent<Canvas>().enabled = true;
             is_vmm = (vamm_scale != new Vector3(1, 1, 1));
         }
         //time_view_map_mode = Time.time + Animation.ANIM_DUR_TIME / 12;
@@ -459,7 +473,7 @@ public class Control_Animation : MonoBehaviour {
     private IEnumerator ViewMapModeAnim()
     {
         float i = 0;
-        float speed = 0.8f;
+        float speed = 0.75f;
         float vmm_anim_dur_time = 1.0f;
         while (Mathf.Abs(Game_Panel.transform.position.magnitude - vamm_pos.magnitude) >= 0.01f)
         {
@@ -472,6 +486,12 @@ public class Control_Animation : MonoBehaviour {
         is_anim = false;
         Game_Panel.transform.localScale = vamm_scale;
         Game_Panel.transform.position = vamm_pos;
+        if (vamm_scale == new Vector3(1, 1, 1))
+        {
+            GameObject.Find("Player Control Canvas").GetComponent<Canvas>().enabled = true;
+            levelMap.thePlayer.thePlayerDisp.playerFacingSprite.enabled = true;
+            GameObject.Find("Player State Canvas").GetComponent<Canvas>().enabled = true;
+        }
         is_vmm = (vamm_scale != new Vector3(1, 1, 1));
     }
 
@@ -555,17 +575,17 @@ public class Control_Animation : MonoBehaviour {
     private void HandleDragMoveControl()
     {
         float minDeltaDistance = 9f;
-        if (Input.GetTouch(0).phase == TouchPhase.Moved)
+        if (Input.GetTouch(0).phase == TouchPhase.Moved && !is_irresponsive)
         {
             float m = Input.GetTouch(0).deltaPosition.x / Input.GetTouch(0).deltaPosition.y;
-            if (m > 3f) // left & right
+            if (m > 3.33f) // left & right
             {
-                if (Input.GetTouch(0).deltaPosition.x > minDeltaDistance * 0.9)
+                if (Input.GetTouch(0).deltaPosition.x > minDeltaDistance)
                     levelMap.thePlayer.PlayerMove((int)FACETO.LEFT);
-                else if (Input.GetTouch(0).deltaPosition.x < -minDeltaDistance * 0.9)
+                else if (Input.GetTouch(0).deltaPosition.x < -minDeltaDistance)
                     levelMap.thePlayer.PlayerMove((int)FACETO.RIGHT);
             }
-            else if  (m < 0.25f)
+            else if  (m < (1f / 4f)) // up & down
             {
                 if (Input.GetTouch(0).deltaPosition.y > minDeltaDistance)
                     levelMap.thePlayer.PlayerMove((int)FACETO.DOWN);
@@ -614,12 +634,9 @@ public class Control_Animation : MonoBehaviour {
                     preMousePos = new Vector3();
             }
         }
-        else if(Input.touchSupported)
+        else if(Input.touchSupported && Input.touchCount == 1)
         {
-            if (Input.touchCount == 1)
-            {
-                HandleDragMoveControl();
-            }
+            HandleDragMoveControl();
         }
 
         // handle double tap
@@ -629,7 +646,7 @@ public class Control_Animation : MonoBehaviour {
             {
                 if (Input.GetTouch(0).deltaTime < 0.12f)
                 {
-                    if (doubleTapStep == 2 && (Time.time - lastProgressTime) < 0.24f)
+                    if (doubleTapStep == 2 && (Time.time - lastProgressTime) < 0.24f && !is_irresponsive)
                     {
                         levelMap.thePlayer.PlayerDoAbility();
                     }
