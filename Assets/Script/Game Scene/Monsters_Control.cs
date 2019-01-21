@@ -360,29 +360,31 @@ public class Monsters_Control: MonoBehaviour {
 
     private void SpawnAllBoss(int totalNum)
     {
-        Debug.Log("map ask " + totalNum + " boss");
         if (totalNum == 0)
             return;
-
+        Debug.Log("map ask " + totalNum + " boss");
         const int MIN_DIS_BTW_MONS = 7;
         int spawnedCount = 0;
+        int emegercyJumpOut = 0;
         bool invalid = false;
+        
         while (spawnedCount < totalNum)
         {
             invalid = false;
             int h = Random.Range(1, levelMap.height - 1);
             int w = Random.Range(1, levelMap.width - 1);
             int pos = h * levelMap.width + w;
+            
+            if(emegercyJumpOut++ > (totalNum * 256))
+            {
+                Debug.Log("Emegercy Jump-Out Happened.\ntryCount: " + emegercyJumpOut + "\ntotalNum: " + totalNum);
+                break;
+            }
 
             int disTpPlayer = Mathf.Abs(levelMap.playerStartTile[0] - h) + Mathf.Abs(levelMap.playerStartTile[1] - w);
             int disToFinish = Mathf.Abs(levelMap.finishTile[0] - h) + Mathf.Abs(levelMap.finishTile[1] - w);
             // check if too close to player and boss have to spawn close to finsh
-            if (disTpPlayer < 12)
-                invalid = true;
-            else if (disToFinish > 8 * (spawnedCount + 1) || disToFinish < 8 * spawnedCount + 1)
-                invalid = true;
-
-            
+            invalid = disTpPlayer < 14 || (disToFinish < (2 + (spawnedCount * 5))) || (disToFinish > (8 + (spawnedCount * 5)));
             foreach (BossMonster m in bossList)
             {
                 if (MIN_DIS_BTW_MONS > (Mathf.Abs(m.h - h) + Mathf.Abs(m.w - w)))
@@ -491,7 +493,7 @@ public class Monsters_Control: MonoBehaviour {
             }
             else if (distanceToPlayer <= 32)
             {
-                MonsterMoveRandom(monsList[i]);
+                MonsterMoveRandom(monsList[i], false);
             }
         }
         for (int i = 0; i < bossList.Count; i++)
@@ -505,7 +507,9 @@ public class Monsters_Control: MonoBehaviour {
                 {
                     case DECISION.MOVE :
                         if (distanceToPlayer <= 2 || Random.Range(0, 32) == 0)
-                            MonsterMoveRandom(bossList[i]);
+                            MonsterMoveRandom(bossList[i], true);
+                        else if (distanceToPlayer <= 3 && Random.Range(0, 32) == 0)
+                            MonsterMoveRandom(bossList[i], true);
                         else
                             MonsterMoveToPlayer(bossList[i], true);
                         break;
@@ -540,22 +544,28 @@ public class Monsters_Control: MonoBehaviour {
 
         if (goingTo == -1 || pathList.Count > (isBoss ? 24 : 12))
         { // Monster sense player but cannot find path //Debug.Log("try MonsterMoveToPlayer() failed");
-            MonsterMoveRandom(thisMon);
+            MonsterMoveRandom(thisMon, isBoss);
         }
         else
         {
             //Debug.Log("MonsterMoveToPlayer()");
             int newh = thisMon.h + ((goingTo % 2 == 0) ? (goingTo - 1) : 0);
             int neww = thisMon.w + ((goingTo % 2 == 1) ? (goingTo - 2) : 0);
-            // check if too close to other boss: don't move
+            // check if a boss is too close to other boss: don't move
             if (isBoss)
             {
                 foreach (BossMonster x in bossList)
                 {
                     if (x.h != thisMon.h && x.w != thisMon.w)
                     {
-                        if (Mathf.Abs(x.h - newh) + Mathf.Abs(x.w - neww) <= 2)
-                            return;
+                        if (Mathf.Abs(x.h - newh) + Mathf.Abs(x.w - neww) <= 3)
+                        {
+                            if (Random.Range(0, 2) > 0)
+                                MonsterMoveRandom(thisMon, true);
+                            else
+                                return;
+                                
+                        }
                     }
                 }
             }
@@ -591,7 +601,7 @@ public class Monsters_Control: MonoBehaviour {
         }
     }
 
-    private void MonsterMoveRandom(Monster thisMon)
+    private void MonsterMoveRandom(Monster thisMon, bool isBoss)
     {
         //Debug.Log("MonsterMoveRandom()");
 
@@ -606,6 +616,22 @@ public class Monsters_Control: MonoBehaviour {
             if (Random.Range(0, 8) < 0) break; // monter wont move
             newh = thisMon.h + ((goingTo % 2 == 0) ? (goingTo - 1) : 0);
             neww = thisMon.w + ((goingTo % 2 == 1) ? (goingTo - 2) : 0);
+            // check if a boss is too close to other boss: don't move
+            if (isBoss)
+            {
+                bool boss_too_crowded = false;
+                foreach (BossMonster x in bossList)
+                {
+                    if (x.h != thisMon.h && x.w != thisMon.w)
+                    {
+                        if (Mathf.Abs(x.h - newh) + Mathf.Abs(x.w - neww) <= 3)
+                        {
+                            boss_too_crowded = Random.Range(0, 2) > 0;
+                        }
+                    }
+                }
+                if (boss_too_crowded) continue;
+            }
             if (levelMap.tiles[newh, neww] != TILE_TYPE.WALL
                 && !levelMap.theObstacles.positionList.Exists(x => x == (newh * levelMap.width + neww))
                 && (levelMap.thePlayer.h != newh || levelMap.thePlayer.w != neww))

@@ -213,7 +213,7 @@ public class Control_Animation : MonoBehaviour {
                     else
                     // Created
                     {
-                        if (!(can_end = x.transform.localScale.y > 0.999f))
+                        if (thisObsSprite.transform.localScale.y < 0.999f)
                         {
                             thisObsSprite.transform.localScale += new Vector3(0f, 0.45f * (Time.deltaTime / ANIM_DUR_TIME * 0.99f), 0f);
                             thisObsSprite.transform.position += new Vector3(0f, 0.27f * (Time.deltaTime / ANIM_DUR_TIME * 0.99f), 0f);
@@ -285,7 +285,7 @@ public class Control_Animation : MonoBehaviour {
         if (thisBoss.hp == 0)
         {
             thisBoss = null;
-            levelMap.theMonsters.HurtBossById(bossIndex);
+            levelMap.theMonsters.HurtBossByListIndex(bossIndex);
         }
         else
         {
@@ -473,7 +473,7 @@ public class Control_Animation : MonoBehaviour {
     private IEnumerator ViewMapModeAnim()
     {
         float i = 0;
-        float speed = 0.75f;
+        float speed = 0.5f;
         float vmm_anim_dur_time = 1.0f;
         while (Mathf.Abs(Game_Panel.transform.position.magnitude - vamm_pos.magnitude) >= 0.01f)
         {

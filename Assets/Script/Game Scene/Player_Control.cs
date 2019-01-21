@@ -220,8 +220,7 @@ public class Player_Control : MonoBehaviour {
             thePlayerDisp.animEndPos = levelMap.MapCoordToWorldVec3(h, w, 0);
             return TILE_TYPE.WALKABLE;
         }
-        else if (newh == levelMap.finishTile[0] && neww == levelMap.finishTile[1]
-            && (Save_Data.SelectedLevel != Save_Data.MaxLevel || levelMap.theMonsters.bossList.Count == 0))
+        else if (newh == levelMap.finishTile[0] && neww == levelMap.finishTile[1])
         {
             thePlayerDisp.animBeginPos = thePlayerDisp.ObjPos;
             thePlayerDisp.animEndPos = levelMap.MapCoordToWorldVec3(newh, neww, 0);

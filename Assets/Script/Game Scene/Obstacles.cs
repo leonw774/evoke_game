@@ -39,13 +39,16 @@ public class Obstacles : MonoBehaviour {
         int pos = h * levelMap.width + w;
         positionList.Add(pos);
         positionList.Sort();
-        Vector3 trans = levelMap.MapCoordToWorldVec3(h, w, 0);
-        GameObject created = Instantiate(prototype);
-        created.name = "Obstacle Sprite" + pos.ToString();
-        created.tag = "Obstacle";
-        created.transform.parent = GameObject.Find("Game Panel").transform;
-        created.transform.localPosition = trans;
-        created.transform.localScale = Vector3.one;
+        if (GameObject.Find("Obstacle Sprite" + pos.ToString()) == null)
+        {
+            Vector3 trans = levelMap.MapCoordToWorldVec3(h, w, 0);
+            GameObject created = Instantiate(prototype);
+            created.name = "Obstacle Sprite" + pos.ToString();
+            created.tag = "Obstacle";
+            created.transform.parent = GameObject.Find("Game Panel").transform;
+            created.transform.localPosition = trans;
+            created.transform.localScale = Vector3.one;
+        }
     }
 
     public void ObsCreate(int pos)

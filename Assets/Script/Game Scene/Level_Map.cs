@@ -233,14 +233,16 @@ public class Level_Map : MonoBehaviour
 
     private void SetMonsterNumber()
     {
-        if (Save_Data.SelectedLevel >= 3 && Save_Data.SelectedLevel <= 5)
-            bossNumber = 1;
-        else if (Save_Data.SelectedLevel >= 6 && Save_Data.SelectedLevel <= 9)
-            bossNumber = 3;
-        else if (Save_Data.SelectedLevel == 10)
-            bossNumber = 5;
-        else
+        if (Save_Data.SelectedLevel < 3)
             bossNumber = 0;
+        else if (Save_Data.SelectedLevel <= 5)
+            bossNumber = 1;
+        else if (Save_Data.SelectedLevel <= 6)
+            bossNumber = 2;
+        else if (Save_Data.SelectedLevel <= 9)
+            bossNumber = 3;
+        else if (Save_Data.SelectedLevel <= 10)
+            bossNumber = 4; 
 
         if (Save_Data.SelectedLevel < 3)
             monsterNumber = 2 * (Save_Data.SelectedLevel + 1);
@@ -266,12 +268,12 @@ public class Level_Map : MonoBehaviour
         float adjustedmonsterNum = monsterNumber / multiPathFactor;
         //Debug.Log("adjustedmonsterNum: " + adjustedmonsterNum);
 
-        int adjustedestimatedStep = (int) (estimatedStep * (1.1 + 0.05 * (Save_Data.MaxLevel - Save_Data.SelectedLevel) / 2));
+        int adjustedestimatedStep = (int) (estimatedStep * (1.0 + 0.1 * (Save_Data.MaxLevel - Save_Data.SelectedLevel) / 2));
 
         int ep_to_set = adjustedestimatedStep + (int) (monsterNumToStep * adjustedmonsterNum);
         int hp_to_set = (int) adjustedmonsterNum / 15 + 2;
 
-        ep_to_set += (int) (bossNumber - 0.5) * 24;
+        ep_to_set += (int) bossNumber * 12;
         hp_to_set += (int) (bossNumber + 1) / 2;
 
         thePlayer.EP = ep_to_set;
@@ -289,8 +291,7 @@ public class Level_Map : MonoBehaviour
         // only do MapConstruct in first start
         MapFirstConstruction();
         theObstacles.Construct();
-        if (monsterNumber > 0)
-            theMonsters.SpawnAll(monsterNumber, bossNumber);
+        theMonsters.SpawnAll(monsterNumber, bossNumber);
         SetPlayerInfo();
     }
 
@@ -305,8 +306,7 @@ public class Level_Map : MonoBehaviour
         theObstacles.Construct();
         theAnimation.is_anim = false;
         theAnimation.is_bossability = false;
-        if (monsterNumber > 0)
-            theMonsters.SpawnAll(monsterNumber, bossNumber);
+        theMonsters.SpawnAll(monsterNumber, bossNumber);
         SetPlayerInfo();
     }
 
