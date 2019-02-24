@@ -11,13 +11,13 @@ public class Game_Menu : MonoBehaviour {
     GameObject menuCanvas;
     GameObject FinishGO;
     GameObject FailGO;
-    GameObject MenuBtn;
-    GameObject InfoBtn;
     GameObject MapBtn;
+    GameObject InfoBtn;
     GameObject ResumeBtn;
     AudioSource FinishSound;
     AudioSource FailSound;
 
+    public GameObject MenuBtn;
     public bool isMenuActive = false;
     public bool isFinishMenu = false, isFailMenu = false;
 
@@ -87,12 +87,24 @@ public class Game_Menu : MonoBehaviour {
 
     public void ToggleFinishMenu()
     {
+        StartCoroutine(FinishWaitTime(0.05f));
+    }
+
+    public void ToggleFailMenu()
+    {
+        StartCoroutine(FailWaitTime(0.25f));
+    }
+
+    IEnumerator FinishWaitTime(float waitTime)
+    {
+        for (float i = 0f; i < waitTime; i += Time.deltaTime)
+            yield return 0;
         if (!isFinishMenu)
         {
             ToggleGameMenu();
             FinishSound.Play();
             WriteSaveData(Save_Data.PassedLevel);
-            if (Save_Data.SelectedLevel == Save_Data.BossLevel)
+            if (Save_Data.SelectedLevel == Save_Data.MaxLevel)
             {
                 GameObject.Find("Next Level Button").transform.Translate(new Vector3(0, 0, -1000));
             }
@@ -102,8 +114,10 @@ public class Game_Menu : MonoBehaviour {
         }
     }
 
-    public void ToggleFailMenu()
+    IEnumerator FailWaitTime(float waitTime)
     {
+        for (float i = 0f; i < waitTime; i += Time.deltaTime)
+            yield return 0;
         if (!isFailMenu)
         {
             ToggleGameMenu();
@@ -117,6 +131,7 @@ public class Game_Menu : MonoBehaviour {
     public void GameExitButton()
     {
         WriteSaveData(Save_Data.PassedLevel);
+        GameObject.Find("Loading Control").GetComponent<SpriteRenderer>().enabled = true;
         SceneManager.LoadScene("Menu Scene");
     }
 
@@ -130,4 +145,6 @@ public class Game_Menu : MonoBehaviour {
             SaveW.Close();
         }
     }
+
+
 }

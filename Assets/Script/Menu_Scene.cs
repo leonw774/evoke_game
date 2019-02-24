@@ -11,15 +11,17 @@ public class Menu_Scene : MonoBehaviour {
     public StreamReader SaveR = null;
     public StreamWriter SaveW = null;
     public bool isTitleAnimPlaying = false;
-    public SpriteRenderer titleImg;
-    public SpriteRenderer titleImgIcon;
     public GameObject mainCam;
+    public GameObject titleObj;
+    public SpriteRenderer titleLogo;
+    public SpriteRenderer titleImg;
 
     public void Start()
     {
         mainCam = GameObject.Find("Main Camera");
-        titleImg = GameObject.Find("Main Title").GetComponent<SpriteRenderer>();
-        titleImgIcon = GameObject.Find("Main Title Icon").GetComponent<SpriteRenderer>();
+        titleObj = GameObject.Find("Main Title");
+        titleLogo = GameObject.Find("Main Title").GetComponent<SpriteRenderer>();
+        titleImg = GameObject.Find("Main Title Player Sprite").GetComponent<SpriteRenderer>();
         Text saveFileDebugOutput = GameObject.Find("Save File Debug Output").GetComponent<Text>();
 
 		SaveFilePath = Application.persistentDataPath + "/save.txt";
@@ -36,8 +38,8 @@ public class Menu_Scene : MonoBehaviour {
             else
             {
                 saveFileDebugOutput.text += "false\n";
-                GameObject.Find("Continue Button Text").GetComponent<Text>().text = "Begin";
-                // Passedlevel is still -1 until player finish level 0
+                GameObject.Find("Continue Button Text").GetComponent<Text>().text = "開始教學關";
+                // Passed level is still -1 until player finish level 0
                 if (Save_Data.SelectedLevel != -1)
                 {
                     CameraMain2Menu();
@@ -57,6 +59,7 @@ public class Menu_Scene : MonoBehaviour {
 	    //Save_Data.PassedLevel = 2;
 
         SetupLevelMenuButton();
+        TitleAnimationStart();
     }
 
     void SetupLevelMenuButton()
@@ -100,15 +103,7 @@ public class Menu_Scene : MonoBehaviour {
     }
 
     /* JUMP TO OTHER SCENE */
-
-    private void FirstTimeInGameIntro()
-    {
-        GameObject.Find("Loading Title").GetComponent<SpriteRenderer>().enabled = true;
-        Save_Data.SelectLevel(0);
-        SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
-        SceneManager.LoadScene("Slide Scene");
-    }
-
+    /*
     public void LoadIntroSlide(int num)
     {
         GameObject.Find("Loading Menu").GetComponent<SpriteRenderer>().enabled = true;
@@ -116,11 +111,11 @@ public class Menu_Scene : MonoBehaviour {
         SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
         SceneManager.LoadScene("Slide Scene");
     }
-
+    */
     public void LoadContinueLevel()
     {
         GameObject.Find("Loading Title").GetComponent<SpriteRenderer>().enabled = true;
-        Save_Data.SelectLevel(Save_Data.PassedLevel + ((Save_Data.PassedLevel == Save_Data.BossLevel) ? 0 : 1));
+        Save_Data.SelectLevel(Save_Data.PassedLevel + ((Save_Data.PassedLevel == Save_Data.MaxLevel) ? 0 : 1));
         SceneManager.SetActiveScene(SceneManager.GetSceneByName("Menu Scene"));
         SceneManager.LoadScene("Game Scene");
     }
@@ -135,24 +130,17 @@ public class Menu_Scene : MonoBehaviour {
 
     /* ANIMATION */ 
 
-    public void AnimationStart()
+    public void TitleAnimationStart()
     {
-        if (Save_Data.PassedLevel == -1 && Save_Data.SelectedLevel == -1)
-            FirstTimeInGameIntro();
-        else
-            isTitleAnimPlaying = true;
+        titleLogo.color = Color.clear;
+        titleImg.color = Color.clear;
+        isTitleAnimPlaying = true;
     }
 
     public void CameraMain2Menu()
     {
         // move camera
         mainCam.transform.Translate(new Vector3(-20, 0, 0));
-        // set title logo back to transparent
-        Color c = titleImg.color, ci = titleImgIcon.color;
-        c.a = 1.0f;
-        ci.a = 0.0f;
-        titleImg.color = c;
-        titleImgIcon.color = ci;
     }
 
     public void CameraMenu2Main()
@@ -162,27 +150,16 @@ public class Menu_Scene : MonoBehaviour {
 
     public void TitleAnimation()
     {
-        Color toFadeInColor = titleImgIcon.color;
-        Color toFadeOutColor = titleImg.color;
-        if (toFadeInColor.a < 0.2f)
+        if (titleLogo.color.a < 0.99)
         {
-            toFadeInColor.a = Mathf.Lerp(toFadeInColor.a, 1.0f, 3.2f * Time.deltaTime);
-            toFadeOutColor.a = Mathf.Lerp(toFadeOutColor.a, 0.0f, 3.2f * Time.deltaTime);
-            titleImgIcon.color = toFadeInColor;
-            titleImg.color = toFadeOutColor;
+            titleImg.color = titleLogo.color * (1 - (Time.deltaTime / 0.5f)) + Color.white * (Time.deltaTime / 0.5f);
+            titleLogo.color = titleLogo.color * (1 - (Time.deltaTime / 0.5f)) + Color.white * (Time.deltaTime / 0.5f);
         }
-        else if (toFadeInColor.a < 0.98f)
-        {
-            toFadeInColor.a = Mathf.Lerp(toFadeInColor.a, 1.0f, 4.8f * Time.deltaTime);
-            toFadeOutColor.a = Mathf.Lerp(toFadeOutColor.a, 0.0f, 4.8f * Time.deltaTime);
-            titleImgIcon.color = toFadeInColor;
-            titleImg.color = toFadeOutColor;
-        }
+        int cycleNum = (int) (Time.time / 2.5);
+        if (cycleNum % 2 == 0)
+            titleObj.transform.position += new Vector3(0f, 0.06f * Time.deltaTime, 0f);
         else
-        {
-            isTitleAnimPlaying = false;
-            CameraMain2Menu();
-        }
+            titleObj.transform.position += new Vector3(0f, -0.06f * Time.deltaTime, 0f);
     }
 
     void Update()

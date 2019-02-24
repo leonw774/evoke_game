@@ -12,6 +12,7 @@ public class Level_Map : MonoBehaviour
     public int estimatedStep = 0;
     public int wallsNumber = 0;
     public int monsterNumber = 0;
+    public int bossNumber = 0;
 
     public Obstacles theObstacles = null;
     public Monsters_Control theMonsters = null;
@@ -67,43 +68,46 @@ public class Level_Map : MonoBehaviour
         LoadMapImg();
     }
 
-    private void LoadThemeSprites()
+    private void LoadThemeSprites(int themeNum = 0)
     {
         Texture2D thisThemeTex;
         Rect Rect;
         Sprite Sp;
+        String themeString;
+
+        themeString = (themeNum != 0) ? themeNum.ToString() : "test";
 
         // get backgrounds
-        thisThemeTex = Resources.Load<Texture2D>("Themes/Background/background_" + Save_Data.SelectedTheme.ToString());
+        thisThemeTex = Resources.Load<Texture2D>("Themes/Background/background_" + themeString);
         Rect = new Rect(0.0f, 0.0f, (float)thisThemeTex.width, (float)thisThemeTex.height);
         Sp = Sprite.Create(thisThemeTex, Rect, new Vector2(0.5f, 0.5f));
         GameObject.Find("Field Background").GetComponent<SpriteRenderer>().sprite = Sp;
 
         // get outring
-        thisThemeTex = Resources.Load<Texture2D>("Themes/Background/background_outring_" + Save_Data.SelectedTheme.ToString());
+        thisThemeTex = Resources.Load<Texture2D>("Themes/Background/background_outring_" + themeString);
         Rect = new Rect(0.0f, 0.0f, (float)thisThemeTex.width, (float)thisThemeTex.height);
         Sp = Sprite.Create(thisThemeTex, Rect, new Vector2(0.5f, 0.5f));
         GameObject.Find("Field Frontground Outring").GetComponent<SpriteRenderer>().sprite = Sp;
 
         // get wall spaite
-        thisThemeTex = Resources.Load<Texture2D>("Themes/Wall/wall_" + Save_Data.SelectedTheme.ToString());
+        thisThemeTex = Resources.Load<Texture2D>("Themes/Wall/wall_" + themeString);
         Rect = new Rect(0.0f, 0.0f, (float)thisThemeTex.width, (float)thisThemeTex.height);
         Sp = Sprite.Create(thisThemeTex, Rect, new Vector2(0.5f, 0.5f));
         GameObject.Find("Prototype Wall Sprite").GetComponent<SpriteRenderer>().sprite = Sp;
 
         // get obs sprite
-        thisThemeTex = Resources.Load<Texture2D>("Themes/Obs/obs_" + Save_Data.SelectedTheme.ToString());
+        thisThemeTex = Resources.Load<Texture2D>("Themes/Obs/obs_" + themeString);
         Rect = new Rect(0.0f, 0.0f, (float)thisThemeTex.width, (float)thisThemeTex.height);
         Sp = Sprite.Create(thisThemeTex, Rect, new Vector2(0.5f, 0.5f));
         GameObject.Find("Prototype Obstacle Sprite").GetComponent<SpriteRenderer>().sprite = Sp;
 
         // get monster sprite
-        thisThemeTex = Resources.Load<Texture2D>("Themes/Monster/monster_frame1_" + Save_Data.SelectedTheme.ToString());
+        thisThemeTex = Resources.Load<Texture2D>("Themes/Monster/monster_frame1_" + themeString);
         Rect = new Rect(0.0f, 0.0f, (float)thisThemeTex.width, (float)thisThemeTex.height);
         Sp = Sprite.Create(thisThemeTex, Rect, new Vector2(0.5f, 0.5f));
         GameObject.Find("Prototype Monster Sprite Frame 1").GetComponent<SpriteRenderer>().sprite = Sp;
 
-        thisThemeTex = Resources.Load<Texture2D>("Themes/Monster/monster_frame2_" + Save_Data.SelectedTheme.ToString());
+        thisThemeTex = Resources.Load<Texture2D>("Themes/Monster/monster_frame2_" + themeString);
         Rect = new Rect(0.0f, 0.0f, (float)thisThemeTex.width, (float)thisThemeTex.height);
         Sp = Sprite.Create(thisThemeTex, Rect, new Vector2(0.5f, 0.5f));
         GameObject.Find("Prototype Monster Sprite Frame 2").GetComponent<SpriteRenderer>().sprite = Sp;
@@ -207,15 +211,16 @@ public class Level_Map : MonoBehaviour
                     tiles[h, w] = TILE_TYPE.WALL;
                     exitObj = GameObject.Find("Exit Sprite");
                     exitObj.transform.position = trans;
-
+                    /*
                     // in boss level, exit is closed
-                    if (Save_Data.SelectedLevel == Save_Data.BossLevel)
+                    if (Save_Data.SelectedLevel == Save_Data.MaxLevel)
                     {
                         exitObj.GetComponent<SpriteRenderer>().enabled = false;
                         exitObj = GameObject.Find("Closed Exit Sprite");
                         exitObj.transform.position = trans;
                         exitObj.GetComponent<SpriteRenderer>().enabled = true;
                     }
+                    */
                 }
                 else if (tiles[h, w] == TILE_TYPE.PLAYER_START_POINT)
                 {
@@ -229,48 +234,53 @@ public class Level_Map : MonoBehaviour
     private void SetMonsterNumber()
     {
         if (Save_Data.SelectedLevel < 3)
+            bossNumber = 0;
+        else if (Save_Data.SelectedLevel <= 5)
+            bossNumber = 1;
+        else if (Save_Data.SelectedLevel <= 6)
+            bossNumber = 2;
+        else if (Save_Data.SelectedLevel <= 9)
+            bossNumber = 3;
+        else if (Save_Data.SelectedLevel <= 10)
+            bossNumber = 4; 
+
+        if (Save_Data.SelectedLevel < 3)
             monsterNumber = 2 * (Save_Data.SelectedLevel + 1);
-        else if (Save_Data.SelectedLevel == 3)
-            monsterNumber = 10;
         else
-            monsterNumber = (tiles.Length - wallsNumber - 8) / 32 + ((Save_Data.SelectedLevel > 4) ? 4 : Save_Data.SelectedLevel);
-        //Debug.Log("map ask for " + monsterNumber + " mons");
+            monsterNumber = (tiles.Length - wallsNumber - 8) / 32 + ((Save_Data.SelectedLevel > 4) ? 5 : (int)(Save_Data.SelectedLevel * 1.2)) - (int) (bossNumber * 1.8);
     }
 
     private void SetPlayerInfo()
     {
         // use A-star to find least steps to finish
         Astar astar = new Astar(tiles, height, width, theObstacles.positionList, playerStartTile, finishTile);
-        estimatedStep = astar.FindPathLength(false, true, false);
+        estimatedStep = (int) astar.FindPath(false, true, false);
 
         //astar.PrintPath();
-        //Debug.Log("estimatedStep:" + estimatedStep);
+        Debug.Log("estimatedStep:" + estimatedStep);
 
         int walkableTilesNnum = tiles.Length - wallsNumber;
-        float adjustedmonsterNum = monsterNumber;
         float monsterNumToStep = 3.6f;
-        float multiPathFactor = ((int)(walkableTilesNnum / (estimatedStep * 3.6f) * 100) / 100f);
-
-        walkableTilesNnum += (int) (theObstacles.positionList.Count / ((multiPathFactor > 1f) ? multiPathFactor : 1f));
-        multiPathFactor = (int)(walkableTilesNnum / (estimatedStep * 3.6f) * 100) / 100f;
-        adjustedmonsterNum /= multiPathFactor;
+        float stepToTiles = 3f;
+        float multiPathFactor = Mathf.Max(1f, ((int)(walkableTilesNnum / (estimatedStep * stepToTiles) * 100) / 100f));
         Debug.Log("multiPathFactor: " + multiPathFactor);
+
+        float adjustedmonsterNum = monsterNumber / multiPathFactor;
         //Debug.Log("adjustedmonsterNum: " + adjustedmonsterNum);
 
-        int ep_to_set = (int) (estimatedStep * (1.36 - ((Save_Data.SelectedLevel / 3) * 0.03))) + (int) (monsterNumToStep * adjustedmonsterNum) + 3;
+        int adjustedestimatedStep = (int) (estimatedStep * (1.2 + 0.05 * (Save_Data.MaxLevel - Save_Data.SelectedLevel) / 2));
+
+        int ep_to_set = adjustedestimatedStep + (int) (monsterNumToStep * adjustedmonsterNum);
         int hp_to_set = (int) adjustedmonsterNum / 15 + 2;
 
-        if (Save_Data.SelectedLevel == Save_Data.BossLevel)
-        {
-            ep_to_set += (int) (monsterNumToStep * adjustedmonsterNum + 0.5);
-            hp_to_set += 4;
-        }
+        ep_to_set += (int) bossNumber * 12;
+        hp_to_set += (int) (bossNumber + 1) / 2;
 
         thePlayer.EP = ep_to_set;
         thePlayer.HP = hp_to_set;
         thePlayer.CD = 0;
         thePlayer.thePlayerDisp.FaceTo = FACETO.DOWN;
-        if (theAnimation.isViewMapMode)
+        if (theAnimation.is_vmm)
             thePlayer.thePlayerDisp.playerFacingSprite.enabled = false;
         thePlayer.SetPositionTo(playerStartTile[0], playerStartTile[1]);
         //Debug.Log("Player States All Set");
@@ -281,8 +291,7 @@ public class Level_Map : MonoBehaviour
         // only do MapConstruct in first start
         MapFirstConstruction();
         theObstacles.Construct();
-        if(monsterNumber > 0)
-            theMonsters.SpawnMonsters(monsterNumber);
+        theMonsters.SpawnAll(monsterNumber, bossNumber);
         SetPlayerInfo();
     }
 
@@ -290,18 +299,21 @@ public class Level_Map : MonoBehaviour
     public void GameRestart()
     {
         //Debug.Log("Restart");
+        if (theAnimation.is_vmm)
+            theAnimation.ToggleViewMapMode(false);
         theObstacles.DestroyAllObstacles();
         theMonsters.DestroyAllMonsters();
         theObstacles.Construct();
-        if(monsterNumber > 0)
-            theMonsters.SpawnMonsters(monsterNumber);
+        theAnimation.is_anim = false;
+        theAnimation.is_bossability = false;
+        theMonsters.SpawnAll(monsterNumber, bossNumber);
         SetPlayerInfo();
     }
 
     /* this function is called by Player_Control when it find out player is at finish */
     public void UpdateSaveLevel()
     {
-        if (Save_Data.SelectedLevel != Save_Data.BossLevel && Save_Data.SelectedLevel == Save_Data.PassedLevel + 1)
+        if (Save_Data.SelectedLevel != Save_Data.MaxLevel && Save_Data.SelectedLevel == Save_Data.PassedLevel + 1)
             Save_Data.UpdatePassedLevel();
         //Debug.Log("SelectedLevel: " + Save_Data.SelectedLevel);
         //Debug.Log("PassedLevel: " + Save_Data.PassedLevel);
@@ -326,8 +338,14 @@ public class Level_Map : MonoBehaviour
 
     public bool IsTileWalkable(int i, int j)
     {
-        if (theMonsters.boss != null)
-            return !(theObstacles.positionList.Exists(x => x == i * width + j) || tiles[i, j] == TILE_TYPE.WALL || (theMonsters.boss.h == i && theMonsters.boss.w == j));
+        if (theMonsters.bossList.Count > 0)
+        {
+            foreach (BossMonster x in theMonsters.bossList)
+            {
+                if (x.h == i && x.w == j)
+                    return false;
+            }
+        }
         return !(theObstacles.positionList.Exists(x => x == i * width + j) || tiles[i, j] == TILE_TYPE.WALL);
     }
 }

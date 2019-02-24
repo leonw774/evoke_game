@@ -89,10 +89,8 @@ public class Player_Control : MonoBehaviour {
     public int h;
     public int w;
 
-    private Text energyPointObject;
-    private Text healthPointObject;
-    private Text abilityCooldownObject;
-    private AudioSource abilitySound, moveSound;
+    public Text energyPointObject;
+    public Text healthPointObject;
 
     private int energyPoint;
     private int healthPoint;
@@ -106,7 +104,7 @@ public class Player_Control : MonoBehaviour {
         set
         {
             energyPointObject.color = (value <= 10) ? new Color(1.0f, 0.2f, 0.2f) : new Color(0.1098f, 0.882353f, 0.882353f);
-            energyPointObject.fontSize = (value <= 10) ? 36 : 30;
+            energyPointObject.fontSize = (value <= 10) ? 22 : 20;
             energyPointObject.text = (energyPoint = value).ToString();
         }
     }
@@ -119,7 +117,7 @@ public class Player_Control : MonoBehaviour {
         set
         {
             healthPointObject.color = (value <= 1) ? new Color(1.0f, 0.2f, 0.2f) : new Color(0.1098f, 0.882353f, 0.1098f);
-            healthPointObject.fontSize = (value <= 1) ? 36 : 30;
+            healthPointObject.fontSize = (value <= 1) ? 22 : 20;
             healthPointObject.text = (healthPoint = value).ToString();
         }
     }
@@ -134,19 +132,19 @@ public class Player_Control : MonoBehaviour {
             abilityCooldown = value;
             if (abilityCooldown > 0)
             {
-                abilityCooldownObject.text = "C.D."; // abilityCooldown.ToString();
                 GameObject.Find("Ability Button").GetComponent<Button>().interactable = false;
             }
             else
             {
                 GameObject.Find("Ability Button").GetComponent<Button>().interactable = true;
-                abilityCooldownObject.text = "";
             }
         }
         
     }
+
     private Control_Animation theAnimation;
     private Level_Map levelMap;
+    private AudioSource abilitySound;
     public Player_Display thePlayerDisp;
     public Game_Menu theControlPanel;
 
@@ -164,36 +162,41 @@ public class Player_Control : MonoBehaviour {
 
         energyPointObject = GameObject.Find("EP Output").GetComponent<Text>();
         healthPointObject = GameObject.Find("HP Output").GetComponent<Text>();
-        abilityCooldownObject = GameObject.Find("CD Output").GetComponent<Text>();
-        moveSound = GameObject.Find("Move Sound").GetComponent<AudioSource>();
         abilitySound = GameObject.Find("Ability Sound").GetComponent<AudioSource>();
     }
 
     public void PlayerMove(int direction)
     {
-        if (!theAnimation.is_irresponsive && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
+        if (!theAnimation.is_irresponsive && theControlPanel.MenuBtn.GetComponent<Button>().enabled)
         {
+            theAnimation.is_irresponsive = true;
             thePlayerDisp.FaceTo = (FACETO)direction;
-            if (Move(direction)) // it is monster's turn only if player did change position
+            TILE_TYPE goingTo = Move(direction);
+            if (goingTo == TILE_TYPE.WALKABLE) // it is monster's turn only if player did change position
             {
-                moveSound.Play();
                 levelMap.theMonsters.MonstersTurn();
-                levelMap.theAnimation.playerAnim.Start();
-                levelMap.theAnimation.monstersAnim.Start();
+                StartCoroutine(theAnimation.PlayerMoveAnim());
+                StartCoroutine(theAnimation.MonstersMoveAnim());
+            }
+            else if (goingTo == TILE_TYPE.FINISH_POINT)
+            {
+                levelMap.UpdateSaveLevel();
+                theControlPanel.ToggleFinishMenu();
             }
         }
     }
 
     public void PlayerDoAbility()
     {
-        if (!theAnimation.is_irresponsive && !theAnimation.isViewMapMode && !theAnimation.viewMapModeAnimation)
+        if (!theAnimation.is_irresponsive && theControlPanel.MenuBtn.GetComponent<Button>().enabled)
         {
             if (DoAbility())
             {
+                theAnimation.is_irresponsive = true;
                 abilitySound.Play();
-                levelMap.theAnimation.playerAbilityAnim.Start();
+                StartCoroutine(levelMap.theAnimation.PlayerAbilityAnim()); 
                 levelMap.theMonsters.MonstersTurn();
-                levelMap.theAnimation.monstersAnim.Start();
+                StartCoroutine(levelMap.theAnimation.MonstersMoveAnim());
             }
         }
     }
@@ -201,12 +204,12 @@ public class Player_Control : MonoBehaviour {
     /* HANDEL REAL THING THERE */
 
     // retrun true: player did change position; return false: player didn't move
-    private bool Move(int direction)
+    private TILE_TYPE Move(int direction)
     {
         int newh = h + ((direction % 2 == 0) ? (direction - 1) : 0);
         int neww = w + (direction % 2 == 1 ? (direction - 2) : 0);
-        if (theControlPanel.isMenuActive)
-            return false;
+        if (healthPoint <= 0 || energyPoint <= 0)
+            return TILE_TYPE.WALL;
         else if (levelMap.IsTileWalkable(newh, neww))
         {
             h = newh;
@@ -215,32 +218,28 @@ public class Player_Control : MonoBehaviour {
             CD--;
             thePlayerDisp.animBeginPos = thePlayerDisp.ObjPos;
             thePlayerDisp.animEndPos = levelMap.MapCoordToWorldVec3(h, w, 0);
-            return true;
+            return TILE_TYPE.WALKABLE;
         }
-        else if (newh == levelMap.finishTile[0] && neww == levelMap.finishTile[1]
-            && (Save_Data.SelectedLevel != Save_Data.BossLevel || levelMap.theMonsters.boss == null))
+        else if (newh == levelMap.finishTile[0] && neww == levelMap.finishTile[1])
         {
             thePlayerDisp.animBeginPos = thePlayerDisp.ObjPos;
-            thePlayerDisp.animEndPos = levelMap.MapCoordToWorldVec3(h, w, 0);
-            levelMap.UpdateSaveLevel();
-            theControlPanel.ToggleFinishMenu();
-            return true;
+            thePlayerDisp.animEndPos = levelMap.MapCoordToWorldVec3(newh, neww, 0);
+            return TILE_TYPE.FINISH_POINT;
         }
-        return false;       
+        return TILE_TYPE.WALL;       
     }
 
     // retrun true: player did do ability; return false: player couldn't do it
     private bool DoAbility()
     {
-        if (theControlPanel.isMenuActive || abilityCooldown > 0)
+        if (abilityCooldown > 0)
             return false;
         CD = 1;
         EP--;
         return true;
     }
 
-    /* Checks for Animation */
-
+    /* after monster move animation end, we check if play is attacked */
     public bool IsPlayerAttacked()
     {
         // if player finish the map, monster can not fail it afterward.
@@ -249,12 +248,13 @@ public class Player_Control : MonoBehaviour {
         
         int loss = levelMap.theMonsters.TryAttackPlayer(h * levelMap.width + w);
         if (levelMap.theObstacles.positionList.Exists(x => x == h * levelMap.width + w))
+        {
+            levelMap.theObstacles.ObsDestroy(h * levelMap.width + w);
             loss++;
+        }
         if (loss > 0)
         {
             // Debug.Log("player hurted");
-            // try destroy obs because player might be hurted by obs in boss monster attack
-            levelMap.theObstacles.ObsDestroy(h * levelMap.width + w);
             HP -= loss;
             return true;
         }
@@ -267,7 +267,7 @@ public class Player_Control : MonoBehaviour {
                         levelMap.IsTileWalkable(h - 1, w) ||
                         levelMap.IsTileWalkable(h, w + 1) ||
                         levelMap.IsTileWalkable(h, w - 1));
-        if (!not_blocked)
+        if (!not_blocked && abilityCooldown > 0)
             theControlPanel.ToggleFailMenu();
     }
 
