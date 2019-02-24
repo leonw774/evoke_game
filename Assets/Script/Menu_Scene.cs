@@ -39,7 +39,7 @@ public class Menu_Scene : MonoBehaviour {
             {
                 saveFileDebugOutput.text += "false\n";
                 GameObject.Find("Continue Button Text").GetComponent<Text>().text = "開始教學關";
-                // Passedlevel is still -1 until player finish level 0
+                // Passed level is still -1 until player finish level 0
                 if (Save_Data.SelectedLevel != -1)
                 {
                     CameraMain2Menu();
@@ -141,14 +141,6 @@ public class Menu_Scene : MonoBehaviour {
     {
         // move camera
         mainCam.transform.Translate(new Vector3(-20, 0, 0));
-        // set title logo to transparent
-        /*
-        Color c = titleImg.color, ci = titleImgIcon.color;
-        c.a = 1.0f;
-        ci.a = 0.0f;
-        titleImg.color = c;
-        titleImgIcon.color = ci;
-        */
     }
 
     public void CameraMenu2Main()

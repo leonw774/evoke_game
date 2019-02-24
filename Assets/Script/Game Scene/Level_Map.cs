@@ -268,7 +268,7 @@ public class Level_Map : MonoBehaviour
         float adjustedmonsterNum = monsterNumber / multiPathFactor;
         //Debug.Log("adjustedmonsterNum: " + adjustedmonsterNum);
 
-        int adjustedestimatedStep = (int) (estimatedStep * (1.0 + 0.1 * (Save_Data.MaxLevel - Save_Data.SelectedLevel) / 2));
+        int adjustedestimatedStep = (int) (estimatedStep * (1.2 + 0.05 * (Save_Data.MaxLevel - Save_Data.SelectedLevel) / 2));
 
         int ep_to_set = adjustedestimatedStep + (int) (monsterNumToStep * adjustedmonsterNum);
         int hp_to_set = (int) adjustedmonsterNum / 15 + 2;

@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public enum FACETO {UP = 0, LEFT, DOWN, RIGHT};
-public enum DECISION { NONE = 0, MOVE, ABILITY, SPECIAL };
+public enum DECISION { IDLE = 0, MOVE, ABILITY, SPECIAL };
 
 public class Monster
 {
@@ -83,21 +83,20 @@ public class BossMonster : Monster
 
     public BossMonster(int _h, int _w, int _id, int _hp, GameObject _vessel, GameObject _state, GameObject _sprite, Level_Map _lm) : base(_h, _w, _id, _vessel)
     {
-        decision = DECISION.NONE;
+        decision = DECISION.IDLE;
         levelMap = _lm;
 
         FULL_HP = _hp;
         healthPoint = _hp;
         hpOutput = _state.GetComponent<Text>();
-        hpOutput.text = healthPoint.ToString();
+        hpOutput.text = _hp.ToString();
         hp = _hp;
 
         facingSprite = _sprite.GetComponent<SpriteRenderer>();
         // need to set faceTo again
         // because the assignment in base will not do it
         // until ability is giving
-        FaceTo = (FACETO)Random.Range(0, 4);
-        
+        FaceTo = (FACETO) Random.Range(0, 4);
     }
 
     public int GetPostion()
@@ -148,17 +147,10 @@ public class BossMonster : Monster
     public DECISION Decide()
     {
         int distanceToPlayer = Mathf.Abs(levelMap.thePlayer.h - h) + Mathf.Abs(levelMap.thePlayer.w - w);
-
-        // if player is next to it or
-        // if player is near to it and they are seperated by some obstacles: ability
+        if (distanceToPlayer > 24)
+            return decision = DECISION.IDLE;
         if (CanDoAbility() || distanceToPlayer == 1)
             return decision = DECISION.ABILITY;
-
-        // if player not near and health point is low: Special Move
-        /*
-        if (distanceToPlayer < 12 && distanceToPlayer >= 6 && Random.Range(-1, FULL_HP - healthPoint + 1) > 0)
-            return decision = 3;
-        */
         return decision = DECISION.MOVE;
     }
 
@@ -179,7 +171,7 @@ public class BossMonster : Monster
         //Debug.Log("boss TryDoAbility(): boss at " + self.h + ", " + self.w + "; try at " + h_tocheck + ", " + w_tocheck);
         return levelMap.theObstacles.positionList.Exists(x => x == h_tocheck * levelMap.width + w_tocheck);
     }
-
+    /*
     public void DoSpecialMove()
     {
         int goingTo = -1;
@@ -237,6 +229,7 @@ public class BossMonster : Monster
             FaceTo = (FACETO)goingTo;
         }
     }
+    */
 }
 
 public class Monsters_Control: MonoBehaviour {
@@ -306,7 +299,7 @@ public class Monsters_Control: MonoBehaviour {
             h = pos / mapWidth;
             w = pos % mapWidth;
             tooClose = false;
-            // check if too close to player or finsh
+            // check if too close to player or finish
             if (5 > (Mathf.Abs(levelMap.playerStartTile[0] - h) + Mathf.Abs(levelMap.playerStartTile[1] - w))
              || 3 > (Mathf.Abs(levelMap.finishTile[0] - h) + Mathf.Abs(levelMap.finishTile[1] - w)))
                 tooClose = true;
@@ -483,43 +476,32 @@ public class Monsters_Control: MonoBehaviour {
 
     public void MonstersTurn()
     {
-        int distanceToPlayer = 0;
-        for (int i = 0; i < monsList.Count; i++)
+        int distanceToPlayer = 0, p_h = levelMap.thePlayer.h, p_w = levelMap.thePlayer.w;
+        foreach (Monster m in monsList)
         {
-            distanceToPlayer = Mathf.Abs(levelMap.thePlayer.h - monsList[i].h) + Mathf.Abs(levelMap.thePlayer.w - monsList[i].w);
+            distanceToPlayer = Mathf.Abs(p_h - m.h) + Mathf.Abs(p_w - m.w);
             if (distanceToPlayer <= 6 && Random.Range(0, 32) > 0)
             {
-                MonsterMoveToPlayer(monsList[i], false);
+                MonsterMoveToPlayer(m, false);
             }
             else if (distanceToPlayer <= 32)
             {
-                MonsterMoveRandom(monsList[i], false);
+                MonsterMoveRandom(m, false);
             }
         }
-        for (int i = 0; i < bossList.Count; i++)
+        foreach (BossMonster m in bossList)
         {
-            if (bossList[i].hp > 0)
+            if (m.hp > 0)
             {
-                bossList[i].Decide();
-                distanceToPlayer = Mathf.Abs(levelMap.thePlayer.h - bossList[i].h) + Mathf.Abs(levelMap.thePlayer.w - bossList[i].w);
-                //Debug.Log("boss" + i + " decision: " + bossList[i].decision);
-                switch (bossList[i].decision)
+                m.Decide();
+                distanceToPlayer = Mathf.Abs(p_h - m.h) + Mathf.Abs(p_w - m.w);
+                // Debug.Log("boss" + i + " decision: " + bossList[i].decision);
+                if (m.decision == DECISION.MOVE)
                 {
-                    case DECISION.MOVE :
-                        if (distanceToPlayer <= 2 || Random.Range(0, 32) == 0)
-                            MonsterMoveRandom(bossList[i], true);
-                        else if (distanceToPlayer <= 3 && Random.Range(0, 32) == 0)
-                            MonsterMoveRandom(bossList[i], true);
-                        else
-                            MonsterMoveToPlayer(bossList[i], true);
-                        break;
-                    case DECISION.SPECIAL :
-                        bossList[i].DoSpecialMove();
-                        break;
-                    default:
-                        // attack & ability behavier is handled in TryAttackPlayer
-                        // that wont happen until every other monster are done moving
-                        break;
+                    if (distanceToPlayer <= 2 || (distanceToPlayer == 3 && Random.Range(0, 32) == 0))
+                        MonsterMoveRandom(m, true);
+                    else
+                        MonsterMoveToPlayer(m, true);
                 }
             }
         }    
@@ -527,18 +509,18 @@ public class Monsters_Control: MonoBehaviour {
 
     private void MonsterMoveToPlayer(Monster thisMon, bool isBoss)
     {
+        if (Mathf.Abs(thisMon.h - levelMap.thePlayer.h) + Mathf.Abs(thisMon.w - levelMap.thePlayer.w) > 16)
+            return;
+        
         int goingTo = -1;
-        Astar monAstar;
         List<int> pathList;
-
-        monAstar = new Astar(levelMap.tiles, levelMap.height, levelMap.width, levelMap.theObstacles.positionList,
+        Astar monAstar = new Astar(levelMap.tiles, levelMap.height, levelMap.width, levelMap.theObstacles.positionList,
                             new int[2] { thisMon.h, thisMon.w},
                             new int[2] { levelMap.thePlayer.h, levelMap.thePlayer.w });
 
         monAstar.FindPath(false, isBoss, true);
         pathList = monAstar.GetPath();
-        if (pathList.Count > 0) goingTo = pathList[0];
-
+        goingTo = (pathList.Count == 0) ? -1 : pathList[0];
         //Debug.Log("mon #" + monsList[i].id + " goingTo = " + goingTo);
         //for (int k = 0; k < pathList.Count; k++) Debug.Log("[" + k + "]" + ": " + pathList[k]);
 
@@ -581,12 +563,15 @@ public class Monsters_Control: MonoBehaviour {
                         break;
                     }
                 }
-                foreach (BossMonster m in bossList)
+                if (!blocked)
                 {
-                    if (m.h == newh && m.w == neww)
+                    foreach (BossMonster m in bossList)
                     {
-                        blocked = true;
-                        break;
+                        if (m.h == newh && m.w == neww)
+                        {
+                            blocked = true;
+                            break;
+                        }
                     }
                 }
                 if (!blocked)
@@ -606,6 +591,8 @@ public class Monsters_Control: MonoBehaviour {
         //Debug.Log("MonsterMoveRandom()");
 
         if (thisMon.h == levelMap.thePlayer.h && thisMon.w == levelMap.thePlayer.w)
+            return;
+        if (Mathf.Abs(thisMon.h - levelMap.thePlayer.h) + Mathf.Abs(thisMon.w - levelMap.thePlayer.w) > 16)
             return;
 
         int tryCount = 0, goingTo = -1;

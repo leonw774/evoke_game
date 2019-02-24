@@ -19,19 +19,21 @@ public class Control_Animation : MonoBehaviour {
     public bool is_double_tap = false;
     private Vector3 vamm_pos, vamm_scale;
     GameObject Game_Panel;
+    Canvas Player_Control_Canvas, Player_State_Canvas;
 
     public IEnumerator PlayerMoveAnim()
     {
         float i = 0;
         Player_Display pd = levelMap.thePlayer.thePlayerDisp;
+        Vector3 playerMoveVecter = pd.animEndPos - pd.animBeginPos;
 
         while (is_anim)
             yield return 0;
 
         // update
-        while (i <= ANIM_DUR_TIME && (pd.animEndPos - pd.ObjPos).magnitude >= 0.01f)
+        while (i <= ANIM_DUR_TIME)
         {
-            pd.ObjPos += (pd.animEndPos - pd.animBeginPos) * (Time.deltaTime * 0.975f / ANIM_DUR_TIME);
+            pd.ObjPos += playerMoveVecter * (Time.deltaTime * 0.975f / ANIM_DUR_TIME);
             i += Time.deltaTime;
             is_anim = true;
             yield return 0;
@@ -70,8 +72,8 @@ public class Control_Animation : MonoBehaviour {
     public IEnumerator MonstersMoveAnim()
     {
         float i = 0;
-        bool can_end = false;
-        while (i <= ANIM_DUR_TIME && !can_end)
+        //bool can_end = false;
+        while (i <= ANIM_DUR_TIME)
         {
             if (levelMap.theMonsters.monsList.Count > 0)
             {
@@ -80,17 +82,13 @@ public class Control_Animation : MonoBehaviour {
                     if (x.animBeginPos != new Vector3(0.0f, 0.0f, -1.0f))
                     {
                         x.SpriteObj.transform.position += (x.animEndPos - x.animBeginPos) * (Time.deltaTime * 0.975f / ANIM_DUR_TIME);
-                        can_end = ((x.animEndPos - x.SpriteObj.transform.position).magnitude < 0.01f);
                     }
                 }
                 foreach (BossMonster x in levelMap.theMonsters.bossList)
                 {
-                    if (x.decision == DECISION.MOVE)
+                    if (x.animBeginPos != new Vector3(0.0f, 0.0f, -1.0f) && x.decision == DECISION.MOVE)
                     {
-                        if (x.animBeginPos != new Vector3(0.0f, 0.0f, -1.0f))
-                        {
-                            x.SpriteObj.transform.position += (x.animEndPos - x.animBeginPos) * (Time.deltaTime * 0.975f / ANIM_DUR_TIME);
-                        }
+                        x.SpriteObj.transform.position += (x.animEndPos - x.animBeginPos) * (Time.deltaTime * 0.975f / ANIM_DUR_TIME);
                     }
                 }
             }
@@ -113,17 +111,14 @@ public class Control_Animation : MonoBehaviour {
         }
         foreach (BossMonster x in levelMap.theMonsters.bossList)
         {
-            if (x.decision == DECISION.MOVE)
+            if (x.animBeginPos != new Vector3(0.0f, 0.0f, -1.0f) && x.decision == DECISION.MOVE)
             {
-                if (x.animBeginPos != new Vector3(0.0f, 0.0f, -1.0f))
-                {
-                    x.SpriteObj.transform.position = x.animEndPos;
-                    x.animEndPos = new Vector3(0.0f, 0.0f, -1.0f);
-                    x.animBeginPos = new Vector3(0.0f, 0.0f, -1.0f);
-                }
+                x.SpriteObj.transform.position = x.animEndPos;
+                x.animEndPos = new Vector3(0.0f, 0.0f, -1.0f);
+                x.animBeginPos = new Vector3(0.0f, 0.0f, -1.0f);
             }
         }
-        // don't set is_anim to false when BossAbilityAnim and PlayerHurtedAnim may play
+        // don't set is_anim to false yet when BossAbilityAnim and PlayerHurtedAnim may play
         if (levelMap.theMonsters.bossList.Count != 0)
         {
             for (i = 0; i < 0.01; i += Time.deltaTime)
@@ -420,6 +415,8 @@ public class Control_Animation : MonoBehaviour {
         Input.multiTouchEnabled = true;
         levelMap = GameObject.Find("Game Panel").GetComponent<Level_Map>();
         Game_Panel = GameObject.Find("Game Panel");
+        Player_Control_Canvas = GameObject.Find("Player Control Canvas").GetComponent<Canvas>();
+        Player_State_Canvas = GameObject.Find("Player State Canvas").GetComponent<Canvas>();
     }
 
     /*
@@ -451,20 +448,22 @@ public class Control_Animation : MonoBehaviour {
             GameObject.Find("View Map Description").GetComponent<Text>().text = "現可拖移、縮放\n瀏覽地圖";
             is_vmm = true;
         }
+        
         if (vamm_scale != new Vector3(1, 1, 1))
         {
-            GameObject.Find("Player Control Canvas").GetComponent<Canvas>().enabled = false;
+            Player_State_Canvas.enabled = Player_Control_Canvas.enabled = false;
             levelMap.thePlayer.thePlayerDisp.playerFacingSprite.enabled = false;
-            GameObject.Find("Player State Canvas").GetComponent<Canvas>().enabled = false;
         }
         if (useAnim)
+        {
             StartCoroutine(ViewMapModeAnim());
+        }
         else
         {
             Game_Panel.transform.localScale = vamm_scale;
             Game_Panel.transform.position = vamm_pos;
-            if (!GameObject.Find("Player Control Canvas").GetComponent<Canvas>().enabled)
-                GameObject.Find("Player Control Canvas").GetComponent<Canvas>().enabled = true;
+            if (!Player_Control_Canvas.enabled)
+                Player_Control_Canvas.enabled = true;
             is_vmm = (vamm_scale != new Vector3(1, 1, 1));
         }
         //time_view_map_mode = Time.time + Animation.ANIM_DUR_TIME / 12;
@@ -473,14 +472,19 @@ public class Control_Animation : MonoBehaviour {
     private IEnumerator ViewMapModeAnim()
     {
         float i = 0;
-        float speed = 0.5f;
-        float vmm_anim_dur_time = 1.0f;
-        while (Mathf.Abs(Game_Panel.transform.position.magnitude - vamm_pos.magnitude) >= 0.01f)
+        Vector3 deltaPosition = vamm_pos - Game_Panel.transform.position;
+        Vector3 deltaScale = vamm_scale - Game_Panel.transform.localScale;
+        float beginSpeed = 0.99f;
+        float speed = beginSpeed;
+        float vmm_anim_dur_time = 0.75f;
+        
+        while (i < vmm_anim_dur_time || (Game_Panel.transform.position - vamm_pos).magnitude < 0.01)
         {
-            Game_Panel.transform.position += (vamm_pos - Game_Panel.transform.position) * (speed * i / vmm_anim_dur_time);
-            Game_Panel.transform.localScale += (vamm_scale - Game_Panel.transform.localScale) * (speed * i / vmm_anim_dur_time);
+            Game_Panel.transform.position += deltaPosition * (2 * speed * Time.deltaTime / vmm_anim_dur_time);
+            Game_Panel.transform.localScale += deltaScale * (2 * speed * Time.deltaTime / vmm_anim_dur_time);
             is_anim = true;
             i += Time.deltaTime;
+            speed -= Time.deltaTime / vmm_anim_dur_time;
             yield return 0;
         }
         is_anim = false;
@@ -488,9 +492,8 @@ public class Control_Animation : MonoBehaviour {
         Game_Panel.transform.position = vamm_pos;
         if (vamm_scale == new Vector3(1, 1, 1))
         {
-            GameObject.Find("Player Control Canvas").GetComponent<Canvas>().enabled = true;
+            Player_Control_Canvas.enabled = Player_State_Canvas.enabled = true;
             levelMap.thePlayer.thePlayerDisp.playerFacingSprite.enabled = true;
-            GameObject.Find("Player State Canvas").GetComponent<Canvas>().enabled = true;
         }
         is_vmm = (vamm_scale != new Vector3(1, 1, 1));
     }
@@ -634,32 +637,36 @@ public class Control_Animation : MonoBehaviour {
                     preMousePos = new Vector3();
             }
         }
-        else if(Input.touchSupported && Input.touchCount == 1)
-        {
-            HandleDragMoveControl();
-        }
-
-        // handle double tap
-        if (doubleTapStep == 0 || doubleTapStep == 2)
+        else if(Input.touchSupported)
         {
             if (Input.touchCount == 1)
+                HandleDragMoveControl();
+        }
+        
+        // handle double tap
+        if(Input.touchSupported)
+        {
+            if (doubleTapStep == 0 || doubleTapStep == 2)
             {
-                if (Input.GetTouch(0).deltaTime < 0.12f)
+                if (Input.touchCount == 1)
                 {
-                    if (doubleTapStep == 2 && (Time.time - lastProgressTime) < 0.24f && !is_irresponsive)
+                    if (Input.GetTouch(0).deltaTime < 0.12f)
                     {
-                        levelMap.thePlayer.PlayerDoAbility();
+                        if (doubleTapStep == 2 && (Time.time - lastProgressTime) < 0.24f && !is_irresponsive)
+                        {
+                            levelMap.thePlayer.PlayerDoAbility();
+                        }
+                        doubleTapStep = 1;
+                        lastProgressTime = Time.time;
                     }
-                    doubleTapStep = 1;
-                    lastProgressTime = Time.time;
                 }
             }
-        }
-        else if (doubleTapStep == 1)
-        {
-            if (Input.touchCount == 0)
+            else if (doubleTapStep == 1)
             {
-                doubleTapStep = 2;
+                if (Input.touchCount == 0)
+                {
+                    doubleTapStep = 2;
+                }
             }
         }
 
@@ -683,7 +690,7 @@ public class Control_Animation : MonoBehaviour {
             {
                 levelMap.thePlayer.PlayerMove((int)FACETO.RIGHT);
             }
-            else if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift) || Input.GetKey(KeyCode.Space))
+            else if (Input.GetKey(KeyCode.RightShift) || Input.GetKey(KeyCode.Space))
             {
                 levelMap.thePlayer.PlayerDoAbility();
             }

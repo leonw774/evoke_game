@@ -133,8 +133,9 @@ public class Astar {
 
     public float FindPath(bool ignoreObs, bool canBreakThroughObs, bool recordPath, float obstaclesCost = 1.2f)
     // will return cost of shortest path
-    // retrun -1 means failure
+    // return -1 means failure
     {
+        TileComparer nc = new TileComparer();
         Tile curTile;
         Tile nbTile;
         while (OpenList.Count > 0)
@@ -148,16 +149,15 @@ public class Astar {
                 return result;
             }
 
-            // upadte lists
+            // update lists
             OpenList.RemoveAt(0);
             ClosedList.Add(curTile);
 
-            // examine to neighbors 
-            int nbNum = 0;
-            while (nbNum < 4)
+            // examine to neighbors
+            for (int nbNum = 0; nbNum < 4; nbNum++)
             {
                 nbTile = curTile.getNeighbor((FACETO)nbNum);
-                nbNum++;
+                
                 //Debug.Log("looking at " + nbTile.h + ", " + nbTile.w);
                 // if already examined
                 if (ClosedList.Exists(x => x.IsEqualTile(nbTile)))
@@ -186,7 +186,6 @@ public class Astar {
                 // check if it is a newly discovered block
                 if (!OpenList.Exists(x => x.IsEqualTile(nbTile)))
                 {
-                    TileComparer nc = new TileComparer();
                     nbTile.estTotalCost = EstimateCost(nbTile) + nbCostScore;
                     OpenList.Add(nbTile);
                     OpenList.Sort(nc);
@@ -196,8 +195,8 @@ public class Astar {
                     continue;
 
                 // now, this is a better way to get to this block
-                // updat the came-from-map with this cost
-                if (recordPath) CameFromMap[nbTile.h, nbTile.w] = (nbNum - 1); // nbNum - 1 because it is now the next neighbor
+                // update the came-from-map with this cost
+                if (recordPath) CameFromMap[nbTile.h, nbTile.w] = nbNum;
                 CostMap[nbTile.h, nbTile.w] = nbCostScore;
                 EstimatedTotalCostMap[nbTile.h, nbTile.w] = nbCostScore + EstimateCost(nbTile);
             } // end of while: nbTile < 4
@@ -216,24 +215,24 @@ public class Astar {
     {
         List<int> pathList = new List<int>();
         int count = 0;
-        int[] currentTile = new int[2] { GoalTile.h, GoalTile.w };
-        // creat it as {goal -> start} order
+        int[] curTile = new int[2] { GoalTile.h, GoalTile.w };
+        // create it as {goal -> start} order
         do
         {
-            pathList.Add(CameFromMap[currentTile[0], currentTile[1]]);
-            switch (CameFromMap[currentTile[0], currentTile[1]])
+            pathList.Add(CameFromMap[curTile[0], curTile[1]]);
+            switch (CameFromMap[curTile[0], curTile[1]])
             {
                 case 0: // it came from down
-                    currentTile[0]++; break;
+                    curTile[0]++; break;
                 case 1: // it came from right
-                    currentTile[1]++; break;
+                    curTile[1]++; break;
                 case 2: // it came from up
-                    currentTile[0]--; break;
+                    curTile[0]--; break;
                 case 3: // it came from left
-                    currentTile[1]--; break;
+                    curTile[1]--; break;
             }
             if(count++ > 50) break;
-        } while (CameFromMap[currentTile[0], currentTile[1]] != -1);
+        } while (CameFromMap[curTile[0], curTile[1]] != -1);
         pathList.Reverse(); // reverse to {start -> goal} order
         return pathList;
     }
@@ -242,26 +241,26 @@ public class Astar {
     {
         List<Vector3> pathList;
         int count = 0;
-        int[] currentTile = new int[2] { GoalTile.h, GoalTile.w };
+        int[] curTile = new int[2] { GoalTile.h, GoalTile.w };
         pathList = new List<Vector3>();
         // creat it as {goal -> start} order
         //Debug.Log("Astar: PrintPath()");
         do
         {
-            pathList.Add(new Vector3(currentTile[0], currentTile[1], CameFromMap[currentTile[0], currentTile[1]]));
-            switch (CameFromMap[currentTile[0], currentTile[1]])
+            pathList.Add(new Vector3(curTile[0], curTile[1], CameFromMap[curTile[0], curTile[1]]));
+            switch (CameFromMap[curTile[0], curTile[1]])
             {
                 case 0: // it came from down
-                    currentTile[0]++; break;
+                    curTile[0]++; break;
                 case 1: // it came from right
-                    currentTile[1]++; break;
+                    curTile[1]++; break;
                 case 2: // it came from up
-                    currentTile[0]--; break;
+                    curTile[0]--; break;
                 case 3: // it came from left
-                    currentTile[1]--; break;
+                    curTile[1]--; break;
             }
             if(count++ > 50) break;
-        }  while (CameFromMap[currentTile[0], currentTile[1]] != -1);
+        }  while (CameFromMap[curTile[0], curTile[1]] != -1);
         pathList.Reverse(); // reverse to {start -> goal} order
         foreach (Vector3 v in pathList)
         {

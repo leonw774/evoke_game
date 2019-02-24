@@ -26,20 +26,10 @@
     public static void SelectLevel(int newlevel)
     {
         SelectedLevel = newlevel;
-        SetThemeSelectedLevel();
     }
 
     public static void SelectedNextLevel()
     {
         SelectedLevel++;
-        SetThemeSelectedLevel();
-    }
-
-    public static void SetThemeSelectedLevel()
-    {
-        if (SelectedLevel < MaxLevel)
-            SelectedTheme = 1;
-        else
-            SelectedTheme = 2;
     }
 }
